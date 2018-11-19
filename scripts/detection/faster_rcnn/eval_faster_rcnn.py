@@ -25,7 +25,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Validate Faster-RCNN networks.')
     parser.add_argument('--network', type=str, default='resnet50_v1b',
                         help="Base feature extraction network name")
-    parser.add_argument('--dataset', type=str, default='voc',
+    parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers')

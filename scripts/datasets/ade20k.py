@@ -5,7 +5,7 @@ import argparse
 import zipfile
 from gluoncv.utils import download, makedirs
 
-_TARGET_DIR = os.path.expanduser('~/.mxnet/datasets/ade')
+_TARGET_DIR = os.path.expanduser('/mnt/mdisk/xcq/ADE20K')
 
 
 def parse_args():
@@ -32,7 +32,7 @@ def download_ade(path, overwrite=False):
 
 if __name__ == '__main__':
     args = parse_args()
-    makedirs(os.path.expanduser('~/.mxnet/datasets'))
+    makedirs(os.path.expanduser('/mnt/mdisk/xcq/ADE20K/'))
     if args.download_dir is not None:
         if os.path.isdir(_TARGET_DIR):
             os.remove(_TARGET_DIR)

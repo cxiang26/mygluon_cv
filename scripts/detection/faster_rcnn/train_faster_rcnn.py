@@ -26,12 +26,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--dataset', type=str, default='voc',
+    parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='0,1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -179,8 +179,8 @@ def get_dataset(dataset, args):
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(splits='instances_train2017', use_crowd=False)
-        val_dataset = gdata.COCODetection(splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_train2017', use_crowd=False)
+        val_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))

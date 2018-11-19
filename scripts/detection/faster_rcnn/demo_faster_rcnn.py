@@ -14,9 +14,9 @@ def parse_args():
                         help='Test images, use comma to split multiple.')
     parser.add_argument('--gpus', type=str, default='',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--pretrained', type=str, default='True',
+    parser.add_argument('--pretrained', type=str, default='./faster_rcnn_resnet50_v1b_coco_best.params',
                         help='Load weights from previously saved parameters. You can specify parameter file name.')
-    parser.add_argument('--thresh', type=float, default=0.5,
+    parser.add_argument('--thresh', type=float, default=0.8,
                         help='Threshold of object score when visualize the bboxes.')
     args = parser.parse_args()
     return args
