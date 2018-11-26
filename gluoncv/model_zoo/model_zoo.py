@@ -24,10 +24,14 @@ from .resnet import *
 from .squeezenet import *
 from .vgg import *
 from .mobilenet import *
+from .pointnet import *
 
 __all__ = ['get_model', 'get_model_list']
 
 _models = {
+    'pointnetcls': pointnetcls,
+    'pointnetseg': pointnetseg,
+
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,
     'resnet50_v1': resnet50_v1,

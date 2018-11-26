@@ -9,7 +9,8 @@ from tqdm import tqdm
 from mxnet.gluon.utils import check_sha1
 from gluoncv.utils import download, makedirs
 
-_TARGET_DIR = os.path.expanduser('~/.mxnet/datasets/imagenet')
+# _TARGET_DIR = os.path.expanduser('~/.mxnet/datasets/imagenet')
+_TARGET_DIR = os.path.expanduser('/mnt/mdisk/xcq/imagenet')
 _TRAIN_TAR = 'ILSVRC2012_img_train.tar'
 _TRAIN_TAR_SHA1 = '43eda4fe35c1705d6606a6a7a633bc965d194284'
 _VAL_TAR = 'ILSVRC2012_img_val.tar'
@@ -19,7 +20,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='Setup the ImageNet dataset.',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--download-dir', required=True,
+    parser.add_argument('--download-dir', default='/mnt/mdisk/xcq/',
                         help="The directory that contains downloaded tar files")
     parser.add_argument('--target-dir', default=_TARGET_DIR,
                         help="The directory to store extracted images")
@@ -27,7 +28,7 @@ def parse_args():
                         help="If check integrity before extracting.")
     parser.add_argument('--with-rec', action='store_true',
                         help="If build image record files.")
-    parser.add_argument('--num-thread', type=int, default=1,
+    parser.add_argument('--num-thread', type=int, default=8,
                         help="Number of threads to use when building image record file.")
     args = parser.parse_args()
     return args
