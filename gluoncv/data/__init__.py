@@ -3,7 +3,7 @@ This module provides data loaders and transfomers for popular vision datasets.
 """
 from . import transforms
 from . import batchify
-from .shapenet.shapenet import PartDataset
+from .shapenet.shapenet3d import PartDataset
 from .imagenet.classification import ImageNet, ImageNet1kAttr
 from .dataloader import DetectionDataLoader, RandomTransformDataLoader
 from .pascal_voc.detection import VOCDetection

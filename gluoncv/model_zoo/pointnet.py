@@ -33,45 +33,45 @@ class STN3d(HybridBlock):
         with self.name_scope():
             self.STN3d = nn.HybridSequential(prefix='')
             with self.STN3d.name_scope():
-                # self.STN3d.add(nn.Conv1D(64, 1), nn.BatchNorm(in_channels=64), nn.Activation('relu'),
-                #                nn.Conv1D(128, 1), nn.BatchNorm(in_channels=128), nn.Activation('relu'),
-                #                nn.Conv1D(1024, 1), nn.BatchNorm(in_channels=1024), nn.Activation('relu'),
-                #                nn.MaxPool1D(num_points), nn.Flatten(),
-                #                nn.Dense(512), nn.BatchNorm(in_channels=512), nn.Activation('relu'),
-                #                nn.Dense(256), nn.BatchNorm(in_channels=256), nn.Activation('relu'),
-                #                nn.Dense(9))
-                self.conv1 = nn.Conv1D(64, 1)
-                self.bn1 = nn.BatchNorm(in_channels=64)
-                self.relu1 = nn.Activation('relu')
-                self.conv2 = nn.Conv1D(128, 1)
-                self.bn2 = nn.BatchNorm(in_channels=128)
-                self.relu2 = nn.Activation('relu')
-                self.conv3 = nn.Conv1D(1024, 1)
-                self.bn3 = nn.BatchNorm(in_channels=1024)
-                self.relu3 = nn.Activation('relu')
-                self.mp1 = nn.MaxPool1D(num_points)
-                self.fla = nn.Flatten()
-                self.fc1 = nn.Dense(512)
-                self.bn4 = nn.BatchNorm(in_channels=512)
-                self.relu4 = nn.Activation('relu')
-                self.fc2 = nn.Dense(256)
-                self.bn5 = nn.BatchNorm(in_channels=256)
-                self.relu5 = nn.Activation('relu')
-                self.fc3 = nn.Dense(9)
+                self.STN3d.add(nn.Conv1D(64, 1), nn.BatchNorm(in_channels=64), nn.Activation('relu'),
+                               nn.Conv1D(128, 1), nn.BatchNorm(in_channels=128), nn.Activation('relu'),
+                               nn.Conv1D(1024, 1), nn.BatchNorm(in_channels=1024), nn.Activation('relu'),
+                               nn.MaxPool1D(num_points), nn.Flatten(),
+                               nn.Dense(512), nn.BatchNorm(in_channels=512), nn.Activation('relu'),
+                               nn.Dense(256), nn.BatchNorm(in_channels=256), nn.Activation('relu'),
+                               nn.Dense(9))
+                # self.conv1 = nn.Conv1D(64, 1)
+                # self.bn1 = nn.BatchNorm(in_channels=64)
+                # self.relu1 = nn.Activation('relu')
+                # self.conv2 = nn.Conv1D(128, 1)
+                # self.bn2 = nn.BatchNorm(in_channels=128)
+                # self.relu2 = nn.Activation('relu')
+                # self.conv3 = nn.Conv1D(1024, 1)
+                # self.bn3 = nn.BatchNorm(in_channels=1024)
+                # self.relu3 = nn.Activation('relu')
+                # self.mp1 = nn.MaxPool1D(num_points)
+                # self.fla = nn.Flatten()
+                # self.fc1 = nn.Dense(512)
+                # self.bn4 = nn.BatchNorm(in_channels=512)
+                # self.relu4 = nn.Activation('relu')
+                # self.fc2 = nn.Dense(256)
+                # self.bn5 = nn.BatchNorm(in_channels=256)
+                # self.relu5 = nn.Activation('relu')
+                # self.fc3 = nn.Dense(9)
             self.iden = self.params.get_constant('iden', value=nd.array([1,0,0,0,1,0,0,0,1],dtype='float32').reshape(1,9))
 
     def hybrid_forward(self, F, x, iden):
 
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = self.mp1(x)
-        x = x.flatten()
-
-        x = F.relu(self.bn4(self.fc1(x)))
-        x = F.relu(self.bn5(self.fc2(x)))
-        x = self.fc3(x)
-
+        # x = F.relu(self.bn1(self.conv1(x)))
+        # x = F.relu(self.bn2(self.conv2(x)))
+        # x = F.relu(self.bn3(self.conv3(x)))
+        # x = self.mp1(x)
+        # x = x.flatten()
+        #
+        # x = F.relu(self.bn4(self.fc1(x)))
+        # x = F.relu(self.bn5(self.fc2(x)))
+        # x = self.fc3(x)
+        x = self.STN3d(x)
         # x = x + iden
         x = F.broadcast_add(x, iden)
         x = F.reshape(x,(-1, 3, 3))
@@ -115,6 +115,39 @@ class PointNetfeat(HybridBlock):
         #     x = s
         # else:
         #     x = self.mp1(x)
+        if self.global_feat:
+            return x, trans
+        else:
+            x = x.repeat(self.num_points, axis=2)
+            return F.concat(x, pointfeat, dim=1), trans
+
+class PointNetfeat_sim(HybridBlock):
+    def __init__(self, num_points = 2500, global_feat = True):
+        super(PointNetfeat_sim, self).__init__()
+        self.stn = STN3d(num_points = num_points)
+        self.sim = nn.Conv2D(16, 1)
+        self.sim_t = nn.Conv2D(16, 1)
+        self.conv1 = nn.Conv1D(64, 1)
+        self.conv2 = nn.Conv1D(128, 1)
+        self.conv3 = nn.Conv1D(1024, 1)
+        self.bn1 = nn.BatchNorm(in_channels=64)
+        self.bn2 = nn.BatchNorm(in_channels=128)
+        self.bn3 = nn.BatchNorm(in_channels=1024)
+        self.mp1 = nn.MaxPool1D(num_points)
+        self.num_points = num_points
+        self.global_feat = global_feat
+    def hybrid_forward(self, F, x):
+        trans = self.stn(x)
+        x = F.transpose(x,(0,2,1))
+        x = F.batch_dot(x, trans)
+        x = F.transpose(x,(0,2,1))
+        sim_mat = F.batch_dot(self.sim(x).transpose((0,2,1)), self.sim_t(x))
+
+        x = F.relu(self.bn1(self.conv1(x)))
+        pointfeat = x
+        x = F.relu(self.bn2(self.conv2(x)))
+        x = self.bn3(self.conv3(x))
+        x = self.mp1(x)
         if self.global_feat:
             return x, trans
         else:

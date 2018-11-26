@@ -13,7 +13,7 @@ from mxnet.gluon.data.vision import transforms
 
 from gluoncv.model_zoo import get_model
 from gluoncv.utils import makedirs, TrainingHistory
-from gluoncv.data.shapenet import shapenet as gcv_shapenet
+from gluoncv.data.shapenet import shapenet3d as gcv_shapenet
 
 
 # CLI
@@ -26,7 +26,7 @@ parser.add_argument('--model', type=str, default='pointnetcls',
                     help='model to use. options are pointnet and wrn. default is pointnet.')
 parser.add_argument('-j', '--num-data-workers', dest='num_workers', default=4, type=int,
                     help='number of preprocessing workers')
-parser.add_argument('--num-epochs', type=int, default=3,
+parser.add_argument('--num-epochs', type=int, default=30,
                     help='number of training epochs.')
 parser.add_argument('--lr', type=float, default=0.1,
                     help='learning rate. default is 0.1.')
@@ -167,17 +167,17 @@ def train(epochs, ctx):
 
         if val_acc > best_val_score:
             best_val_score = val_acc
-            net.save_parameters('%s/%.4f-cifar-%s-%d-best.params'%(save_dir, best_val_score, model_name, epoch))
+            net.save_parameters('%s/%.4f-shapenet-%s-%d-best.params'%(save_dir, best_val_score, model_name, epoch))
 
         name, val_acc = test(ctx, val_data)
         logging.info('[Epoch %d] train=%f val=%f loss=%f time: %f' %
             (epoch, acc, val_acc, train_loss, time.time()-tic))
 
         if save_period and save_dir and (epoch + 1) % save_period == 0:
-            net.save_parameters('%s/cifar10-%s-%d.params'%(save_dir, model_name, epoch))
+            net.save_parameters('%s/shapenet3d-%s-%d.params'%(save_dir, model_name, epoch))
 
     if save_period and save_dir:
-        net.save_parameters('%s/cifar10-%s-%d.params'%(save_dir, model_name, epochs-1))
+        net.save_parameters('%s/shapenet3d-%s-%d.params'%(save_dir, model_name, epochs-1))
 
 def main():
     if opt.mode == 'hybrid':
