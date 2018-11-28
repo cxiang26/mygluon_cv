@@ -55,20 +55,33 @@ class ModelNetDataset(Dataset):
         with open(self.files['files'][idx]) as off:
             point_matrix = []
             for i, data in enumerate(off.readlines()):
+                data = data.strip('\n')
                 if i == 0:
-                    continue
-                elif i == 1:
-                    data = data.strip('\n')
+
+                    if len(data) == 3:
+                        com = True
+                        continue
+                    else:
+                        data = data.strip('OFF')
+                        nums = data.split(' ')
+                        nums = [int(x) for x in nums]
+                        npoint = nums[0]
+                        com = False
+                elif i == 1 and com:
                     nums = data.split(' ')
-                    nums = [int(x) for x in nums]
+                    # if len(nums) != 3:
+                    #     print(nums)
+                    nums = [int(x) for x in nums[:3]]
                     npoint = nums[0]
                     # if self.npoint > npoint-2:
                         # print(self.files['files'][idx], npoint)
                         # raise ValueError("npoint beyong the range.")
                 else:
-                    data = data.strip('\n')
+                    data.replace('\t', ' ')
                     nums = data.split(' ')
-                    nums = [float(x) for x in nums]
+                    # if len(nums) != 3:
+                    #     print(nums)
+                    nums = [float(x) for x in nums[:3]]
                     point_matrix.append(nums)
                 if i > npoint - 2:
                     if self.npoint>npoint-2:
@@ -99,7 +112,7 @@ if __name__ == '__main__':
                                     pc_tranforms.random_scale_point_cloud,
                                     pc_tranforms.rotate_point_cloud_z,
                                     pc_tranforms.jitter_point_cloud])
-    dataset = ModelNetDataset(transform=transform)
+    dataset = ModelNetDataset(modelnet='ModelNet10',transform=transform)
     dataloader = DataLoader(dataset, batch_size=128, shuffle=True, num_workers=8)
     for i,batch in enumerate(dataloader):
         print(i)
