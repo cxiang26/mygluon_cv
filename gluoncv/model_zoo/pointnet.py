@@ -78,10 +78,9 @@ class STN3d(HybridBlock):
         return x
 
 class PointNetfeat(HybridBlock):
-    def __init__(self, num_points = 2500, global_feat = True, routing=None):
+    def __init__(self, num_points = 2500, global_feat = True):
         super(PointNetfeat, self).__init__()
         self.stn = STN3d(num_points = num_points)
-        self.routing = routing
         self.conv1 = nn.Conv1D(64, 1)
         self.conv2 = nn.Conv1D(128, 1)
         self.conv3 = nn.Conv1D(1024, 1)
@@ -124,9 +123,12 @@ class PointNetfeat(HybridBlock):
 class PointNetfeat_sim(HybridBlock):
     def __init__(self, num_points = 2500, global_feat = True):
         super(PointNetfeat_sim, self).__init__()
+        self.k = 30
         self.stn = STN3d(num_points = num_points)
-        self.sim = nn.Conv2D(16, 1)
-        self.sim_t = nn.Conv2D(16, 1)
+        self.sim = nn.Dense(16, flatten=False)
+        self.sim_bn = nn.BatchNorm(in_channels=16)
+        self.sim_t = nn.Dense(16, flatten=False)
+        self.sim_tbn = nn.BatchNorm(in_channels=16)
         self.conv1 = nn.Conv1D(64, 1)
         self.conv2 = nn.Conv1D(128, 1)
         self.conv3 = nn.Conv1D(1024, 1)
@@ -140,9 +142,12 @@ class PointNetfeat_sim(HybridBlock):
         trans = self.stn(x)
         x = F.transpose(x,(0,2,1))
         x = F.batch_dot(x, trans)
-        x = F.transpose(x,(0,2,1))
-        sim_mat = F.batch_dot(self.sim(x).transpose((0,2,1)), self.sim_t(x))
 
+        sim_mat = F.batch_dot(self.sim(x), self.sim_t(x).transpose((0,2,1)))
+        mask = F.topk(sim_mat, ret_typ='value', k=self.k)
+        sim_mat = sim_mat * mask
+        x = F.transpose(x, (0,2,1))
+        x = F.batch_dot(x, F.softmax(sim_mat, axis=1, temperature=0.1))
         x = F.relu(self.bn1(self.conv1(x)))
         pointfeat = x
         x = F.relu(self.bn2(self.conv2(x)))
@@ -155,12 +160,15 @@ class PointNetfeat_sim(HybridBlock):
             return F.concat(x, pointfeat, dim=1), trans
 
 class PointNetCls(HybridBlock):
-    def __init__(self, num_points = 2500, classes = 2, routing=None):
+    def __init__(self, num_points = 2500, classes = 2, drop_rate=None,routing=None):
         super(PointNetCls, self).__init__()
         self.num_points = num_points
+        self.dp_rate = drop_rate
         with self.name_scope():
-            self.feat = PointNetfeat(num_points, global_feat=True, routing=routing)
+            self.feat = PointNetfeat(num_points, global_feat=True)
             self.fc1 = nn.Dense(512)
+            if drop_rate is not None:
+                self.dp = nn.Dropout(drop_rate)
             self.fc2 = nn.Dense(256)
             self.fc3 = nn.Dense(classes)
             self.bn1 = nn.BatchNorm(in_channels=512)
@@ -169,6 +177,8 @@ class PointNetCls(HybridBlock):
     def hybrid_forward(self, F, x):
         x, trans = self.feat(x)
         x = F.relu(self.bn1(self.fc1(x)))
+        if self.dp_rate is not None:
+            x = self.dp(x)
         x = F.relu(self.bn2(self.fc2(x)))
         x = self.fc3(x)
         # return nd.log_softmax(x, axis=-1), trans

@@ -48,7 +48,7 @@ class COCOInstance(VisionDataset):
                'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock', 'vase',
                'scissors', 'teddy bear', 'hair drier', 'toothbrush']
 
-    def __init__(self, root=os.path.join('~', '.mxnet', 'datasets', 'coco'),
+    def __init__(self, root=os.path.join('/', 'mnt', 'mdisk', 'xcq', 'coco'),
                  splits=('instances_val2017',), transform=None, min_object_area=1,
                  skip_empty=True):
         super(COCOInstance, self).__init__(root)

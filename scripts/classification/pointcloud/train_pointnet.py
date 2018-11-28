@@ -24,9 +24,9 @@ parser.add_argument('--num-gpus', type=int, default=3,
                     help='number of gpus to use.')
 parser.add_argument('--model', type=str, default='pointnetcls',
                     help='model to use. options are pointnet and wrn. default is pointnet.')
-parser.add_argument('-j', '--num-data-workers', dest='num_workers', default=4, type=int,
+parser.add_argument('-j', '--num-data-workers', dest='num_workers', default=8, type=int,
                     help='number of preprocessing workers')
-parser.add_argument('--num-epochs', type=int, default=30,
+parser.add_argument('--num-epochs', type=int, default=100,
                     help='number of training epochs.')
 parser.add_argument('--lr', type=float, default=0.1,
                     help='learning rate. default is 0.1.')
@@ -40,7 +40,7 @@ parser.add_argument('--lr-decay-period', type=int, default=0,
                     help='period in epoch for learning rate decays. default is 0 (has no effect).')
 parser.add_argument('--lr-decay-epoch', type=str, default='40,60',
                     help='epoches at which learning rate decays. default is 40,60.')
-parser.add_argument('--drop-rate', type=float, default=0.0,
+parser.add_argument('--drop-rate', type=float, default=0.2,
                     help='dropout rate for wide pointnet. default is 0.')
 parser.add_argument('--mode', type=str, default='hybrid',
                     help='mode in which to train the model. options are imperative, hybrid')
@@ -66,7 +66,7 @@ lr_decay = opt.lr_decay
 lr_decay_epoch = [int(i) for i in opt.lr_decay_epoch.split(',')] + [np.inf]
 
 model_name = opt.model
-if model_name.startswith('cifar_wideresnet'):
+if model_name.startswith('pointnetcls'):
     kwargs = {'classes': classes,
               'drop_rate': opt.drop_rate}
 else:
