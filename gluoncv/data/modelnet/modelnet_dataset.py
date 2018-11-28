@@ -5,7 +5,7 @@
 import os
 import os.path
 import numpy as np
-from . import pc_tranforms
+import pc_tranforms
 from mxnet.gluon.data import Dataset
 from mxnet.gluon.data import DataLoader
 from mxnet import nd
@@ -62,8 +62,8 @@ class ModelNetDataset(Dataset):
                     nums = data.split(' ')
                     nums = [int(x) for x in nums]
                     npoint = nums[0]
-                    if self.npoint > npoint-2:
-                        print(self.files['files'][idx], npoint)
+                    # if self.npoint > npoint-2:
+                        # print(self.files['files'][idx], npoint)
                         # raise ValueError("npoint beyong the range.")
                 else:
                     data = data.strip('\n')
@@ -88,8 +88,18 @@ class ModelNetDataset(Dataset):
 
 
 if __name__ == '__main__':
-
-    dataset = ModelNetDataset()
+    # ['rotate_point_cloud', 'rotate_perturbation_point_cloud',
+    # 'random_point_dropout', 'random_scale_point_cloud',
+    # 'rotate_point_cloud_by_angle', 'rotate_point_cloud_z',
+    # 'jitter_point_cloud', 'normalize_point_cloud']
+    transform = transforms.Compose([pc_tranforms.normalize_point_cloud,
+                                    pc_tranforms.rotate_point_cloud,
+                                    pc_tranforms.rotate_perturbation_point_cloud,
+                                    pc_tranforms.random_point_dropout,
+                                    pc_tranforms.random_scale_point_cloud,
+                                    pc_tranforms.rotate_point_cloud_z,
+                                    pc_tranforms.jitter_point_cloud])
+    dataset = ModelNetDataset(transform=transform)
     dataloader = DataLoader(dataset, batch_size=128, shuffle=True, num_workers=8)
     for i,batch in enumerate(dataloader):
         print(i)
