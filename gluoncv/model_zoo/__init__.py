@@ -25,4 +25,5 @@ from .vgg import *
 from .mobilenet import *
 
 from .pointnet import *
+from .peleenet import *
 from .residual_attentionnet import *

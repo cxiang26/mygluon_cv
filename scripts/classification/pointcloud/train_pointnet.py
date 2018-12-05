@@ -11,6 +11,7 @@ from mxnet import autograd as ag
 from mxnet.gluon import nn
 from mxnet.gluon.data.vision import transforms
 
+from gluoncv.data.modelnet import pc_tranforms, modelnet_dataset
 from gluoncv.model_zoo import get_model
 from gluoncv.utils import makedirs, TrainingHistory
 from gluoncv.data.shapenet import shapenet3d as gcv_shapenet
@@ -18,13 +19,13 @@ from gluoncv.data.shapenet import shapenet3d as gcv_shapenet
 
 # CLI
 parser = argparse.ArgumentParser(description='Train a model for point cloud classification.')
-parser.add_argument('--batch-size', type=int, default=32,
+parser.add_argument('--batch-size', type=int, default=16,
                     help='training batch size per device (CPU/GPU).')
 parser.add_argument('--num-gpus', type=int, default=3,
                     help='number of gpus to use.')
 parser.add_argument('--model', type=str, default='pointnetcls',
                     help='model to use. options are pointnet and wrn. default is pointnet.')
-parser.add_argument('-j', '--num-data-workers', dest='num_workers', default=8, type=int,
+parser.add_argument('-j', '--num-data-workers', dest='num_workers', default=16, type=int,
                     help='number of preprocessing workers')
 parser.add_argument('--num-epochs', type=int, default=100,
                     help='number of training epochs.')
@@ -90,11 +91,17 @@ logging.basicConfig(level=logging.INFO)
 logging.info(opt)
 
 transform_train = transforms.Compose([
-    transforms.ToTensor(),
+    pc_tranforms.normalize_point_cloud,
+    pc_tranforms.rotate_point_cloud,
+    pc_tranforms.rotate_perturbation_point_cloud,
+    pc_tranforms.random_point_dropout,
+    pc_tranforms.random_scale_point_cloud,
+    pc_tranforms.rotate_point_cloud_z,
+    pc_tranforms.jitter_point_cloud
 ])
 
 transform_test = transforms.Compose([
-    transforms.ToTensor(),
+    pc_tranforms.normalize_point_cloud,
 ])
 
 def test(ctx, val_data):
@@ -112,12 +119,14 @@ def train(epochs, ctx):
     net.initialize(mx.init.Xavier(), ctx=ctx)
 
     train_data = gluon.data.DataLoader(
-        gcv_shapenet.PartDataset(train=True, classification = True),
+        gcv_shapenet.PartDataset(train=True, classification = True, transform=transform_train),
+        # modelnet_dataset.ModelNetDataset(modelnet='ModelNet40', train=True, npoint=2500, transform=transform_train),
         batch_size=batch_size, shuffle=True, last_batch='discard', num_workers=num_workers)
 
     val_data = gluon.data.DataLoader(
-        gcv_shapenet.PartDataset(train=False, classification = True),
-        batch_size=batch_size, shuffle=False, num_workers=num_workers)
+        gcv_shapenet.PartDataset(train=False, classification = True, transform=transform_test),
+        # modelnet_dataset.ModelNetDataset(modelnet='ModelNet40', train=False, npoint=2500, transform=transform_test),
+        batch_size=batch_size, shuffle=False, last_batch='discard', num_workers=num_workers)
 
     trainer = gluon.Trainer(net.collect_params(), optimizer,
                             {'learning_rate': opt.lr, 'wd': opt.wd, 'momentum': opt.momentum})
@@ -163,7 +172,7 @@ def train(epochs, ctx):
         name, acc = train_metric.get()
         name, val_acc = test(ctx, val_data)
         train_history.update([1-acc, 1-val_acc])
-        train_history.plot(save_path='%s/%s_history.png'%(plot_path, model_name))
+        train_history.plot(save_path='%s/%s_shapenet_history.png'%(plot_path, model_name))
 
         if val_acc > best_val_score:
             best_val_score = val_acc
@@ -174,10 +183,10 @@ def train(epochs, ctx):
             (epoch, acc, val_acc, train_loss, time.time()-tic))
 
         if save_period and save_dir and (epoch + 1) % save_period == 0:
-            net.save_parameters('%s/shapenet3d-%s-%d.params'%(save_dir, model_name, epoch))
+            net.save_parameters('%s/shapenet-%s-%d.params'%(save_dir, model_name, epoch))
 
     if save_period and save_dir:
-        net.save_parameters('%s/shapenet3d-%s-%d.params'%(save_dir, model_name, epochs-1))
+        net.save_parameters('%s/shapenet-%s-%d.params'%(save_dir, model_name, epochs-1))
 
 def main():
     if opt.mode == 'hybrid':

@@ -28,14 +28,14 @@ def parse_args():
     parser.add_argument('--data-shape', type=int, default=416,
                         help="Input data shape for evaluation, use 320, 416, 608... " +
                              "Training is with random shapes from (320 to 608).")
-    parser.add_argument('--batch-size', type=int, default=64,
+    parser.add_argument('--batch-size', type=int, default=6,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=200,
                         help='Training epochs.')
@@ -197,8 +197,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                                warmup_epochs=args.warmup_epochs)
 
     trainer = gluon.Trainer(
-        net.collect_params(), 'sgd',
-        {'wd': args.wd, 'momentum': args.momentum, 'lr_scheduler': lr_scheduler},
+        net.collect_params(), 'adam',
+        {'wd': args.wd,  'lr_scheduler': lr_scheduler},
         kvstore='local')
 
     # targets

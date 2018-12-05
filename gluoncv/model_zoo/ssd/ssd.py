@@ -30,7 +30,9 @@ __all__ = ['SSD', 'get_ssd',
            'ssd_512_resnet152_v2_voc',
            'ssd_512_mobilenet1_0_voc',
            'ssd_512_mobilenet1_0_coco',
-           'ssd_512_mobilenet1_0_custom',]
+           'ssd_512_mobilenet1_0_custom',
+
+           'ssd_300_peleenet50_voc']
 
 
 class SSD(HybridBlock):
@@ -809,3 +811,14 @@ def ssd_512_mobilenet1_0_custom(classes, pretrained_base=True, transfer=None, **
         net = get_model('ssd_512_mobilenet1.0_' + str(transfer), pretrained=True, **kwargs)
         net.reset_class(classes)
     return net
+
+def ssd_300_peleenet50_voc(pretrained=False, pretrained_base=False, **kwargs):
+    classes = VOCDetection.CLASSES
+    return get_ssd('peleenet', 300,
+                   features=['stage3_relu40_fwd', 'stage4_relu30_fwd'],
+                   filters=[512, 512, 256, 256],
+                   sizes=[51.2, 102.4, 189.4, 276.4, 363.52, 450.6, 492],
+                   ratios=[[1, 2, 0.5]] + [[1, 2, 0.5, 3, 1.0 / 3]] * 3 + [[1, 2, 0.5]] * 2,
+                   steps=[16, 32, 64, 128, 256, 512],
+                   classes=classes, dataset='voc', pretrained=pretrained,
+                   pretrained_base=pretrained_base, **kwargs)

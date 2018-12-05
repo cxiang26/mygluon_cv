@@ -833,3 +833,16 @@ def se_resnet152_v2(**kwargs):
         Location for keeping the model parameters.
     """
     return get_resnet(2, 152, use_se=True, **kwargs)
+
+if __name__ == '__main__':
+    import mxnet as mx
+    p = get_resnet(1, 18, use_se=False)
+    p.initialize(ctx=mx.gpu())
+    for n in p.collect_params().values():
+        print(n.name)
+    # print(p)
+    # p.hybridize()
+    input = mx.nd.random_uniform(shape=(1,3,224,224),ctx=mx.gpu())
+    output = p(input)
+    # p.summary(input)
+    # print(output.shape)

@@ -26,6 +26,7 @@ from .vgg import *
 from .mobilenet import *
 
 from .pointnet import *
+from .peleenet import *
 from .residual_attentionnet import *
 
 
@@ -34,6 +35,8 @@ __all__ = ['get_model', 'get_model_list']
 _models = {
     'pointnetcls': pointnetcls,
     'pointnetseg': pointnetseg,
+    'peleenet': peleenet,
+    'ssd_300_peleenet50_voc': ssd_300_peleenet50_voc,
 
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,

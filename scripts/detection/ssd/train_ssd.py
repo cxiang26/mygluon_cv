@@ -21,18 +21,18 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='vgg16_atrous',
+    parser.add_argument('--network', type=str, default='peleenet50',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=300,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=24,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=12, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='0,1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
@@ -235,7 +235,7 @@ if __name__ == '__main__':
     # network
     net_name = '_'.join(('ssd', str(args.data_shape), args.network, args.dataset))
     args.save_prefix += net_name
-    net = get_model(net_name, pretrained_base=True)
+    net = get_model(net_name, pretrained_base=False)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
     else:

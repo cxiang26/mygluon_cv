@@ -5,7 +5,7 @@
 import os
 import os.path
 import numpy as np
-import pc_tranforms
+# import pc_tranforms
 from mxnet.gluon.data import Dataset
 from mxnet.gluon.data import DataLoader
 from mxnet import nd
@@ -105,6 +105,7 @@ if __name__ == '__main__':
     # 'random_point_dropout', 'random_scale_point_cloud',
     # 'rotate_point_cloud_by_angle', 'rotate_point_cloud_z',
     # 'jitter_point_cloud', 'normalize_point_cloud']
+
     transform = transforms.Compose([pc_tranforms.normalize_point_cloud,
                                     pc_tranforms.rotate_point_cloud,
                                     pc_tranforms.rotate_perturbation_point_cloud,
@@ -112,7 +113,7 @@ if __name__ == '__main__':
                                     pc_tranforms.random_scale_point_cloud,
                                     pc_tranforms.rotate_point_cloud_z,
                                     pc_tranforms.jitter_point_cloud])
-    dataset = ModelNetDataset(modelnet='ModelNet10',transform=transform)
+    dataset = ModelNetDataset(modelnet='ModelNet10', transform=transform)
     dataloader = DataLoader(dataset, batch_size=128, shuffle=True, num_workers=8)
     for i,batch in enumerate(dataloader):
         print(i)

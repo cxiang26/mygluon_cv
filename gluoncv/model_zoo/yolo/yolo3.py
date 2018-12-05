@@ -25,7 +25,7 @@ def _upsample(x, stride=2):
         The input array.
     stride : int, default is 2
         Upsampling stride
-
+t
     """
     return x.repeat(axis=-1, repeats=stride).repeat(axis=-2, repeats=stride)
 

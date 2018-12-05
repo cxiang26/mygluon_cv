@@ -461,3 +461,16 @@ def mobilenet_v2_0_25(**kwargs):
         Number of devices for training. If `num_sync_bn_devices < 2`, SyncBatchNorm is disabled.
     """
     return get_mobilenet_v2(0.25, **kwargs)
+
+if __name__ == '__main__':
+    import mxnet as mx
+    p = get_mobilenet(1.)
+    p.initialize(ctx=mx.gpu())
+
+    # p.hybridize()
+    input = mx.nd.random_uniform(shape=(1,3,224,224),ctx=mx.gpu())
+    output = p(input)
+    for n in p.collect_params():
+        print(n._prefix)
+    # p.summary(input)
+    # print(output.shape)

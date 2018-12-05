@@ -8,9 +8,10 @@ import numpy as np
 __all__ = ['PartDataset']
 
 class PartDataset(data.Dataset):
-    def __init__(self, root = '/mnt/mdisk/xcq/shapenetcore_partanno_segmentation_benchmark_v0', npoints = 2500, classification = False, class_choice = None, train = True):
+    def __init__(self, root = '/mnt/mdisk/xcq/shapenetcore_partanno_segmentation_benchmark_v0', npoints = 2500, classification = False, class_choice = None, train = True, transform=None):
         self.npoints = npoints
         self.root = root
+        self.transform = transform
         self.catfile = os.path.join(self.root, 'synsetoffset2category.txt')
         self.cat = {}
 
@@ -69,6 +70,9 @@ class PartDataset(data.Dataset):
         choice = np.random.choice(len(seg), self.npoints, replace=True)
         #resample
         point_set = point_set[choice, :]
+        if self.transform is not None:
+            for tran in self.transform:
+                point_set = tran(point_set)
         seg = seg[choice]
         point_set = nd.array(point_set)
         seg = nd.array(seg)
