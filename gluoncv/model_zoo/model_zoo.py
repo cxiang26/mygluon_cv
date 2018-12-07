@@ -36,6 +36,7 @@ _models = {
     'pointnetcls': pointnetcls,
     'pointnetseg': pointnetseg,
     'peleenet': peleenet,
+    'ssd_224_peleenet50_voc': ssd_224_peleenet50_voc,
     'ssd_300_peleenet50_voc': ssd_300_peleenet50_voc,
 
     'resnet18_v1': resnet18_v1,

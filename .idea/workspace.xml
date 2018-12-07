@@ -2,19 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a711ed93-9a6a-4680-95d9-8f357310f535" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/modelnet/modelnet_dataset.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/modelnet/modelnet_dataset.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/mobilenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/mobilenet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/resnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/resnet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/classification/pointcloud/train_pointnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/classification/pointcloud/train_pointnet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/detection/yolo/train_yolo3.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/yolo/train_yolo3.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -23,56 +15,13 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="DockManager">
-    <window id="2">
-      <content type="file-editors">
-        <state>
-          <leaf>
-            <file leaf-file-name="ssd.py" pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="781">
-                    <caret line="133" selection-start-line="133" selection-end-line="133" />
-                    <folding>
-                      <element signature="e#38#76#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file leaf-file-name="vgg_atrous.py" pinned="false" current-in-tab="false">
-              <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/vgg_atrous.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="2667">
-                    <caret line="202" column="31" lean-forward="true" selection-start-line="202" selection-start-column="31" selection-end-line="202" selection-end-column="31" />
-                    <folding>
-                      <element signature="e#82#113#0" expanded="true" />
-                    </folding>
-                  </state>
-                </provider>
-              </entry>
-            </file>
-            <file leaf-file-name="feature.py" pinned="false" current-in-tab="true">
-              <entry file="file://$PROJECT_DIR$/gluoncv/nn/feature.py">
-                <provider selected="true" editor-type-id="text-editor">
-                  <state relative-caret-position="520">
-                    <caret line="51" selection-start-line="51" selection-end-line="51" />
-                  </state>
-                </provider>
-              </entry>
-            </file>
-          </leaf>
-        </state>
-      </content>
-    </window>
-  </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file leaf-file-name="model_zoo.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="model_zoo.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="364">
-              <caret line="202" selection-start-line="202" selection-end-line="202" />
+            <state relative-caret-position="-197">
+              <caret line="109" column="43" lean-forward="true" selection-start-line="109" selection-start-column="43" selection-end-line="109" selection-end-column="43" />
               <folding>
                 <element signature="e#167#185#0" expanded="true" />
               </folding>
@@ -80,25 +29,34 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="densenet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/densenet.py">
+      <file leaf-file-name="feature.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/nn/feature.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="22" selection-start-line="22" selection-end-line="22" />
+            <state relative-caret-position="194">
+              <caret line="128" selection-start-line="128" selection-end-line="128" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="ssd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="344">
+              <caret line="833" column="53" selection-start-line="833" selection-start-column="53" selection-end-line="833" selection-end-column="53" />
               <folding>
-                <element signature="e#976#1005#0" expanded="true" />
+                <element signature="e#38#76#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="peleenet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py">
+      <file leaf-file-name="anchor.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/anchor.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="2771">
-              <caret line="172" selection-start-line="172" selection-end-line="172" />
+            <state relative-caret-position="595">
+              <caret line="35" column="21" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="21" />
               <folding>
-                <element signature="e#925#954#0" expanded="true" />
+                <element signature="e#77#115#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -107,8 +65,8 @@
       <file leaf-file-name="train_ssd.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="415">
-              <caret line="237" selection-start-line="237" selection-end-line="237" />
+            <state relative-caret-position="-272">
+              <caret line="98" column="53" selection-start-line="98" selection-start-column="53" selection-end-line="98" selection-end-column="53" />
               <folding>
                 <element signature="e#16#31#0" expanded="true" />
               </folding>
@@ -116,40 +74,35 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="codecs.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/codecs.py">
+      <file leaf-file-name="demo_ssd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="202">
-              <caret line="310" selection-start-line="310" selection-end-line="310" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="361">
-              <caret line="27" column="23" lean-forward="true" selection-start-line="27" selection-start-column="23" selection-end-line="27" selection-end-column="23" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="target.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/target.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-204">
+            <state relative-caret-position="395">
+              <caret line="54" selection-start-line="54" selection-end-line="54" />
               <folding>
-                <element signature="e#37#75#0" expanded="true" />
+                <element signature="e#23#32#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mobilenet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/mobilenet.py">
+      <file leaf-file-name="api.py" pinned="false" current-in-tab="false">
+        <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/requests/api.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="420">
-              <caret line="473" column="23" selection-start-line="473" selection-start-column="23" selection-end-line="473" selection-end-column="23" />
+            <state relative-caret-position="168">
+              <caret line="71" selection-start-line="71" selection-end-line="71" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="shapenet3d.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="357">
+              <caret line="21" column="41" selection-start-line="21" selection-start-column="41" selection-end-line="21" selection-end-column="41" />
+              <folding>
+                <element signature="e#0#37#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -188,7 +141,10 @@
       <find>YOLOV3</find>
       <find>total_filter</find>
       <find>cpu</find>
+      <find>nDenseBlocks</find>
+      <find>stage_index</find>
       <find>features</find>
+      <find>_im_size</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -224,16 +180,19 @@
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/resnet.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/mobilenet.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" />
+        <option value="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" />
         <option value="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="width" value="1920" />
+  <component name="ProjectFrameBounds" extendedState="1">
+    <option name="x" value="1965" />
+    <option name="y" value="12" />
+    <option name="width" value="1849" />
     <option name="height" value="1040" />
   </component>
   <component name="ProjectView">
@@ -247,6 +206,30 @@
             <path>
               <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
               <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
+              <item name="data" type="462c0819:PsiDirectoryNode" />
+              <item name="modelnet" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
+              <item name="model_zoo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
@@ -300,6 +283,24 @@
     </option>
   </component>
   <component name="RunManager" selected="Python.train_ssd">
+    <configuration name="demo_ssd" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="gluon-cv" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/ssd" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+    </configuration>
     <configuration name="mobilenet" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -372,38 +373,20 @@
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="train_yolo3" type="PythonConfigurationType" factoryName="Python" temporary="true">
-      <module name="gluon-cv" />
-      <option name="INTERPRETER_OPTIONS" value="" />
-      <option name="PARENT_ENVS" value="true" />
-      <envs>
-        <env name="PYTHONUNBUFFERED" value="1" />
-      </envs>
-      <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/yolo" />
-      <option name="IS_MODULE_SDK" value="true" />
-      <option name="ADD_CONTENT_ROOTS" value="true" />
-      <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/yolo/train_yolo3.py" />
-      <option name="PARAMETERS" value="" />
-      <option name="SHOW_COMMAND_LINE" value="false" />
-      <option name="EMULATE_TERMINAL" value="false" />
-      <option name="MODULE_MODE" value="false" />
-    </configuration>
     <list>
-      <item itemvalue="Python.train_yolo3" />
       <item itemvalue="Python.peleenet" />
       <item itemvalue="Python.mobilenet" />
       <item itemvalue="Python.resnet" />
       <item itemvalue="Python.train_ssd" />
+      <item itemvalue="Python.demo_ssd" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.train_ssd" />
+        <item itemvalue="Python.demo_ssd" />
         <item itemvalue="Python.peleenet" />
         <item itemvalue="Python.mobilenet" />
         <item itemvalue="Python.resnet" />
-        <item itemvalue="Python.train_yolo3" />
       </list>
     </recent_temporary>
   </component>
@@ -421,18 +404,18 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="0" width="1920" height="1040" extended-state="0" />
+    <frame x="1965" y="12" width="1849" height="1040" extended-state="1" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.3182058" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.16200528" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.36089385" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.375419" />
       <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32960895" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.32960895" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.40782124" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.40782124" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
@@ -501,13 +484,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py</url>
-          <line>172</line>
+          <line>195</line>
           <option name="timeStamp" value="72" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/target.py</url>
-          <line>1</line>
-          <option name="timeStamp" value="73" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py</url>
@@ -515,9 +493,19 @@
           <option name="timeStamp" value="74" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/feature.py</url>
-          <line>51</line>
-          <option name="timeStamp" value="76" />
+          <url>file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py</url>
+          <line>247</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py</url>
+          <line>53</line>
+          <option name="timeStamp" value="85" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py</url>
+          <line>46</line>
+          <option name="timeStamp" value="86" />
         </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
@@ -527,41 +515,10 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="77" />
+      <option name="time" value="88" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/setup.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="8" lean-forward="true" selection-start-line="8" selection-end-line="8" />
-          <folding>
-            <element signature="e#22#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/site-packages/mxnet/gluon/trainer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="344">
-          <caret line="361" selection-start-line="361" selection-end-line="361" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/site-packages/mxnet/gluon/block.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="453">
-          <caret line="917" selection-start-line="917" selection-end-line="917" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="22" selection-start-line="22" selection-end-line="22" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/data/mscoco/instance.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="680">
@@ -667,26 +624,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1258">
-          <caret line="74" column="43" selection-start-line="74" selection-start-column="43" selection-end-line="74" selection-end-column="43" />
-          <folding>
-            <element signature="e#0#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/modelnet/modelnet_dataset.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2023">
-          <caret line="119" selection-start-line="119" selection-end-line="119" />
-          <folding>
-            <element signature="e#108#117#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/docs/model_zoo/classification.rst">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-5095" />
@@ -767,29 +704,12 @@
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet_ssd/anchor.py">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="13685">
-          <caret line="841" column="21" lean-forward="true" selection-start-line="841" selection-start-column="21" selection-end-line="841" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/alexnet.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="323">
           <caret line="19" selection-start-line="19" selection-end-line="25" />
           <folding>
             <element signature="e#925#954#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/pointnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2408">
-          <caret line="142" column="34" lean-forward="true" selection-start-line="142" selection-start-column="34" selection-end-line="142" selection-end-column="34" />
-          <folding>
-            <element signature="e#969#998#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -802,19 +722,9 @@
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/vgg_atrous.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2667">
-          <caret line="202" column="31" lean-forward="true" selection-start-line="202" selection-start-column="31" selection-end-line="202" selection-end-column="31" />
+          <caret line="202" column="31" selection-start-line="202" selection-start-column="31" selection-end-line="202" selection-end-column="31" />
           <folding>
             <element signature="e#82#113#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2771">
-          <caret line="172" selection-start-line="172" selection-end-line="172" />
-          <folding>
-            <element signature="e#925#954#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -839,19 +749,61 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="195" selection-start-line="195" selection-end-line="195" />
+          <folding>
+            <element signature="e#925#954#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/densenet.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="22" selection-start-line="22" selection-end-line="22" />
+        <state relative-caret-position="238">
+          <caret line="14" column="57" lean-forward="true" selection-start-line="14" selection-start-column="57" selection-end-line="14" selection-end-column="57" />
           <folding>
             <element signature="e#976#1005#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/pointnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="162" column="8" selection-start-line="162" selection-start-column="8" selection-end-line="162" selection-end-column="8" />
+          <folding>
+            <element signature="e#969#998#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/resnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="358">
+          <caret line="371" column="65" lean-forward="true" selection-start-line="371" selection-start-column="36" selection-end-line="371" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/mxnet/gluon/block.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1872">
+          <caret line="537" selection-start-line="537" selection-end-line="537" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="403">
+          <caret line="27" column="23" lean-forward="true" selection-start-line="27" selection-start-column="23" selection-end-line="27" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/target.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-204">
+        <state relative-caret-position="-447">
+          <caret line="1" selection-start-line="1" selection-end-line="1" />
           <folding>
             <element signature="e#37#75#0" expanded="true" />
           </folding>
@@ -865,54 +817,94 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/requests/api.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="71" selection-start-line="71" selection-end-line="71" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/nn/feature.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="194">
+          <caret line="128" selection-start-line="128" selection-end-line="128" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="236">
+          <caret line="310" selection-start-line="310" selection-end-line="310" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="54" selection-start-line="54" selection-end-line="54" />
+          <folding>
+            <element signature="e#23#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/anchor.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="595">
+          <caret line="35" column="21" selection-start-line="35" selection-start-column="13" selection-end-line="35" selection-end-column="21" />
+          <folding>
+            <element signature="e#77#115#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="781">
-          <caret line="133" selection-start-line="133" selection-end-line="133" />
+        <state relative-caret-position="344">
+          <caret line="833" column="53" selection-start-line="833" selection-start-column="53" selection-end-line="833" selection-end-column="53" />
           <folding>
             <element signature="e#38#76#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="202">
-          <caret line="310" selection-start-line="310" selection-end-line="310" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="415">
-          <caret line="237" selection-start-line="237" selection-end-line="237" />
+        <state relative-caret-position="-272">
+          <caret line="98" column="53" selection-start-line="98" selection-start-column="53" selection-end-line="98" selection-end-column="53" />
           <folding>
             <element signature="e#16#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/nn/feature.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="520">
-          <caret line="51" selection-start-line="51" selection-end-line="51" />
+        <state relative-caret-position="357">
+          <caret line="21" column="41" selection-start-line="21" selection-start-column="41" selection-end-line="21" selection-end-column="41" />
+          <folding>
+            <element signature="e#0#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/modelnet/modelnet_dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="589">
+          <caret line="119" selection-start-line="119" selection-end-line="119" />
+          <folding>
+            <element signature="e#108#117#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="364">
-          <caret line="202" selection-start-line="202" selection-end-line="202" />
+        <state relative-caret-position="-197">
+          <caret line="109" column="43" lean-forward="true" selection-start-line="109" selection-start-column="43" selection-end-line="109" selection-end-column="43" />
           <folding>
             <element signature="e#167#185#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="361">
-          <caret line="27" column="23" lean-forward="true" selection-start-line="27" selection-start-column="23" selection-end-line="27" selection-end-column="23" />
         </state>
       </provider>
     </entry>

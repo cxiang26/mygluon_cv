@@ -147,3 +147,85 @@ class FeatureExpander(SymbolBlock):
         if global_pool:
             outputs.append(mx.sym.Pooling(y, pool_type='avg', global_pool=True, kernel=(1, 1)))
         super(FeatureExpander, self).__init__(outputs, inputs, params)
+
+class Peleenet_FeatureExpander(SymbolBlock):
+    """Feature extractor with additional layers to append.
+    This is very common in vision networks where extra branches are attched to
+    backbone network.
+
+    Parameters
+    ----------
+    network : str or HybridBlock or Symbol
+        Logic chain: load from gluoncv.model_zoo if network is string.
+        Convert to Symbol if network is HybridBlock.
+    outputs : str or list of str
+        The name of layers to be extracted as features
+    num_filters : list of int
+        Number of filters to be appended.
+    use_1x1_transition : bool
+        Whether to use 1x1 convolution between attached layers. It is effective
+        reducing network size.
+    use_bn : bool
+        Whether to use BatchNorm between attached layers.
+    reduce_ratio : float
+        Channel reduction ratio of the transition layers.
+    min_depth : int
+        Minimum channel number of transition layers.
+    global_pool : bool
+        Whether to use global pooling as the last layer.
+    pretrained : bool
+        Use pretrained parameters as in gluon.model_zoo if `True`.
+    ctx : Context
+        The context, e.g. mxnet.cpu(), mxnet.gpu(0).
+    inputs : list of str
+        Name of input variables to the network.
+
+    """
+    def __init__(self, network, outputs, num_filters, use_ResBlock=True,
+                 use_bn=True, reduce_ratio=1.0, min_depth=128, global_pool=False,
+                 pretrained=False, ctx=mx.cpu(), inputs=('data',)):
+        inputs, outputs, params = _parse_network(network, outputs, inputs, pretrained, ctx)
+        # append more layers
+        # y = outputs[-1]
+        output = []
+        weight_init = mx.init.Xavier(rnd_type='gaussian', factor_type='out', magnitude=2)
+        for j, y in enumerate(outputs):
+            for i, f in enumerate(num_filters):
+                if use_ResBlock:
+                    num_trans = max(min_depth, int(round(f * reduce_ratio)))
+                    y1 = mx.sym.Convolution(
+                        y, num_filter=num_trans, kernel=(1, 1), no_bias=use_bn,
+                        name='expand_resl1{}_conv{}'.format(j,i), attr={'__init__': weight_init})
+                    if use_bn:
+                        y1 = mx.sym.BatchNorm(y1, name='expand_resl1{}_bn{}'.format(j,i))
+                    y1 = mx.sym.Activation(y1, act_type='relu', name='expand_resl1{}_relu{}'.format(j,i))
+                    y1 = mx.sym.Convolution(
+                        y1, num_filter=num_trans, kernel=(3, 3), no_bias=use_bn, pad=(1,1),
+                        name='expand_resl2{}_conv{}'.format(j,i), attr={'__init__': weight_init})
+                    if use_bn:
+                        y1 = mx.sym.BatchNorm(y1, name='expand_resl2{}_bn{}'.format(j,i))
+                    y1 = mx.sym.Activation(y1, act_type='relu', name='expand_resl2{}_relu{}'.format(j,i))
+                    y1 = mx.sym.Convolution(
+                        y1, num_filter=num_trans*2, kernel=(1, 1), no_bias=use_bn,
+                        name='expand_resl3{}_conv{}'.format(j,i), attr={'__init__': weight_init})
+                    if use_bn:
+                        y1 = mx.sym.BatchNorm(y1, name='expand_resl3{}_bn{}'.format(j,i))
+                    y1 = mx.sym.Activation(y1, act_type='relu', name='expand_resl3{}_relu{}'.format(j,i))
+                    y2 = mx.sym.Convolution(
+                        y, num_filter=num_trans*2, kernel=(1, 1), no_bias=use_bn,
+                        name='expand_resr1{}_conv{}'.format(j,i), attr={'__init__': weight_init})
+                    if use_bn:
+                        y2 = mx.sym.BatchNorm(y2, name='expand_resr1{}_bn{}'.format(j,i))
+                    y2 = mx.sym.Activation(y2, act_type='relu', name='expand_resr1{}_relu{}'.format(j,i))
+                    y = y1 + y2
+                else:
+                    y = mx.sym.Convolution(
+                        y, num_filter=f, kernel=(3, 3), pad=(1, 1), stride=(2, 2),
+                        no_bias=use_bn, name='expand_{}_conv{}'.format(j,i), attr={'__init__': weight_init})
+                    if use_bn:
+                        y = mx.sym.BatchNorm(y, name='expand_{}_bn{}'.format(j,i))
+                    y = mx.sym.Activation(y, act_type='relu', name='expand_{}_reu{}'.format(j,i))
+                output.append(y)
+        if global_pool:
+            output.append(mx.sym.Pooling(y, pool_type='avg', global_pool=True, kernel=(1, 1)))
+        super(Peleenet_FeatureExpander, self).__init__(output, inputs, params)

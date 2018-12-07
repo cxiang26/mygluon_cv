@@ -8,13 +8,13 @@ from matplotlib import pyplot as plt
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Test with SSD networks.')
-    parser.add_argument('--network', type=str, default='ssd_300_vgg16_atrous_coco',
+    parser.add_argument('--network', type=str, default='ssd_300_peleenet50_voc',
                         help="Base network name")
     parser.add_argument('--images', type=str, default='',
                         help='Test images, use comma to split multiple.')
     parser.add_argument('--gpus', type=str, default='',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--pretrained', type=str, default='True',
+    parser.add_argument('--pretrained', type=str, default='./ssd_300_peleenet50_voc_best.params',
                         help='Load weights from previously saved parameters.')
     parser.add_argument('--thresh', type=float, default=0.5,
                         help='Threshold of object score when visualize the bboxes.')
@@ -42,6 +42,7 @@ if __name__ == '__main__':
         net.load_parameters(args.pretrained)
     net.set_nms(0.45, 200)
     net.collect_params().reset_ctx(ctx = ctx)
+
 
     ax = None
     for image in image_list:

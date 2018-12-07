@@ -23,16 +23,16 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
     parser.add_argument('--network', type=str, default='peleenet50',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--data-shape', type=int, default=300,
+    parser.add_argument('--data-shape', type=int, default=224,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=24,
+    parser.add_argument('--batch-size', type=int, default=48,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=12, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0,1,2',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
@@ -106,11 +106,11 @@ def save_params(net, best_map, current_map, epoch, save_interval, prefix):
     current_map = float(current_map)
     if current_map > best_map[0]:
         best_map[0] = current_map
-        net.save_params('{:s}_best.params'.format(prefix, epoch, current_map))
+        net.save_parameters('{:s}_best.params'.format(prefix, epoch, current_map))
         with open(prefix+'_best_map.log', 'a') as f:
             f.write('{:04d}:\t{:.4f}\n'.format(epoch, current_map))
     if save_interval and epoch % save_interval == 0:
-        net.save_params('{:s}_{:04d}_{:.4f}.params'.format(prefix, epoch, current_map))
+        net.save_parameters('{:s}_{:04d}_{:.4f}.params'.format(prefix, epoch, current_map))
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
