@@ -21,16 +21,16 @@ from gluoncv.utils.metrics.coco_instance import COCOInstanceMetric
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Mask R-CNN network end to end.')
-    parser.add_argument('--network', type=str, default='resnet50_v1b',
+    parser.add_argument('--network', type=str, default='peleenet',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=8, help='Number of data workers, you can use larger '
+                        default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=str, default='1',
+    parser.add_argument('--epochs', type=str, default='26',
                         help='Training epochs.')
     parser.add_argument('--resume', type=str, default='',
                         help='Resume from previously saved parameters if not None. '
@@ -38,13 +38,13 @@ def parse_args():
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=str, default='',
+    parser.add_argument('--lr', type=str, default='0.01',
                         help='Learning rate, default is 0.00125 for coco single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-    parser.add_argument('--lr-decay-epoch', type=str, default='',
+    parser.add_argument('--lr-decay-epoch', type=str, default='17,23',
                         help='epoches at which learning rate decays. default is 17,23 for coco.')
-    parser.add_argument('--lr-warmup', type=str, default='',
+    parser.add_argument('--lr-warmup', type=int, default=1000,
                         help='warmup iterations to adjust learning rate, default is 8000 for coco.')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='SGD momentum, default is 0.9')
@@ -444,7 +444,8 @@ if __name__ == '__main__':
     # network
     net_name = '_'.join(('mask_rcnn', args.network, args.dataset))
     args.save_prefix += net_name
-    net = get_model(net_name, pretrained_base=True)
+    net = get_model(net_name, pretrained_base=False)
+
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
     else:
