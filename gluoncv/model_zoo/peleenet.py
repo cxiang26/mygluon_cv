@@ -52,7 +52,7 @@ class StemBlock(HybridBlock):
         self.stem_1 = Conv_bn_relu(inp, num_init_features, 3, 2, 1)
         self.stem_2a = Conv_bn_relu(num_init_features, int(num_init_features/2), 1, 1, 0)
         self.stem_2b = Conv_bn_relu(int(num_init_features/2), num_init_features, 3, 2, 1)
-        self.stem_2p = nn.MaxPool2D(pool_size=2, strides=2)
+        # self.stem_2p = nn.MaxPool2D(pool_size=2, strides=2, pooling_convention='full')
         self.stem_3 = Conv_bn_relu(num_init_features*2, num_init_features, 1, 1, 0)
 
     def hybrid_forward(self, F, x):
@@ -60,7 +60,8 @@ class StemBlock(HybridBlock):
         stem_2a_out = self.stem_2a(stem_1_out)
         stem_2b_out = self.stem_2b(stem_2a_out)
 
-        stem_2p_out = self.stem_2p(stem_1_out)
+        # stem_2p_out = self.stem_2p(stem_1_out)
+        stem_2p_out = F.Pooling(stem_1_out, kernel=(2,2), stride=(2,2), pool_type='max', pooling_convention='full')
         out = self.stem_3(F.concat(stem_2b_out, stem_2p_out, dim=1))
         return out
 
@@ -189,9 +190,12 @@ if __name__ == '__main__':
     p.initialize(ctx=mx.gpu())
     # for n in p.collect_params().values():
     #     print(n.name)
-    print(p)
+    # print(p)
     # p.hybridize()
-    input = mx.nd.random_uniform(shape=(1,3,224,224),ctx=mx.gpu())
+    input = mx.nd.random_uniform(shape=(1,3,750,1333),ctx=mx.gpu())
+    for n in p.features:
+        input = n(input)
+        print(input.shape)
     output = p(input)
     p.summary(input)
     # print(output.shape)

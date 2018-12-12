@@ -44,7 +44,7 @@ def parse_args():
                         help='decay rate of learning rate. default is 0.1.')
     parser.add_argument('--lr-decay-epoch', type=str, default='',
                         help='epoches at which learning rate decays. default is 17,23 for coco.')
-    parser.add_argument('--lr-warmup', type=int, default='',
+    parser.add_argument('--lr-warmup', type=str, default='',
                         help='warmup iterations to adjust learning rate, default is 8000 for coco.')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='SGD momentum, default is 0.9')
@@ -353,7 +353,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             metric.reset()
         tic = time.time()
         btic = time.time()
-        # net.hybridize(static_alloc=True)
+        net.hybridize(static_alloc=True)
         base_lr = trainer.learning_rate
         for i, batch in enumerate(train_data):
             if epoch == 0 and i <= lr_warmup:
