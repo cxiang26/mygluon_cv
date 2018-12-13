@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=str, default='0.01',
+    parser.add_argument('--lr', type=str, default='0.001',
                         help='Learning rate, default is 0.00125 for coco single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')

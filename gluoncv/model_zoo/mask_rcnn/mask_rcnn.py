@@ -381,8 +381,10 @@ def mask_rcnn_peleenet_coco(pretrained=False, pretrained_base=False, **kwargs):
     features.add(base_network.features[0],
                  base_network.features[1],
                  base_network.features[2],
-                 base_network.features[3],)
-    top_features.add(base_network.features[4],)
+                 base_network.features[3][:8],
+                 base_network.features[3][8].tb[0],)
+    top_features.add(base_network.features[3][8].tb[1],
+                 base_network.features[4],)
     # for layer in ['0', '1', '2', '3']:
     #     features.add(getattr(base_network.features, layer))
     # for layer in ['4']:
@@ -393,9 +395,9 @@ def mask_rcnn_peleenet_coco(pretrained=False, pretrained_base=False, **kwargs):
         name='peleenet', dataset='coco', pretrained=pretrained,
         features=features, top_features=top_features, classes=classes,
         mask_channels=256, rcnn_max_dets=1000,
-        short=800, max_size=1334, train_patterns=train_patterns,
+        short=800, max_size=1333, train_patterns=train_patterns,
         nms_thresh=0.5, nms_topk=-1, post_nms=-1,
-        roi_mode='align', roi_size=(7, 7), stride=32, clip=4.42,
+        roi_mode='align', roi_size=(14, 14), stride=16, clip=4.42,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
