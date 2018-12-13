@@ -25,22 +25,37 @@ from mxnet.gluon.block import HybridBlock
 from mxnet.gluon import nn
 
 class Conv_bn_relu(HybridBlock):
-    def __init__(self, inp, oup, kernel_size=3, stride=1, pad=1, use_relu=True):
+    def __init__(self, inp, oup, kernel_size=3, stride=1, pad=1, gamma_initializer=None, use_relu=True):
         super(Conv_bn_relu, self).__init__()
         self.use_relu = use_relu
         if self.use_relu:
             self.convs = nn.HybridSequential()
-            self.convs.add(
-                nn.Conv2D(in_channels=inp, channels=oup, kernel_size=kernel_size, strides=stride,padding=pad, use_bias=False),
-                nn.BatchNorm(in_channels=oup),
-                nn.Activation('relu')
-            )
+            if gamma_initializer is not None:
+                self.convs.add(
+                    nn.Conv2D(in_channels=inp, channels=oup, kernel_size=kernel_size, strides=stride,padding=pad, use_bias=False),
+                    nn.BatchNorm(in_channels=oup, gamma_initializer=gamma_initializer),
+                    nn.Activation('relu')
+                )
+            else:
+                self.convs.add(
+                    nn.Conv2D(in_channels=inp, channels=oup, kernel_size=kernel_size, strides=stride, padding=pad,
+                              use_bias=False),
+                    nn.BatchNorm(in_channels=oup),
+                    nn.Activation('relu')
+                )
+
         else:
             self.convs = nn.HybridSequential()
-            self.convs.add(
-                nn.Conv2D(channels=oup, kernel_size=kernel_size, strides=stride, padding=pad, use_bias=False),
-                nn.BatchNorm(in_channels=oup)
-            )
+            if gamma_initializer is not None:
+                self.convs.add(
+                    nn.Conv2D(channels=oup, kernel_size=kernel_size, strides=stride, padding=pad, use_bias=False),
+                    nn.BatchNorm(in_channels=oup, gamma_initializer=gamma_initializer)
+                )
+            else:
+                self.convs.add(
+                    nn.Conv2D(channels=oup, kernel_size=kernel_size, strides=stride, padding=pad, use_bias=False),
+                    nn.BatchNorm(in_channels=oup)
+                )
     def hybrid_forward(self, F, x):
         out = self.convs(x)
         return out
@@ -50,8 +65,8 @@ class StemBlock(HybridBlock):
         super(StemBlock, self).__init__()
 
         self.stem_1 = Conv_bn_relu(inp, num_init_features, 3, 2, 1)
-        self.stem_2a = Conv_bn_relu(num_init_features, int(num_init_features/2), 1, 1, 0)
-        self.stem_2b = Conv_bn_relu(int(num_init_features/2), num_init_features, 3, 2, 1)
+        self.stem_2a = Conv_bn_relu(num_init_features, int(num_init_features/2), 1, 1, 0, gamma_initializer='zeros')
+        self.stem_2b = Conv_bn_relu(int(num_init_features/2), num_init_features, 3, 2, 1, gamma_initializer='zeros')
         # self.stem_2p = nn.MaxPool2D(pool_size=2, strides=2, pooling_convention='full')
         self.stem_3 = Conv_bn_relu(num_init_features*2, num_init_features, 1, 1, 0)
 
@@ -69,11 +84,11 @@ class DenseBlock(HybridBlock):
     def __init__(self, inp, inter_channel, growth_rate):
         super(DenseBlock, self).__init__()
 
-        self.cb1_a = Conv_bn_relu(inp, inter_channel, 1, 1, 0)
-        self.cb1_b = Conv_bn_relu(inter_channel, growth_rate, 3, 1, 1)
-        self.cb2_a = Conv_bn_relu(inp, inter_channel, 1, 1, 0)
-        self.cb2_b = Conv_bn_relu(inter_channel, growth_rate, 3, 1, 1)
-        self.cb2_c = Conv_bn_relu(growth_rate, growth_rate, 3, 1, 1)
+        self.cb1_a = Conv_bn_relu(inp, inter_channel, 1, 1, 0, gamma_initializer='zeros')
+        self.cb1_b = Conv_bn_relu(inter_channel, growth_rate, 3, 1, 1, gamma_initializer='zeros')
+        self.cb2_a = Conv_bn_relu(inp, inter_channel, 1, 1, 0, gamma_initializer='zeros')
+        self.cb2_b = Conv_bn_relu(inter_channel, growth_rate, 3, 1, 1, gamma_initializer='zeros')
+        self.cb2_c = Conv_bn_relu(growth_rate, growth_rate, 3, 1, 1, gamma_initializer='zeros')
 
     def hybrid_forward(self, F, x):
         cb1_a_out = self.cb1_a(x)
