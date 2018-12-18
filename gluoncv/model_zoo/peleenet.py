@@ -201,7 +201,8 @@ def peleenet(**kwargs):
 
 if __name__ == '__main__':
     import mxnet as mx
-    p = peleenet()
+    p = get_peleenet(num_layers=40, pretrained=False, ctx=cpu(),
+               root='~/.mxnet/models', use_se=False)
     p.initialize(ctx=mx.gpu())
     # for n in p.collect_params().values():
     #     print(n.name)
@@ -211,6 +212,6 @@ if __name__ == '__main__':
     for n in p.features:
         input = n(input)
         print(input.shape)
-    output = p(input)
+    # output = p(input)
     p.summary(input)
     # print(output.shape)

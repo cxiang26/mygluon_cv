@@ -383,8 +383,16 @@ def mask_rcnn_peleenet_coco(pretrained=False, pretrained_base=False, **kwargs):
                  base_network.features[2],
                  base_network.features[3][:8],
                  base_network.features[3][8].tb[0],)
-    top_features.add(base_network.features[3][8].tb[1],
-                 base_network.features[4],)
+    top_features.add(nn.Conv2D(channels=64, kernel_size=3, strides=1, padding=1,use_bias=False),
+                     nn.BatchNorm(),
+                     nn.Activation('relu'),
+                     nn.Conv2D(channels=128, kernel_size=3, strides=2, padding=1, use_bias=False),
+                     nn.BatchNorm(),
+                     nn.Activation('relu'),
+                     nn.Conv2D(channels=256, kernel_size=1, strides=1),
+                     )
+    # top_features.add(base_network.features[3][8].tb[1],
+    #              base_network.features[4],)
     # for layer in ['0', '1', '2', '3']:
     #     features.add(getattr(base_network.features, layer))
     # for layer in ['4']:
