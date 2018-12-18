@@ -24,14 +24,14 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
-    parser.add_argument('--network', type=str, default='resnet50_v1b',
+    parser.add_argument('--network', type=str, default='caps_resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--dataset', type=str, default='coco',
+    parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='0,1',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -171,6 +171,31 @@ class RCNNL1LossMetric(mx.metric.EvalMetric):
         self.sum_metric += loss.asscalar()
         self.num_inst += num_inst.asscalar()
 
+class RCNNMarginAccMetric(mx.metric.EvalMetric):
+    def __init__(self):
+        super(RCNNMarginAccMetric, self).__init__('RCNNMarginAcc')
+
+    def update(self, labels, preds):
+        # label = [rcnn_label]
+        # pred = [rcnn_cls]
+        rcnn_label = labels[0]
+        rcnn_cls = preds[0]
+
+        # calculate num_acc
+        pred_label = mx.nd.argmax(rcnn_cls, axis=-1)
+        num_acc = mx.nd.sum(pred_label == rcnn_label)
+
+        self.sum_metric += num_acc.asscalar()
+        self.num_inst += rcnn_label.size
+
+def margin_loss(y_pred, y_true):
+    rcnn_cls_label = mx.nd.one_hot(y_true, 21)
+    rcnn_cls_pred = y_pred
+    loss = rcnn_cls_label * mx.nd.square(mx.nd.maximum(0., 0.9 - rcnn_cls_pred)) + \
+           0.5 * (1 - rcnn_cls_label) * mx.nd.square(mx.nd.maximum(0., rcnn_cls_pred - 0.1))
+
+    return mx.nd.mean(mx.nd.sum(loss, 2))
+
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         train_dataset = gdata.VOCDetection(
@@ -228,7 +253,7 @@ def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
     clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
-    net.hybridize(static_alloc=True)
+    # net.hybridize(static_alloc=True)
     for batch in val_data:
         batch = split_and_load(batch, ctx_list=ctx)
         det_bboxes = []
@@ -281,16 +306,20 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     # TODO(zhreshold) losses?
     rpn_cls_loss = mx.gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=False)
     rpn_box_loss = mx.gluon.loss.HuberLoss(rho=1/9.)  # == smoothl1
-    rcnn_cls_loss = mx.gluon.loss.SoftmaxCrossEntropyLoss()
+    # rcnn_cls_loss = mx.gluon.loss.SoftmaxCrossEntropyLoss()
+    rcnn_cls_loss = margin_loss
     rcnn_box_loss = mx.gluon.loss.HuberLoss()  # == smoothl1
     metrics = [mx.metric.Loss('RPN_Conf'),
                mx.metric.Loss('RPN_SmoothL1'),
-               mx.metric.Loss('RCNN_CrossEntropy'),
-               mx.metric.Loss('RCNN_SmoothL1'),]
+               # mx.metric.Loss('RCNN_CrossEntropy'),
+               mx.metric.Loss('RCNNMarginLoss'),
+               mx.metric.Loss('RCNN_SmoothL1'),
+               ]
 
     rpn_acc_metric = RPNAccMetric()
     rpn_bbox_metric = RPNL1LossMetric()
-    rcnn_acc_metric = RCNNAccMetric()
+    # rcnn_acc_metric = RCNNAccMetric()
+    rcnn_acc_metric = RCNNMarginAccMetric()
     rcnn_bbox_metric = RCNNL1LossMetric()
     metrics2 = [rpn_acc_metric, rpn_bbox_metric, rcnn_acc_metric, rcnn_bbox_metric]
 
@@ -328,7 +357,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             metric.reset()
         tic = time.time()
         btic = time.time()
-        net.hybridize(static_alloc=True)
+        # net.hybridize(static_alloc=True)
         base_lr = trainer.learning_rate
         for i, batch in enumerate(train_data):
             if epoch == 0 and i <= lr_warmup:
@@ -359,7 +388,9 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     cls_targets, box_targets, box_masks = net.target_generator(roi, samples, matches, gt_label, gt_box)
                     # losses of rcnn
                     num_rcnn_pos = (cls_targets >= 0).sum()
-                    rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets, cls_targets >= 0) * cls_targets.size / cls_targets.shape[0] / num_rcnn_pos
+                    # rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets, cls_targets >= 0) * cls_targets.size / cls_targets.shape[0] / num_rcnn_pos
+                    rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets) * cls_targets.size / \
+                                 cls_targets.shape[0] / num_rcnn_pos
                     rcnn_loss2 = rcnn_box_loss(box_pred, box_targets, box_masks) * box_pred.size / box_pred.shape[0] / num_rcnn_pos
                     rcnn_loss = rcnn_loss1 + rcnn_loss2
                     # overall losses
@@ -413,7 +444,7 @@ if __name__ == '__main__':
     # network
     net_name = '_'.join(('faster_rcnn', args.network, args.dataset))
     args.save_prefix += net_name
-    net = get_model(net_name, pretrained_base=False)
+    net = get_model(net_name, pretrained_base=True)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
     else:
