@@ -38,6 +38,9 @@ _models = {
     'peleenet': peleenet,
     'ssd_224_peleenet50_voc': ssd_224_peleenet50_voc,
     'ssd_300_peleenet50_voc': ssd_300_peleenet50_voc,
+    'faster_rcnn_peleenet_voc': faster_rcnn_peleenet_voc,
+    'faster_rcnn_caps_resnet50_v1b_voc': faster_rcnn_caps_resnet50_v1b_voc,
+    'faster_rcnn_peleenet_coco': faster_rcnn_peleenet_coco,
     'mask_rcnn_peleenet_coco': mask_rcnn_peleenet_coco,
 
     'resnet18_v1': resnet18_v1,
