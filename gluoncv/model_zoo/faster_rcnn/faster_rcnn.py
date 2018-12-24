@@ -129,22 +129,25 @@ class FasterRCNN_Caps(RCNN_Caps):
         # RCNN prediction
         top_feat = self.top_features(pooled_feat)
         avg_feat = self.global_avg_pool(top_feat)
-        cls_caps_pred = self.class_predictor(avg_feat)
+        cls_pred, _ = self.class_predictor(avg_feat)
+        cls_pred = cls_pred.reshape((self._max_batch, num_roi, self.num_class+1))
+        # cls_caps_pred = self.class_predictor(avg_feat)
 
         # cls_pred (B * N, C) -> (B, N, C)
-        cls_caps_pred = cls_caps_pred.reshape((self._max_batch, num_roi, self.num_class + 1, self.caps_dim))
+        # cls_caps_pred = cls_caps_pred.reshape((self._max_batch, num_roi, self.num_class + 1, self.caps_dim))
+        #
+        # s_squared_norm = F.sum(F.square(cls_caps_pred), axis=-1, keepdims=True)
+        # scale = s_squared_norm / (1 + s_squared_norm) / F.sqrt((s_squared_norm + 1e-08))
+        # cls_caps_pred = F.broadcast_mul(scale, cls_caps_pred)
+        # cls_pred = F.sum(cls_caps_pred, axis=-1)
 
-        s_squared_norm = F.sum(F.square(cls_caps_pred), axis=-1, keepdims=True)
-        scale = s_squared_norm / (1 + s_squared_norm) / F.sqrt((s_squared_norm + 1e-08))
-        cls_caps_pred = F.broadcast_mul(scale, cls_caps_pred)
-        cls_pred = F.sum(cls_caps_pred, axis=-1)
+        # idx = cls_pred.argmax(axis=-1).squeeze()
+        # roi_idx = F.arange(num_roi)
+        # caps = cls_caps_pred[:, roi_idx, idx, :].squeeze()
+        # caps = F.expand_dims(F.expand_dims(caps, axis=-1), axis=-1)
 
-        idx = cls_pred.argmax(axis=-1).squeeze()
-        roi_idx = F.arange(num_roi)
-        caps = cls_caps_pred[:, roi_idx, idx, :].squeeze()
-        caps = F.expand_dims(F.expand_dims(caps, axis=-1), axis=-1)
-
-        box_pred = self.box_predictor(F.concat(avg_feat, caps, dim=1))
+        # box_pred = self.box_predictor(F.concat(avg_feat, caps, dim=1))
+        box_pred = self.box_predictor(avg_feat)
         # box_pred (B * N, C * 4) -> (B, N, C, 4)
         box_pred = box_pred.reshape((self._max_batch, num_roi, self.num_class, 4))
 

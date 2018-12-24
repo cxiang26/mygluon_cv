@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0,1',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -45,7 +45,7 @@ def parse_args():
                         help='Learning rate, default is 0.001 for voc single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-    parser.add_argument('--lr-decay-epoch', type=str, default='',
+    parser.add_argument('--lr-decay-epoch', type=str, default='11, 17',
                         help='epoches at which learning rate decays. default is 14,20 for voc.')
     parser.add_argument('--lr-warmup', type=str, default='',
                         help='warmup iterations to adjust learning rate, default is 0 for voc.')
@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='',
+    parser.add_argument('--save-prefix', type=str, default='debug_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -196,6 +196,7 @@ def margin_loss(y_pred, y_true):
 
     return mx.nd.mean(mx.nd.sum(loss, 2))
 
+
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         train_dataset = gdata.VOCDetection(
@@ -306,20 +307,20 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     # TODO(zhreshold) losses?
     rpn_cls_loss = mx.gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=False)
     rpn_box_loss = mx.gluon.loss.HuberLoss(rho=1/9.)  # == smoothl1
-    # rcnn_cls_loss = mx.gluon.loss.SoftmaxCrossEntropyLoss()
-    rcnn_cls_loss = margin_loss
+    rcnn_cls_loss = mx.gluon.loss.SoftmaxCrossEntropyLoss()
+    # rcnn_cls_loss = margin_loss
     rcnn_box_loss = mx.gluon.loss.HuberLoss()  # == smoothl1
     metrics = [mx.metric.Loss('RPN_Conf'),
                mx.metric.Loss('RPN_SmoothL1'),
-               # mx.metric.Loss('RCNN_CrossEntropy'),
-               mx.metric.Loss('RCNNMarginLoss'),
+               mx.metric.Loss('RCNN_CrossEntropy'),
+               # mx.metric.Loss('RCNNMarginLoss'),
                mx.metric.Loss('RCNN_SmoothL1'),
                ]
 
     rpn_acc_metric = RPNAccMetric()
     rpn_bbox_metric = RPNL1LossMetric()
-    # rcnn_acc_metric = RCNNAccMetric()
-    rcnn_acc_metric = RCNNMarginAccMetric()
+    rcnn_acc_metric = RCNNAccMetric()
+    # rcnn_acc_metric = RCNNMarginAccMetric()
     rcnn_bbox_metric = RCNNL1LossMetric()
     metrics2 = [rpn_acc_metric, rpn_bbox_metric, rcnn_acc_metric, rcnn_bbox_metric]
 
@@ -388,9 +389,9 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     cls_targets, box_targets, box_masks = net.target_generator(roi, samples, matches, gt_label, gt_box)
                     # losses of rcnn
                     num_rcnn_pos = (cls_targets >= 0).sum()
-                    # rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets, cls_targets >= 0) * cls_targets.size / cls_targets.shape[0] / num_rcnn_pos
-                    rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets) * cls_targets.size / \
-                                 cls_targets.shape[0] / num_rcnn_pos
+                    rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets, cls_targets >= 0) * cls_targets.size / cls_targets.shape[0] / num_rcnn_pos
+                    # rcnn_loss1 = rcnn_cls_loss(cls_pred, cls_targets) * cls_targets.size / \
+                    #              cls_targets.shape[0] / num_rcnn_pos
                     rcnn_loss2 = rcnn_box_loss(box_pred, box_targets, box_masks) * box_pred.size / box_pred.shape[0] / num_rcnn_pos
                     rcnn_loss = rcnn_loss1 + rcnn_loss2
                     # overall losses
@@ -417,6 +418,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'.format(
                     epoch, i, args.log_interval * batch_size/(time.time()-btic), msg))
                 btic = time.time()
+
 
         msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
         logger.info('[Epoch {}] Training cost: {:.3f}, {}'.format(
