@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='1',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='caps8_256v_concat_',
+    parser.add_argument('--save-prefix', type=str, default='debug_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -211,7 +211,7 @@ def get_dataset(dataset, args):
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.mixup:
-        from gluoncv.data.mixup import MixupDetection
+        from gluoncv.data.mixup.detection import MixupDetection
         train_dataset = MixupDetection(train_dataset)
     return train_dataset, val_dataset, val_metric
 
@@ -344,10 +344,10 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         mix_ratio = 1.0
         if args.mixup:
             # TODO(zhreshold) only support evenly mixup now, target generator needs to be modified otherwise
-            train_data._dataset.set_mixup(np.random.uniform, 0.5, 0.5)
+            train_data._dataset._data.set_mixup(np.random.uniform, 0.5, 0.5)
             mix_ratio = 0.5
             if epoch >= args.epochs - args.no_mixup_epochs:
-                train_data._dataset.set_mixup(None)
+                train_data._dataset._data.set_mixup(None)
                 mix_ratio = 1.0
         while lr_steps and epoch >= lr_steps[0]:
             new_lr = trainer.learning_rate * lr_decay
