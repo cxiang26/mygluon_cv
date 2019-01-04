@@ -308,7 +308,7 @@ class capsDens(nn.HybridBlock):
             self.w = self.params.get(name='W_'+name, shape=(self.lbl_num, self.input_dim, self.dim_c), init=mx.init.Normal(self.stddev))
 
     def hybrid_forward(self, F, x, w):
-        self.batch_size = 128 if autograd.is_training() else 300
+        self.batch_size = 128 if autograd.is_training() else 1000
         x = self.down_dim(x)
         x = x.reshape((-1, 1, 1, self.input_dim))
         sigma = F.linalg_gemm2(w, w, transpose_a=True, transpose_b=False)
