@@ -13,6 +13,7 @@ from .cifarresnext import *
 from .cifarwideresnet import *
 from .resnetv1b import *
 from .resnext import *
+from .pose_resnet import *
 from .senet import *
 from .se_resnet import *
 from .yolo import *
@@ -170,6 +171,7 @@ _models = {
     'nasnet_5_1538': nasnet_5_1538,
     'nasnet_7_1920': nasnet_7_1920,
     'nasnet_6_4032': nasnet_6_4032,
+<<<<<<< HEAD
     'residualattentionnet56': residualattentionnet56,
     'residualattentionnet92': residualattentionnet92,
     'residualattentionnet128': residualattentionnet128,
@@ -180,6 +182,24 @@ _models = {
     'cifar_residualattentionnet56': cifar_residualattentionnet56,
     'cifar_residualattentionnet92': cifar_residualattentionnet92,
     'cifar_residualattentionnet452': cifar_residualattentionnet452
+=======
+    'pose_resnet18_v1': pose_resnet18_v1,
+    'pose_resnet34_v1': pose_resnet34_v1,
+    'pose_resnet50_v1': pose_resnet50_v1,
+    'pose_resnet101_v1': pose_resnet101_v1,
+    'pose_resnet152_v1': pose_resnet152_v1,
+    'pose_resnet18_v1b': pose_resnet18_v1b,
+    'pose_resnet34_v1b': pose_resnet34_v1b,
+    'pose_resnet50_v1b': pose_resnet50_v1b,
+    'pose_resnet101_v1b': pose_resnet101_v1b,
+    'pose_resnet152_v1b': pose_resnet152_v1b,
+    'pose_resnet50_v1c': pose_resnet50_v1c,
+    'pose_resnet101_v1c': pose_resnet101_v1c,
+    'pose_resnet152_v1c': pose_resnet152_v1c,
+    'pose_resnet50_v1d': pose_resnet50_v1d,
+    'pose_resnet101_v1d': pose_resnet101_v1d,
+    'pose_resnet152_v1d': pose_resnet152_v1d,
+>>>>>>> origin/pose-estimation
     }
 
 def get_model(name, **kwargs):
