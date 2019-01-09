@@ -304,26 +304,27 @@ class capsDens(nn.HybridBlock):
         self.stddev = stddev
         self.eps = eps
         with self.name_scope():
-            self.down_dim = nn.Dense(input_dim, activation='relu')
+            # self.down_dim = nn.Dense(input_dim, activation='relu')
             self.w = self.params.get(name='W_'+name, shape=(self.lbl_num, self.input_dim, self.dim_c), init=mx.init.Normal(self.stddev))
 
     def hybrid_forward(self, F, x, w):
-        self.batch_size = 128 if autograd.is_training() else 1000
-        x = self.down_dim(x)
-        x = x.reshape((-1, 1, 1, self.input_dim))
+        self.batch_size = 128 if autograd.is_training() else 300
+        # x = self.down_dim(x)
+        x = x.reshape((-1, 1, self.dim_c, self.input_dim))
         sigma = F.linalg_gemm2(w, w, transpose_a=True, transpose_b=False)
         sigma = F.linalg_potri(sigma + self.eps*F.eye(self.dim_c))
 
         w_out = F.linalg_gemm2(w, sigma)
-        caps_out = F.linalg_gemm2(sigma, w, transpose_b=True)
-        caps_out = F.tile(caps_out, (self.batch_size, 1, 1, 1))
-        inputs_c = F.tile(x, (1, self.lbl_num, self.dim_c, 1))
-        caps_out = F.sum(caps_out * inputs_c, axis=-1)
+        # caps_out = F.linalg_gemm2(sigma, w, transpose_b=True)
+        # caps_out = F.tile(caps_out, (self.batch_size, 1, 1, 1))
+        # inputs_c = F.tile(x, (1, self.lbl_num, self.dim_c, 1))
+        # caps_out = F.sum(caps_out * inputs_c, axis=-1)
         w_out = F.linalg_gemm2(w_out, w, transpose_a=False, transpose_b=True)
         w_out = F.reshape(w_out, shape=(1, self.lbl_num, self.input_dim, self.input_dim))
         w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
         inputs_1 = F.tile(x, (1, self.lbl_num, 1, 1))
         inputs_ = F.linalg_gemm2(inputs_1, w_out)
-        output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
-        output = F.squeeze(output)
-        return output, caps_out
+        # output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
+        output = inputs_ * inputs_1
+        output = F.squeeze(output.sum(-1).sum(-1))
+        return output, []
