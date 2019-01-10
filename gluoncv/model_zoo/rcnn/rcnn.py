@@ -299,7 +299,7 @@ class capsDens(nn.HybridBlock):
         super(capsDens, self).__init__()
         self.dim_c = dim_c
         self.lbl_num = lbl_num
-        self.input_dim = input_dim
+        self.input_dim = 2048 #input_dim
         self.batch_size = batch_size
         self.stddev = stddev
         self.eps = eps
@@ -310,7 +310,7 @@ class capsDens(nn.HybridBlock):
     def hybrid_forward(self, F, x, w):
         self.batch_size = 128 if autograd.is_training() else 300
         # x = self.down_dim(x)
-        x = x.reshape((-1, 1, self.dim_c, self.input_dim))
+        x = x.reshape((-1, 1, 1, self.input_dim))
         sigma = F.linalg_gemm2(w, w, transpose_a=True, transpose_b=False)
         sigma = F.linalg_potri(sigma + self.eps*F.eye(self.dim_c))
 
@@ -321,10 +321,9 @@ class capsDens(nn.HybridBlock):
         # caps_out = F.sum(caps_out * inputs_c, axis=-1)
         w_out = F.linalg_gemm2(w_out, w, transpose_a=False, transpose_b=True)
         w_out = F.reshape(w_out, shape=(1, self.lbl_num, self.input_dim, self.input_dim))
-        w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
+        # w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
         inputs_1 = F.tile(x, (1, self.lbl_num, 1, 1))
-        inputs_ = F.linalg_gemm2(inputs_1, w_out)
-        # output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
-        output = inputs_ * inputs_1
-        output = F.squeeze(output.sum(-1).sum(-1))
+        inputs_ = F.linalg_gemm2(inputs_1.transpose((2,1,0,3)), w_out).transpose((2,1,0,3))
+        output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
+        output = F.squeeze(output)
         return output, []
