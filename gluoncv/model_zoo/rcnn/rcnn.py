@@ -295,22 +295,20 @@ class RCNN_Caps(gluon.HybridBlock):
 
 from mxnet import autograd
 class capsDens(nn.HybridBlock):
-    def __init__(self, dim_c=8, lbl_num=21, input_dim=1024, batch_size=128, name='capsnet', stddev=0.1, eps=1e-7):
+    def __init__(self, dim_c=8, lbl_num=21, input_dim=256, batch_size=128, name='capsnet', stddev=0.1, eps=1e-7):
         super(capsDens, self).__init__()
         self.dim_c = dim_c
         self.lbl_num = lbl_num
-        self.input_dim = 2048 #input_dim
+        self.input_dim = input_dim
         self.batch_size = batch_size
         self.stddev = stddev
         self.eps = eps
         with self.name_scope():
-            # self.down_dim = nn.Dense(input_dim, activation='relu')
             self.w = self.params.get(name='W_'+name, shape=(self.lbl_num, self.input_dim, self.dim_c), init=mx.init.Normal(self.stddev))
 
     def hybrid_forward(self, F, x, w):
         self.batch_size = 128 if autograd.is_training() else 300
-        # x = self.down_dim(x)
-        x = x.reshape((-1, 1, 1, self.input_dim))
+        x = x.reshape((-1, 1, 8, self.input_dim))
         sigma = F.linalg_gemm2(w, w, transpose_a=True, transpose_b=False)
         sigma = F.linalg_potri(sigma + self.eps*F.eye(self.dim_c))
 
@@ -321,9 +319,11 @@ class capsDens(nn.HybridBlock):
         # caps_out = F.sum(caps_out * inputs_c, axis=-1)
         w_out = F.linalg_gemm2(w_out, w, transpose_a=False, transpose_b=True)
         w_out = F.reshape(w_out, shape=(1, self.lbl_num, self.input_dim, self.input_dim))
-        # w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
+        w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
         inputs_1 = F.tile(x, (1, self.lbl_num, 1, 1))
-        inputs_ = F.linalg_gemm2(inputs_1.transpose((2,1,0,3)), w_out).transpose((2,1,0,3))
-        output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
-        output = F.squeeze(output)
+        inputs_ = F.linalg_gemm2(inputs_1, w_out)
+        output = F.sum(inputs_ * inputs_1, axis=-1)
+        output = F.sum(F.softmax(output, axis=1), axis=-1)
+        # output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
+        # output = F.squeeze(output)
         return output, []

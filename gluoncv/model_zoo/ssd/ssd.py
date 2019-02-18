@@ -8,7 +8,7 @@ from mxnet.gluon import nn
 from mxnet.gluon import HybridBlock
 from ...nn.feature import FeatureExpander, Peleenet_FeatureExpander
 from .anchor import SSDAnchorGenerator
-from ...nn.predictor import ConvPredictor
+from ...nn.predictor import ConvPredictor, CapsPredictor
 from ...nn.coder import MultiPerClassDecoder, NormalizedBoxCenterDecoder
 from .vgg_atrous import vgg16_atrous_300, vgg16_atrous_512
 from ...data import VOCDetection
@@ -413,7 +413,10 @@ class SSD(HybridBlock):
                 self.anchor_generators.add(anchor_generator)
                 asz = max(asz // 2, 16)  # pre-compute larger than 16x16 anchor map
                 num_anchors = anchor_generator.num_depth
-                self.class_predictors.add(ConvPredictor(num_anchors * (len(self.classes) + 1)))
+                # self.class_predictors.add(ConvPredictor(num_anchors * (len(self.classes) + 1)))
+                self.class_predictors.add(
+                    CapsPredictor(dim_c=8, anchor_num=num_anchors, lbl_num=self.num_classes+1, input_dim=i, batch_size=1, stddev=0.1,
+                                  eps=1e-7, name='caps'))
                 self.box_predictors.add(ConvPredictor(num_anchors * 4))
             self.bbox_decoder = NormalizedBoxCenterDecoder(stds)
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
@@ -459,7 +462,7 @@ class SSD(HybridBlock):
     def hybrid_forward(self, F, x):
         """Hybrid forward"""
         features = self.features(x)
-        cls_preds = [F.flatten(F.transpose(cp(feat), (0, 2, 3, 1)))
+        cls_preds = [F.flatten(F.transpose(cp(feat), (0, 2, 1)))
                      for feat, cp in zip(features, self.class_predictors)]
         box_preds = [F.flatten(F.transpose(bp(feat), (0, 2, 3, 1)))
                      for feat, bp in zip(features, self.box_predictors)]
