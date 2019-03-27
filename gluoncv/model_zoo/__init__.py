@@ -15,7 +15,11 @@ from . import segbase
 from .resnetv1b import *
 from .se_resnet import *
 from .nasnet import *
+<<<<<<< HEAD
 from .pose_resnet import *
+=======
+from .simple_pose.simple_pose_resnet import *
+>>>>>>> origin/master
 
 from .alexnet import *
 from .densenet import *
