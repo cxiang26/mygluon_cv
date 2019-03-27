@@ -21,18 +21,18 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='peleenet50',
+    parser.add_argument('--network', type=str, default='vgg16_atrous',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--data-shape', type=int, default=224,
+    parser.add_argument('--data-shape', type=int, default=300,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=48,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='1,2',
+    parser.add_argument('--gpus', type=str, default='2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=351,
                         help='Training epochs.')
@@ -42,7 +42,7 @@ def parse_args():
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=float, default=0.01,
+    parser.add_argument('--lr', type=float, default=0.001,
                         help='Learning rate, default is 0.001')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
@@ -54,7 +54,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='',
+    parser.add_argument('--save-prefix', type=str, default='debug1_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -68,14 +68,14 @@ def parse_args():
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
-        train_dataset = gdata.VOCDetection(
+        train_dataset = gdata.VOCDetection( root='/mnt/mdisk/xcq/VOCdevkit/',
             splits=[(2007, 'trainval'), (2012, 'trainval')])
-        val_dataset = gdata.VOCDetection(
+        val_dataset = gdata.VOCDetection( root='/mnt/mdisk/xcq/VOCdevkit/',
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(splits='instances_train2017')
-        val_dataset = gdata.COCODetection(splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_train2017')
+        val_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(
             val_dataset, args.save_prefix + '_eval', cleanup=True,
             data_shape=(args.data_shape, args.data_shape))
@@ -99,7 +99,7 @@ def get_dataloader(net, train_dataset, val_dataset, data_shape, batch_size, num_
     val_batchify_fn = Tuple(Stack(), Pad(pad_val=-1))
     val_loader = gluon.data.DataLoader(
         val_dataset.transform(SSDDefaultValTransform(width, height)),
-        batch_size, False, batchify_fn=val_batchify_fn, last_batch='keep', num_workers=num_workers)
+        batch_size, False, batchify_fn=val_batchify_fn, last_batch='rollover', num_workers=num_workers)
     return train_loader, val_loader
 
 def save_params(net, best_map, current_map, epoch, save_interval, prefix):
@@ -117,7 +117,7 @@ def validate(net, val_data, ctx, eval_metric):
     eval_metric.reset()
     # set nms threshold and topk constraint
     net.set_nms(nms_thresh=0.45, nms_topk=400)
-    net.hybridize()
+    # net.hybridize()
     for batch in val_data:
         data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0, even_split=False)
         label = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0, even_split=False)
@@ -147,8 +147,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     """Training pipeline"""
     net.collect_params().reset_ctx(ctx)
     trainer = gluon.Trainer(
-        net.collect_params(), 'sgd',
-        {'learning_rate': args.lr, 'wd': args.wd, 'momentum': args.momentum})
+        net.collect_params(), 'adam',
+        {'learning_rate': args.lr, 'wd': args.wd})#, 'momentum': args.momentum})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)
@@ -181,7 +181,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         smoothl1_metric.reset()
         tic = time.time()
         btic = time.time()
-        net.hybridize()
+        # net.hybridize()
         for i, batch in enumerate(train_data):
             batch_size = batch[0].shape[0]
             data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
@@ -235,14 +235,20 @@ if __name__ == '__main__':
     # network
     net_name = '_'.join(('ssd', str(args.data_shape), args.network, args.dataset))
     args.save_prefix += net_name
-    net = get_model(net_name, pretrained_base=False)
+    net = get_model(net_name, pretrained_base=True)
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
     else:
         for param in net.collect_params().values():
             if param._data is not None:
                 continue
+            if param.name.find('_caps') != -1:
+                # param.__setattr__('lr_mult', 0.1)
+                # param.__setattr__('wd_mult', 0.1)
+                param.lr_mult = .1
+                param.wd_mult = .1
             param.initialize()
+
 
     # training data
     train_dataset, val_dataset, eval_metric = get_dataset(args.dataset, args)

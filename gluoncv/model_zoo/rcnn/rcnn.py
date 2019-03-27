@@ -204,9 +204,9 @@ class RCNN_Caps(gluon.HybridBlock):
             self.features = features
             self.top_features = top_features
             self.global_avg_pool = nn.GlobalAvgPool2D()
-            self.class_predictor = capsDens(dim_c=self.caps_dim, lbl_num=self.num_class+1, input_dim=256, batch_size=128)
+            self.class_predictor = capsDens(dim_c=self.caps_dim, lbl_num=self.num_class+1, input_dim=128, batch_size=128)
             # self.class_predictor = nn.Dense(
-            #     (self.num_class + 1)*self.caps_dim, weight_initializer=mx.init.Normal(0.01))
+            #     (self.num_class + 1), weight_initializer=mx.init.Normal(0.01))
             self.box_predictor = nn.Dense(
                 self.num_class * 4, weight_initializer=mx.init.Normal(0.001))
             self.cls_decoder = MultiPerClassDecoder(num_class=self.num_class+1)
@@ -278,10 +278,10 @@ class RCNN_Caps(gluon.HybridBlock):
         self.classes = classes
         self.num_class = len(classes)
         with self.name_scope():
-            self.class_predictor = capsDens(dim_c=self.caps_dim, lbl_num=self.num_class + 1, input_dim=256,
+            self.class_predictor = capsDens(dim_c=self.caps_dim, lbl_num=self.num_class + 1, input_dim=128,
                                             batch_size=128)
             # self.class_predictor = nn.Dense(
-            #     (self.num_class + 1)*self.caps_dim, weight_initializer=mx.init.Normal(0.01),
+            #     (self.num_class + 1), weight_initializer=mx.init.Normal(0.01),
             #     prefix=self.class_predictor.prefix)
             self.box_predictor = nn.Dense(
                 self.num_class * 4, weight_initializer=mx.init.Normal(0.001),
@@ -295,7 +295,7 @@ class RCNN_Caps(gluon.HybridBlock):
 
 from mxnet import autograd
 class capsDens(nn.HybridBlock):
-    def __init__(self, dim_c=8, lbl_num=21, input_dim=256, batch_size=128, name='capsnet', stddev=0.1, eps=1e-7):
+    def __init__(self, dim_c=8, lbl_num=21, input_dim=512, batch_size=128, name='capsnet', stddev=0.1, eps=1e-7):
         super(capsDens, self).__init__()
         self.dim_c = dim_c
         self.lbl_num = lbl_num
@@ -305,10 +305,11 @@ class capsDens(nn.HybridBlock):
         self.eps = eps
         with self.name_scope():
             self.w = self.params.get(name='W_'+name, shape=(self.lbl_num, self.input_dim, self.dim_c), init=mx.init.Normal(self.stddev))
+            self.c = self.params.get_constant(name='dim', value=mx.nd.array([self.input_dim]))
 
-    def hybrid_forward(self, F, x, w):
+    def hybrid_forward(self, F, x, w, c):
         self.batch_size = 128 if autograd.is_training() else 300
-        x = x.reshape((-1, 1, 8, self.input_dim))
+        x = x.reshape((-1, 1, 4, self.input_dim))
         sigma = F.linalg_gemm2(w, w, transpose_a=True, transpose_b=False)
         sigma = F.linalg_potri(sigma + self.eps*F.eye(self.dim_c))
 
@@ -322,8 +323,8 @@ class capsDens(nn.HybridBlock):
         w_out = F.tile(w_out, reps=(self.batch_size, 1, 1, 1))
         inputs_1 = F.tile(x, (1, self.lbl_num, 1, 1))
         inputs_ = F.linalg_gemm2(inputs_1, w_out)
-        output = F.sum(inputs_ * inputs_1, axis=-1)
-        output = F.sum(F.softmax(output, axis=1), axis=-1)
+        output = F.sum(inputs_ * inputs_1 /c, axis=-1)
+        output = F.sum(output, axis=-1)
         # output = F.linalg_gemm2(inputs_, inputs_1, transpose_a=False, transpose_b=True)
         # output = F.squeeze(output)
-        return output, []
+        return output

@@ -24,9 +24,9 @@ def parse_args():
     # model and dataset 
     parser.add_argument('--model', type=str, default='fcn',
                         help='model name (default: fcn)')
-    parser.add_argument('--backbone', type=str, default='resnet50',
+    parser.add_argument('--backbone', type=str, default='resnet101',
                         help='backbone name (default: resnet50)')
-    parser.add_argument('--dataset', type=str, default='pascalaug',
+    parser.add_argument('--dataset', type=str, default='pascal_aug',
                         help='dataset name (default: pascal)')
     parser.add_argument('--workers', type=int, default=16,
                         metavar='N', help='dataloader threads')
@@ -75,7 +75,7 @@ def parse_args():
                         help='put the path to resuming file if needed')
     parser.add_argument('--checkname', type=str, default='default',
                         help='set the checkpoint name')
-    parser.add_argument('--model-zoo', type=str, default=None,
+    parser.add_argument('--model-zoo', type=str, default='fcn_resnet101_ade',
                         help='evaluating on model zoo model')
     # evaluation only
     parser.add_argument('--eval', action='store_true', default= False,
@@ -115,9 +115,9 @@ class Trainer(object):
         data_kwargs = {'transform': input_transform, 'base_size': args.base_size,
                        'crop_size': args.crop_size}
         trainset = get_segmentation_dataset(
-            args.dataset, split=args.train_split, mode='train', **data_kwargs)
+            args.dataset, split=args.train_split, mode='train', root='/mnt/mdisk/xcq/VOCdevkit/',**data_kwargs)
         valset = get_segmentation_dataset(
-            args.dataset, split='val', mode='val', **data_kwargs)
+            args.dataset, split='val', mode='val', root='/mnt/mdisk/xcq/VOCdevkit/',**data_kwargs)
         self.train_data = gluon.data.DataLoader(
             trainset, args.batch_size, shuffle=True, last_batch='rollover',
             num_workers=args.workers)

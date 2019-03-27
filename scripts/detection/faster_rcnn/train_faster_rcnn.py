@@ -24,14 +24,14 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
-    parser.add_argument('--network', type=str, default='resnet50_v1b',
+    parser.add_argument('--network', type=str, default='resnet18_v1b',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--dataset', type=str, default='coco',
+    parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='1',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -66,7 +66,7 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='Print helpful debugging info once set.')
-    parser.add_argument('--mixup', action='store_true', help='Use mixup training.')
+    parser.add_argument('--mixup', action='store_true', default=True,help='Use mixup training.')
     parser.add_argument('--no-mixup-epochs', type=int, default=20,
                         help='Disable mixup training if enabled in the last N epochs.')
     args = parser.parse_args()
@@ -185,7 +185,7 @@ def get_dataset(dataset, args):
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.mixup:
-        from gluoncv.data.mixup import MixupDetection
+        from gluoncv.data.mixup.detection import MixupDetection
         train_dataset = MixupDetection(train_dataset)
     return train_dataset, val_dataset, val_metric
 
@@ -314,10 +314,16 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         mix_ratio = 1.0
         if args.mixup:
             # TODO(zhreshold) only support evenly mixup now, target generator needs to be modified otherwise
-            train_data._dataset.set_mixup(np.random.uniform, 0.5, 0.5)
+            try:
+                train_data._dataset.set_mixup(np.random.uniform, 0.5, 0.5)
+            except AttributeError:
+                train_data._dataset._data.set_mixup(np.random.uniform, 0.5, 0.5)
             mix_ratio = 0.5
             if epoch >= args.epochs - args.no_mixup_epochs:
-                train_data._dataset.set_mixup(None)
+                try:
+                    train_data._dataset.set_mixup(None)
+                except AttributeError:
+                    train_data._dataset._data.set_mixup(None)
                 mix_ratio = 1.0
         while lr_steps and epoch >= lr_steps[0]:
             new_lr = trainer.learning_rate * lr_decay
@@ -386,6 +392,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'.format(
                     epoch, i, args.log_interval * batch_size/(time.time()-btic), msg))
                 btic = time.time()
+
 
         msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
         logger.info('[Epoch {}] Training cost: {:.3f}, {}'.format(
