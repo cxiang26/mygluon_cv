@@ -24,18 +24,18 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
-    parser.add_argument('--network', type=str, default='caps_resnet50_v1b',
+    parser.add_argument('--network', type=str, default='caps_resnet18_v1b',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='',
+    parser.add_argument('--resume', type=str, default='', #'./caps8_2048_softmax_faster_rcnn_caps_resnet50_v1b_voc_0005_0.7177.params',
                         help='Resume from previously saved parameters if not None. '
                         'For example, you can resume from ./faster_rcnn_xxx_0123.params')
     parser.add_argument('--start-epoch', type=int, default=0,
@@ -45,7 +45,7 @@ def parse_args():
                         help='Learning rate, default is 0.001 for voc single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-    parser.add_argument('--lr-decay-epoch', type=str, default='11, 17',
+    parser.add_argument('--lr-decay-epoch', type=str, default='14, 20',
                         help='epoches at which learning rate decays. default is 14,20 for voc.')
     parser.add_argument('--lr-warmup', type=str, default='',
                         help='warmup iterations to adjust learning rate, default is 0 for voc.')
@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='debug_',
+    parser.add_argument('--save-prefix', type=str, default='caps_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -297,7 +297,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         {'learning_rate': args.lr,
          'wd': args.wd,
          'momentum': args.momentum,
-         'clip_gradient': 5})
+         'clip_gradient': .8})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)

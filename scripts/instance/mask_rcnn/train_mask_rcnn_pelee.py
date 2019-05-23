@@ -28,7 +28,7 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='1,2',
+    parser.add_argument('--gpus', type=str, default='0,1',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='26',
                         help='Training epochs.')
@@ -38,7 +38,7 @@ def parse_args():
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=str, default='0.001',
+    parser.add_argument('--lr', type=str, default='0.002',
                         help='Learning rate, default is 0.00125 for coco single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')

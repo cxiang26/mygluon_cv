@@ -31,11 +31,7 @@ class SimplePoseDefaultTrainTransform(object):
                  **kwargs):
         from ....model_zoo.simple_pose.pose_target import SimplePoseGaussianTargetGenerator
         self._target_generator = SimplePoseGaussianTargetGenerator(
-<<<<<<< HEAD
-            num_joints, image_size, heatmap_size, sigma)
-=======
             num_joints, (image_size[1], image_size[0]), (heatmap_size[1], heatmap_size[0]), sigma)
->>>>>>> origin/master
         self._num_joints = num_joints
         self._image_size = image_size
         self._joint_pairs = joint_pairs
@@ -47,11 +43,7 @@ class SimplePoseDefaultTrainTransform(object):
         self._scale_factor = scale_factor
         self._rotation_factor = rotation_factor
 
-<<<<<<< HEAD
-    def __call__(self, src, label):
-=======
     def __call__(self, src, label, img_path):
->>>>>>> origin/master
         cv2 = try_import_cv2()
         joints_3d = label['joints_3d']
         center = label['center']
@@ -66,19 +58,6 @@ class SimplePoseDefaultTrainTransform(object):
         rf = self._rotation_factor
         r = np.clip(np.random.randn() * rf, -rf * 2, rf * 2) if random.random() <= 0.6 else 0
 
-<<<<<<< HEAD
-        if self._random_flip:
-            src, fliped = random_flip_image(src, px=0.5, py=0)
-            if fliped[0]:
-                joints = flip_joints_3d(joints_3d, src.shape[1], self._joint_pairs)
-            else:
-                joints = joints_3d
-            center[0] = src.shape[1] - center[0] - 1
-
-        trans = get_affine_transform(center, scale, r, self._image_size)
-        w, h = self._image_size
-        img = cv2.warpAffine(src.asnumpy(), trans, (int(h), int(w)), flags=cv2.INTER_LINEAR)
-=======
         joints = joints_3d
         if self._random_flip and random.random() > 0.5:
             # src, fliped = random_flip_image(src, px=0.5, py=0)
@@ -90,7 +69,6 @@ class SimplePoseDefaultTrainTransform(object):
         h, w = self._image_size
         trans = get_affine_transform(center, scale, r, [w, h])
         img = cv2.warpAffine(src.asnumpy(), trans, (int(w), int(h)), flags=cv2.INTER_LINEAR)
->>>>>>> origin/master
 
         # deal with joints visibility
         for i in range(self._num_joints):
@@ -103,9 +81,6 @@ class SimplePoseDefaultTrainTransform(object):
         # to tensor
         img = mx.nd.image.to_tensor(mx.nd.array(img))
         img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
-<<<<<<< HEAD
-        return img, target, target_weight
-=======
         return img, target, target_weight, img_path
 
 
@@ -148,4 +123,3 @@ class SimplePoseDefaultValTransform(object):
         img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
 
         return img, scale, center, score, img_path
->>>>>>> origin/master

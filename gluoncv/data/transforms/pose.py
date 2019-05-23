@@ -12,12 +12,6 @@ Written by Bin Xiao (Bin.Xiao@microsoft.com)
 from __future__ import absolute_import
 from __future__ import division
 
-<<<<<<< HEAD
-import numpy as np
-from ...utils.filesystem import try_import_cv2
-
-def flip_heatmap(heatmap, joint_pairs):
-=======
 import math
 import numpy as np
 import mxnet as mx
@@ -26,7 +20,7 @@ from mxnet.gluon.data.vision import transforms
 from ...utils.filesystem import try_import_cv2
 
 def flip_heatmap(heatmap, joint_pairs, shift=False):
->>>>>>> origin/master
+
     """Flip pose heatmap according to joint pairs.
 
     Parameters
@@ -35,11 +29,9 @@ def flip_heatmap(heatmap, joint_pairs, shift=False):
         Heatmap of joints.
     joint_pairs : list
         List of joint pairs
-<<<<<<< HEAD
-=======
     shift : bool
         Whether to shift the output
->>>>>>> origin/master
+
 
     Returns
     -------
@@ -55,11 +47,8 @@ def flip_heatmap(heatmap, joint_pairs, shift=False):
         out[:, pair[0], :, :] = out[:, pair[1], :, :]
         out[:, pair[1], :, :] = tmp
 
-<<<<<<< HEAD
-=======
     if shift:
         out[:, :, :, 1:] = out[:, :, :, 0:-1]
->>>>>>> origin/master
     return out
 
 def flip_joints_3d(joints_3d, width, joint_pairs):
@@ -108,10 +97,6 @@ def get_affine_transform(center,
                          inv=0):
     cv2 = try_import_cv2()
     if not isinstance(scale, np.ndarray) and not isinstance(scale, list):
-<<<<<<< HEAD
-        print(scale)
-=======
->>>>>>> origin/master
         scale = np.array([scale, scale])
 
     scale_tmp = scale * 200.0
@@ -172,8 +157,6 @@ def crop(img, center, scale, output_size, rot=0):
                              flags=cv2.INTER_LINEAR)
 
     return dst_img
-<<<<<<< HEAD
-=======
 
 def transform_preds(coords, center, scale, output_size):
     target_coords = nd.zeros(coords.shape)
@@ -309,4 +292,3 @@ def heatmap_to_coord(heatmaps, bbox_list):
         preds[i][:, 1] = scale[1] * 2 * h_ratio + center[1] - scale[1]
     return preds, maxvals
 
->>>>>>> origin/master

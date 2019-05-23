@@ -43,11 +43,6 @@ if __name__ == '__main__':
     net.set_nms(0.45, 200)
     net.collect_params().reset_ctx(ctx = ctx)
 
-<<<<<<< HEAD
-
-    ax = None
-=======
->>>>>>> origin/master
     for image in image_list:
         ax = None
         x, img = presets.ssd.load_test(image, short=512)

@@ -22,12 +22,9 @@ __all__ = ['FasterRCNN', 'get_faster_rcnn',
            'faster_rcnn_resnet50_v1b_custom',
            'faster_rcnn_resnet101_v1d_voc',
            'faster_rcnn_resnet101_v1d_coco',
-<<<<<<< HEAD
-           'faster_rcnn_resnet101_v1d_custom',
-=======
+
            'faster_rcnn_fpn_resnet101_v1d_coco',
-           'faster_rcnn_resnet101_v1d_custom']
->>>>>>> origin/master
+           'faster_rcnn_resnet101_v1d_custom',
 
            'faster_rcnn_resnet18_v1b_voc',
            'faster_rcnn_caps_resnet50_v1b_voc',
@@ -35,26 +32,36 @@ __all__ = ['FasterRCNN', 'get_faster_rcnn',
            'get_faster_rcnn_caps',
            'faster_rcnn_peleenet_voc',
            'faster_rcnn_peleenet_coco',
-           'faster_rcnn_caps_resnet18_v1b_voc']
-
+           'faster_rcnn_caps_resnet18_v1b_voc',
+           'faster_rcnn_fpn_resnet50_v1b_voc']
 
 class FasterRCNN_Caps(RCNN_Caps):
-    def __init__(self, features, top_features, classes,
-                 short=600, max_size=1000, train_patterns=None,
+
+    def __init__(self, features, top_features, classes, box_features=None,
+                 short=600, max_size=1000, min_stage=4, max_stage=4, train_patterns=None,
                  nms_thresh=0.3, nms_topk=400, post_nms=100,
-                 roi_mode='align', roi_size=(14, 14), stride=16, clip=None,
+                 roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
                  rpn_channel=1024, base_size=16, scales=(8, 16, 32),
                  ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
                  rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
                  rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
                  num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=300,
-                 additional_output=False, caps_dim=4, **kwargs):
+                 additional_output=False, subspace_dim=8, caps_dim=128, **kwargs):
         super(FasterRCNN_Caps, self).__init__(
             features=features, top_features=top_features, classes=classes,
-            short=short, max_size=max_size, train_patterns=train_patterns,
-            nms_thresh=nms_thresh, nms_topk=nms_topk, post_nms=post_nms,
-            roi_mode=roi_mode, roi_size=roi_size, stride=stride, clip=clip, caps_dim=caps_dim, **kwargs)
-        self.caps_dim = caps_dim
+            box_features=box_features, short=short, max_size=max_size,
+            train_patterns=train_patterns, nms_thresh=nms_thresh, nms_topk=nms_topk,
+            post_nms=post_nms, roi_mode=roi_mode, roi_size=roi_size, strides=strides, clip=clip,
+            subspace_dim=subspace_dim, caps_dim=caps_dim,
+            **kwargs)
+        self.ashape = alloc_size[0]
+        self._min_stage = min_stage
+        self._max_stage = max_stage
+        self.num_stages = max_stage - min_stage + 1
+        if self.num_stages > 1:
+            assert len(scales) == len(strides) == self.num_stages, \
+                "The num_stages (%d) must match number of scales (%d) and strides (%d)" \
+                % (self.num_stages, len(scales), len(strides))
         self._max_batch = 1  # currently only support batch size = 1
         self._num_sample = num_sample
         self._rpn_test_post_nms = rpn_test_post_nms
@@ -62,11 +69,12 @@ class FasterRCNN_Caps(RCNN_Caps):
         self._additional_output = additional_output
         with self.name_scope():
             self.rpn = RPN(
-                channels=rpn_channel, stride=stride, base_size=base_size,
+                channels=rpn_channel, strides=strides, base_size=base_size,
                 scales=scales, ratios=ratios, alloc_size=alloc_size,
                 clip=clip, nms_thresh=rpn_nms_thresh, train_pre_nms=rpn_train_pre_nms,
                 train_post_nms=rpn_train_post_nms, test_pre_nms=rpn_test_pre_nms,
-                test_post_nms=rpn_test_post_nms, min_size=rpn_min_size)
+                test_post_nms=rpn_test_post_nms, min_size=rpn_min_size,
+                multi_level=self.num_stages > 1)
             self.sampler = RCNNTargetSampler(
                 num_image=self._max_batch, num_proposal=rpn_train_post_nms,
                 num_sample=num_sample, pos_iou_thresh=pos_iou_thresh,
@@ -74,40 +82,51 @@ class FasterRCNN_Caps(RCNN_Caps):
 
     @property
     def target_generator(self):
-        """Returns stored target generator
-
-        Returns
-        -------
-        mxnet.gluon.HybridBlock
-            The RCNN target generator
-
-        """
         return list(self._target_generator)[0]
 
-    def reset_class(self, classes):
-        super(FasterRCNN_Caps, self).reset_class(classes)
+    def reset_class(self, classes, reuse_weights=None):
+        super(FasterRCNN, self).reset_class(classes, reuse_weights)
         self._target_generator = {RCNNTargetGenerator(self.num_class)}
+
+    def _pyramid_roi_feats(self, F, features, rpn_rois, roi_size, strides, roi_mode='align',
+                           eps=1e-6):
+        max_stage = self._max_stage
+        if self._max_stage > 5:  # do not use p6 for RCNN
+            max_stage = self._max_stage - 1
+        _, x1, y1, x2, y2 = F.split(rpn_rois, axis=-1, num_outputs=5)
+        h = y2 - y1 + 1
+        w = x2 - x1 + 1
+        roi_level = F.floor(4 + F.log2(F.sqrt(w * h) / 224.0 + eps))
+        roi_level = F.squeeze(F.clip(roi_level, self._min_stage, max_stage))
+        # [2,2,..,3,3,...,4,4,...,5,5,...] ``Prohibit swap order here``
+        # roi_level_sorted_args = F.argsort(roi_level, is_ascend=True)
+        # roi_level = F.sort(roi_level, is_ascend=True)
+        # rpn_rois = F.take(rpn_rois, roi_level_sorted_args, axis=0)
+        pooled_roi_feats = []
+        for i, l in enumerate(range(self._min_stage, max_stage + 1)):
+            # Pool features with all rois first, and then set invalid pooled features to zero,
+            # at last ele-wise add together to aggregate all features.
+            if roi_mode == 'pool':
+                pooled_feature = F.ROIPooling(features[i], rpn_rois, roi_size, 1. / strides[i])
+            elif roi_mode == 'align':
+                pooled_feature = F.contrib.ROIAlign(features[i], rpn_rois, roi_size,
+                                                    1. / strides[i],
+                                                    sample_ratio=2)
+            else:
+                raise ValueError("Invalid roi mode: {}".format(roi_mode))
+            pooled_feature = F.where(roi_level == l, pooled_feature, F.zeros_like(pooled_feature))
+            pooled_roi_feats.append(pooled_feature)
+        # Ele-wise add to aggregate all pooled features
+        pooled_roi_feats = F.ElementWiseSum(*pooled_roi_feats)
+        # Sort all pooled features by asceding order
+        # [2,2,..,3,3,...,4,4,...,5,5,...]
+        # pooled_roi_feats = F.take(pooled_roi_feats, roi_level_sorted_args)
+        # pooled roi feats (B*N, C, 7, 7), N = N2 + N3 + N4 + N5 = num_roi, C=256 in ori paper
+        return pooled_roi_feats
 
     # pylint: disable=arguments-differ
     def hybrid_forward(self, F, x, gt_box=None):
-        """Forward Faster-RCNN network.
 
-        The behavior during traing and inference is different.
-
-        Parameters
-        ----------
-        x : mxnet.nd.NDArray or mxnet.symbol
-            The network input tensor.
-        gt_box : type, only required during training
-            The ground-truth bbox tensor with shape (1, N, 4).
-
-        Returns
-        -------
-        (ids, scores, bboxes)
-            During inference, returns final class id, confidence scores, bounding
-            boxes.
-
-        """
         def _split(x, axis, num_outputs, squeeze_axis):
             x = F.split(x, axis=axis, num_outputs=num_outputs, squeeze_axis=squeeze_axis)
             if isinstance(x, list):
@@ -116,62 +135,55 @@ class FasterRCNN_Caps(RCNN_Caps):
                 return [x]
 
         feat = self.features(x)
+        if not isinstance(feat, (list, tuple)):
+            feat = [feat]
+
         # RPN proposals
         if autograd.is_training():
             rpn_score, rpn_box, raw_rpn_score, raw_rpn_box, anchors = \
-                self.rpn(feat, F.zeros_like(x))
+                self.rpn(F.zeros_like(x), *feat)
             rpn_box, samples, matches = self.sampler(rpn_box, rpn_score, gt_box)
         else:
-            _, rpn_box = self.rpn(feat, F.zeros_like(x))
+            _, rpn_box = self.rpn(F.zeros_like(x), *feat)
 
         # create batchid for roi
         num_roi = self._num_sample if autograd.is_training() else self._rpn_test_post_nms
         with autograd.pause():
-            roi_batchid = F.arange(0, self._max_batch, repeat=num_roi)
+            # roi_batchid = F.arange(0, self._max_batch, repeat=num_roi)
+            roi_batchid = F.arange(0, self._max_batch)
+            roi_batchid = F.repeat(roi_batchid, num_roi)
             # remove batch dim because ROIPooling require 2d input
             rpn_roi = F.concat(*[roi_batchid.reshape((-1, 1)), rpn_box.reshape((-1, 4))], dim=-1)
             rpn_roi = F.stop_gradient(rpn_roi)
 
-        # ROI features
-        if self._roi_mode == 'pool':
-            pooled_feat = F.ROIPooling(feat, rpn_roi, self._roi_size, 1. / self._stride)
-        elif self._roi_mode == 'align':
-            pooled_feat = F.contrib.ROIAlign(feat, rpn_roi, self._roi_size, 1. / self._stride,
-                                             sample_ratio=2)
+        if self.num_stages > 1:
+            # using FPN
+            pooled_feat = self._pyramid_roi_feats(F, feat, rpn_roi, self._roi_size,
+                                                  self._strides, roi_mode=self._roi_mode)
         else:
-            raise ValueError("Invalid roi mode: {}".format(self._roi_mode))
+            # ROI features
+            if self._roi_mode == 'pool':
+                pooled_feat = F.ROIPooling(feat[0], rpn_roi, self._roi_size, 1. / self._strides)
+            elif self._roi_mode == 'align':
+                pooled_feat = F.contrib.ROIAlign(feat[0], rpn_roi, self._roi_size,
+                                                 1. / self._strides, sample_ratio=2)
+            else:
+                raise ValueError("Invalid roi mode: {}".format(self._roi_mode))
 
         # RCNN prediction
-        top_feat = self.top_features(pooled_feat)
-        avg_feat = self.global_avg_pool(top_feat)
-        cls_pred = self.class_predictor(avg_feat)
-        cls_pred = cls_pred.reshape((self._max_batch, num_roi, self.num_class+1))
-        # cls_caps_pred = self.class_predictor(avg_feat)
-        # caps_norm = F.norm(caps_all, axis=-1)
-        #
-        # idx = caps_norm.argmax(axis=-1)
-        # num_idx = F.arange(num_roi)
-        # caps_pred = caps_all.reshape((0, -1, 1, 1))
-        # caps_pred = caps_all[num_idx, idx, :]
-        # caps_pred = F.expand_dims(F.expand_dims(caps_pred, axis=-1), axis=-1)
-
+        if self.top_features is not None:
+            top_feat = self.top_features(pooled_feat)
+        else:
+            top_feat = pooled_feat
+        if self.box_features is None:
+            box_feat = F.contrib.AdaptiveAvgPooling2D(top_feat, output_size=1)
+        else:
+            box_feat = self.box_features(top_feat)
+        cls_pred = self.class_predictor(box_feat)
+        box_pred = self.box_predictor(box_feat)
         # cls_pred (B * N, C) -> (B, N, C)
-        # cls_caps_pred = cls_caps_pred.reshape((self._max_batch, num_roi, self.num_class + 1, self.caps_dim))
-        #
-        # s_squared_norm = F.sum(F.square(cls_caps_pred), axis=-1, keepdims=True)
-        # scale = s_squared_norm / (1 + s_squared_norm) / F.sqrt((s_squared_norm + 1e-08))
-        # cls_caps_pred = F.broadcast_mul(scale, cls_caps_pred)
-        # cls_pred = F.sum(cls_caps_pred, axis=-1)
-
-        # idx = cls_pred.argmax(axis=-1).squeeze()
-        # roi_idx = F.arange(num_roi)
-        # caps = cls_caps_pred[:, roi_idx, idx, :].squeeze()
-        # caps = F.expand_dims(F.expand_dims(caps, axis=-1), axis=-1)
-
-        box_pred = self.box_predictor(avg_feat)
-        # box_pred = self.box_predictor(F.concat(avg_feat, caps_pred, dim=1))
+        cls_pred = cls_pred.reshape((self._max_batch, num_roi, self.num_class + 1))
         # box_pred (B * N, C * 4) -> (B, N, C, 4)
-        # box_pred = self.box_predictor(caps_pred)
         box_pred = box_pred.reshape((self._max_batch, num_roi, self.num_class, 4))
 
         # no need to convert bounding boxes in training, just return
@@ -644,39 +656,14 @@ def get_faster_rcnn(name, dataset, pretrained=False, ctx=mx.cpu(),
         net.load_parameters(get_model_file(full_name, tag=pretrained, root=root), ctx=ctx)
     return net
 
-<<<<<<< HEAD
 def get_faster_rcnn_caps(name, dataset, pretrained=False, ctx=mx.cpu(),
                     root=os.path.join('~', '.mxnet', 'models'), **kwargs):
-    r"""Utility function to return faster rcnn networks.
-
-    Parameters
-    ----------
-    name : str
-        Model name.
-    dataset : str
-        The name of dataset.
-    pretrained : bool or str
-        Boolean value controls whether to load the default pretrained weights for model.
-        String value represents the hashtag for a certain version of pretrained weights.
-    ctx : mxnet.Context
-        Context such as mx.cpu(), mx.gpu(0).
-    root : str
-        Model weights storing path.
-
-    Returns
-    -------
-    mxnet.gluon.HybridBlock
-        The Faster-RCNN network.
-
-    """
     net = FasterRCNN_Caps(**kwargs)
     if pretrained:
         from ..model_store import get_model_file
         full_name = '_'.join(('faster_rcnn', name, dataset))
         net.load_parameters(get_model_file(full_name, tag=pretrained, root=root), ctx=ctx)
     return net
-=======
->>>>>>> origin/master
 
 def faster_rcnn_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
     r"""Faster RCNN model from the paper
@@ -1243,11 +1230,11 @@ def faster_rcnn_peleenet_coco(pretrained=False, pretrained_base=False, **kwargs)
         **kwargs)
 
 def faster_rcnn_caps_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
-    from ..resnetv1b import resnet50_v1b, resnet18_v1b
+    from ..resnetv1b import resnet50_v1b
     from ...data import VOCDetection
     classes = VOCDetection.CLASSES
     pretrained_base = False if pretrained else pretrained_base
-    base_network = resnet18_v1b(pretrained=pretrained_base, dilated=False,
+    base_network = resnet50_v1b(pretrained=pretrained_base, dilated=False,
                                 use_global_stats=True, **kwargs)
     features = nn.HybridSequential()
     top_features = nn.HybridSequential()
@@ -1261,12 +1248,13 @@ def faster_rcnn_caps_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **
         features=features, top_features=top_features, classes=classes,
         short=600, max_size=1000, train_patterns=train_patterns,
         nms_thresh=0.3, nms_topk=400, post_nms=100,
-        roi_mode='align', roi_size=(14, 14), stride=16, clip=None,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
         rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=2048,
         **kwargs)
 
 def faster_rcnn_caps_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
@@ -1288,12 +1276,13 @@ def faster_rcnn_caps_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **
         features=features, top_features=top_features, classes=classes,
         short=600, max_size=1000, train_patterns=train_patterns,
         nms_thresh=0.3, nms_topk=400, post_nms=100,
-        roi_mode='align', roi_size=(14, 14), stride=16, clip=None,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
         rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=512,
         **kwargs)
 
 def faster_rcnn_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
@@ -1315,7 +1304,7 @@ def faster_rcnn_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **kwarg
         features=features, top_features=top_features, classes=classes,
         short=600, max_size=1000, train_patterns=train_patterns,
         nms_thresh=0.3, nms_topk=400, post_nms=100,
-        roi_mode='align', roi_size=(14, 14), stride=16, clip=None,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
@@ -1347,5 +1336,40 @@ def faster_rcnn_caps_resnet50_v1b_coco(pretrained=False, pretrained_base=True, *
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
         rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=0,
-        num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100, caps_dim=8,
+        num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=256,
+        **kwargs)
+
+def faster_rcnn_fpn_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
+    from ..resnetv1b import resnet50_v1b
+    from ...data import VOCDetection
+    classes = VOCDetection.CLASSES
+    pretrained_base = False if pretrained else pretrained_base
+    base_network = resnet50_v1b(pretrained=pretrained_base, dilated=False,
+                                use_global_stats=True, **kwargs)
+    features = FPNFeatureExpander(
+        network=base_network,
+        outputs=['layers1_relu8_fwd', 'layers2_relu11_fwd', 'layers3_relu17_fwd',
+                 'layers4_relu8_fwd'], num_filters=[256, 256, 256, 256], use_1x1=True,
+        use_upsample=True, use_elewadd=True, use_p6=True, no_bias=False, pretrained=pretrained_base)
+    top_features = None
+    # 2 FC layer before RCNN cls and reg
+    box_features = nn.HybridSequential()
+    for _ in range(2):
+        box_features.add(nn.Dense(1024, weight_initializer=mx.init.Normal(0.01)))
+        box_features.add(nn.Activation('relu'))
+
+    train_patterns = '|'.join(
+        ['.*dense', '.*rpn', '.*down(2|3|4)_conv', '.*layers(2|3|4)_conv', 'P'])
+    return get_faster_rcnn_caps(
+        name='fpn_resnet50_v1b', dataset='voc', pretrained=pretrained, features=features,
+        top_features=top_features, classes=classes, box_features=box_features,
+        short=600, max_size=1000, min_stage=2, max_stage=6, train_patterns=train_patterns,
+        nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(14, 14),
+        strides=(4, 8, 16, 32, 64), clip=4.42, rpn_channel=1024, base_size=16,
+        scales=(2, 4, 8, 16, 32), ratios=(0.5, 1, 2), alloc_size=(384, 384),
+        rpn_nms_thresh=0.7, rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=0, num_sample=128,
+        pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=256,
         **kwargs)

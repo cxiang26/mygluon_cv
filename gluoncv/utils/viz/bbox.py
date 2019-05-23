@@ -89,7 +89,7 @@ def plot_bbox(img, bboxes, scores=None, labels=None, thresh=0.5,
         rect = plt.Rectangle((xmin, ymin), xmax - xmin,
                              ymax - ymin, fill=False,
                              edgecolor=colors[cls_id],
-                             linewidth=3.5)
+                             linewidth=2)
         ax.add_patch(rect)
         if class_names is not None and cls_id < len(class_names):
             class_name = class_names[cls_id]

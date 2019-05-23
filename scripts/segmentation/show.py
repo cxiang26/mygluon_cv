@@ -98,10 +98,10 @@ def test(args):
         img = img / std
         img = nd.transpose(img, (2, 0, 1))
         img = nd.expand_dims(img, axis=0)
-        # testset = get_segmentation_dataset(
-        #     args.dataset, split='val', mode='testval', transform=input_transform, root='/mnt/mdisk/xcq/VOCdevkit/')
-        # total_inter, total_union, total_correct, total_label = \
-        #     np.int64(0), np.int64(0), np.int64(0), np.int64(0)
+        testset = get_segmentation_dataset(
+            args.dataset, split='val', mode='testval', transform=input_transform, root='/mnt/mdisk/xcq/VOCdevkit/')
+        total_inter, total_union, total_correct, total_label = \
+            np.int64(0), np.int64(0), np.int64(0), np.int64(0)
     else:
         testset = get_segmentation_dataset(
             args.dataset, split='test', mode='test', transform=input_transform, root='/mnt/mdisk/xcq/VOCdevkit/')

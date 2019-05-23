@@ -6,18 +6,7 @@ from .alexnet import *
 from .cifarresnet import *
 from .cifarresnext import *
 from .cifarwideresnet import *
-<<<<<<< HEAD
-from .resnetv1b import *
-from .resnext import *
-from .pose_resnet import *
-from .senet import *
-from .se_resnet import *
-from .yolo import *
-from .nasnet import *
-from .alexnet import *
-=======
 from .deeplabv3 import *
->>>>>>> origin/master
 from .densenet import *
 from .faster_rcnn import *
 from .fcn import *
@@ -37,15 +26,11 @@ from .simple_pose.simple_pose_resnet import *
 from .squeezenet import *
 from .ssd import *
 from .vgg import *
-<<<<<<< HEAD
-from .mobilenet import *
 
 from .pointnet import *
 from .peleenet import *
-from .residual_attentionnet import *
-=======
+
 from .yolo import *
->>>>>>> origin/master
 
 
 __all__ = ['get_model', 'get_model_list']
@@ -62,7 +47,7 @@ _models = {
     'faster_rcnn_caps_resnet18_v1b_voc': faster_rcnn_caps_resnet18_v1b_voc,
     'faster_rcnn_caps_resnet50_v1b_coco': faster_rcnn_caps_resnet50_v1b_coco,
     'faster_rcnn_peleenet_coco': faster_rcnn_peleenet_coco,
-    'mask_rcnn_peleenet_coco': mask_rcnn_peleenet_coco,
+    'faster_rcnn_fpn_resnet50_v1b_voc': faster_rcnn_fpn_resnet50_v1b_voc,
 
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,
@@ -201,9 +186,7 @@ _models = {
     'nasnet_5_1538': nasnet_5_1538,
     'nasnet_7_1920': nasnet_7_1920,
     'nasnet_6_4032': nasnet_6_4032,
-<<<<<<< HEAD
 
-=======
     'simple_pose_resnet18_v1b': simple_pose_resnet18_v1b,
     'simple_pose_resnet50_v1b': simple_pose_resnet50_v1b,
     'simple_pose_resnet101_v1b': simple_pose_resnet101_v1b,
@@ -211,7 +194,7 @@ _models = {
     'simple_pose_resnet50_v1d': simple_pose_resnet50_v1d,
     'simple_pose_resnet101_v1d': simple_pose_resnet101_v1d,
     'simple_pose_resnet152_v1d': simple_pose_resnet152_v1d,
->>>>>>> origin/master
+
     'residualattentionnet56': residualattentionnet56,
     'residualattentionnet92': residualattentionnet92,
     'residualattentionnet128': residualattentionnet128,
@@ -222,26 +205,7 @@ _models = {
     'cifar_residualattentionnet56': cifar_residualattentionnet56,
     'cifar_residualattentionnet92': cifar_residualattentionnet92,
     'cifar_residualattentionnet452': cifar_residualattentionnet452,
-<<<<<<< HEAD
 
-    'pose_resnet18_v1': pose_resnet18_v1,
-    'pose_resnet34_v1': pose_resnet34_v1,
-    'pose_resnet50_v1': pose_resnet50_v1,
-    'pose_resnet101_v1': pose_resnet101_v1,
-    'pose_resnet152_v1': pose_resnet152_v1,
-    'pose_resnet18_v1b': pose_resnet18_v1b,
-    'pose_resnet34_v1b': pose_resnet34_v1b,
-    'pose_resnet50_v1b': pose_resnet50_v1b,
-    'pose_resnet101_v1b': pose_resnet101_v1b,
-    'pose_resnet152_v1b': pose_resnet152_v1b,
-    'pose_resnet50_v1c': pose_resnet50_v1c,
-    'pose_resnet101_v1c': pose_resnet101_v1c,
-    'pose_resnet152_v1c': pose_resnet152_v1c,
-    'pose_resnet50_v1d': pose_resnet50_v1d,
-    'pose_resnet101_v1d': pose_resnet101_v1d,
-    'pose_resnet152_v1d': pose_resnet152_v1d,
-    }
-=======
     'resnet18_v1b_0.89': resnet18_v1b_89,
     'resnet50_v1d_0.86': resnet50_v1d_86,
     'resnet50_v1d_0.48': resnet50_v1d_48,
@@ -257,7 +221,6 @@ _models = {
     'ssd_512_vgg16_atrous_voc_int8': ssd_512_vgg16_atrous_voc_int8,
 }
 
->>>>>>> origin/master
 
 def get_model(name, **kwargs):
     """Returns a pre-defined model by name

@@ -27,12 +27,12 @@ def test(args):
     # dataset and dataloader
     if args.eval:
         testset = get_segmentation_dataset(
-            args.dataset, split='val', mode='testval', transform=input_transform)
+            args.dataset, split='val', mode='testval', transform=input_transform, root='/mnt/mdisk/xcq/VOCdevkit/')
         total_inter, total_union, total_correct, total_label = \
             np.int64(0), np.int64(0), np.int64(0), np.int64(0)
     else:
         testset = get_segmentation_dataset(
-            args.dataset, split='test', mode='test', transform=input_transform)
+            args.dataset, split='test', mode='test', transform=input_transform, root='/mnt/mdisk/xcq/VOCdevkit/')
     test_data = gluon.data.DataLoader(
         testset, args.test_batch_size, shuffle=False, last_batch='keep',
         batchify_fn=ms_batchify_fn, num_workers=args.workers)
@@ -78,4 +78,5 @@ if __name__ == "__main__":
     args = parse_args()
     args.test_batch_size = args.ngpus
     print('Testing model: ', args.resume)
+    args.resume = '/home/xcq/.mxnet/models/fcn_resnet101_voc-12c2b9b3.params'
     test(args)

@@ -126,22 +126,11 @@ def test_imagenet_models():
     _test_model_list(models, ctx, x)
 
 @try_gpu(0)
-<<<<<<< HEAD
-def test_pose_resnet_models():
-    ctx = mx.context.current_context()
-    models = ['pose_resnet18_v1', 'pose_resnet34_v1', 'pose_resnet50_v1',
-              'pose_resnet101_v1', 'pose_resnet152_v1',
-              'pose_resnet18_v1b', 'pose_resnet34_v1b', 'pose_resnet50_v1b',
-              'pose_resnet101_v1b', 'pose_resnet152_v1b',
-              'pose_resnet50_v1c', 'pose_resnet101_v1c', 'pose_resnet152_v1c',
-              'pose_resnet50_v1d', 'pose_resnet101_v1d', 'pose_resnet152_v1d']
-=======
 def test_simple_pose_resnet_models():
     ctx = mx.context.current_context()
     models = ['simple_pose_resnet18_v1b',
               'simple_pose_resnet50_v1b', 'simple_pose_resnet101_v1b', 'simple_pose_resnet152_v1b',
               'simple_pose_resnet50_v1d', 'simple_pose_resnet101_v1d', 'simple_pose_resnet152_v1d']
->>>>>>> origin/master
 
     # 192x256
     x = mx.random.uniform(shape=(2, 3, 192, 256), ctx=ctx)

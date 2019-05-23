@@ -2,10 +2,7 @@
 from __future__ import absolute_import
 from __future__ import division
 import os
-<<<<<<< HEAD
-=======
 import copy
->>>>>>> origin/master
 import numpy as np
 import mxnet as mx
 from .utils import try_import_pycocotools
@@ -35,11 +32,7 @@ class COCOKeyPoints(VisionDataset):
             splits = [splits]
         self._splits = splits
         self._coco = []
-<<<<<<< HEAD
-        self._aspect_ratio = float(aspect_ratio)
-=======
         self._aspect_ratio = float(1.0/aspect_ratio)
->>>>>>> origin/master
         self._pixel_std = 200
         self._skip_empty = skip_empty
         self.index_map = dict(zip(type(self).CLASSES, range(self.num_class)))
@@ -100,11 +93,9 @@ class COCOKeyPoints(VisionDataset):
         """Return pycocotools object for evaluation purposes."""
         if not self._coco:
             raise ValueError("No coco objects found, dataset not initialized.")
-<<<<<<< HEAD
-        elif len(self._coco) > 1:
-=======
+
         if len(self._coco) > 1:
->>>>>>> origin/master
+
             raise NotImplementedError(
                 "Currently we don't support evaluating {} JSON files".format(len(self._coco)))
         return self._coco[0]
@@ -114,17 +105,11 @@ class COCOKeyPoints(VisionDataset):
 
     def __getitem__(self, idx):
         img_path = self._items[idx]
-<<<<<<< HEAD
-        label = self._labels[idx]
-        img = mx.image.imread(img_path, 1)
-        return img, label
-=======
         img_id = int(os.path.splitext(os.path.basename(img_path))[0])
 
         label = copy.deepcopy(self._labels[idx])
         img = mx.image.imread(img_path, 1)
         return img, label, img_id
->>>>>>> origin/master
 
     def _load_jsons(self):
         """Load all image paths and labels from JSON annotation files into buffer."""
@@ -198,20 +183,12 @@ class COCOKeyPoints(VisionDataset):
                 joints_3d[i, :2, 1] = visible
                 # joints_3d[i, 2, 1] = 0
                 center, scale = self._box_to_center_scale(xmin, ymin, xmax - xmin, ymax - ymin)
-<<<<<<< HEAD
-                valid_objs.append({
-                    'center': center,
-                    'scale': scale,
-                    'joints_3d': joints_3d
-                })
-=======
 
             valid_objs.append({
                 'center': center,
                 'scale': scale,
                 'joints_3d': joints_3d
             })
->>>>>>> origin/master
 
         if not valid_objs:
             if not self._skip_empty:

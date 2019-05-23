@@ -27,15 +27,9 @@ def parse_args():
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-<<<<<<< HEAD
-                        default=8, help='Number of data workers, you can use larger '
-                        'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
-=======
                         default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='0',
->>>>>>> origin/master
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='1',
                         help='Training epochs.')
@@ -50,13 +44,8 @@ def parse_args():
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
     parser.add_argument('--lr-decay-epoch', type=str, default='',
-<<<<<<< HEAD
-                        help='epoches at which learning rate decays. default is 17,23 for coco.')
-    parser.add_argument('--lr-warmup', type=int, default='',
-=======
                         help='epochs at which learning rate decays. default is 17,23 for coco.')
     parser.add_argument('--lr-warmup', type=str, default='',
->>>>>>> origin/master
                         help='warmup iterations to adjust learning rate, default is 8000 for coco.')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='SGD momentum, default is 0.9')
@@ -396,12 +385,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             metric.reset()
         tic = time.time()
         btic = time.time()
-<<<<<<< HEAD
-        # net.hybridize(static_alloc=True)
-=======
         if not args.disable_hybridization:
             net.hybridize(static_alloc=args.static_alloc)
->>>>>>> origin/master
         base_lr = trainer.learning_rate
         for i, batch in enumerate(train_data):
             if epoch == 0 and i <= lr_warmup:

@@ -38,12 +38,7 @@ def try_import(package, message=None):
     except ImportError as e:
         if not message:
             raise e
-<<<<<<< HEAD
-        else:
-            raise ImportError(message)
-=======
         raise ImportError(message)
->>>>>>> origin/master
 
 def try_import_cv2():
     """Try import cv2 at runtime.

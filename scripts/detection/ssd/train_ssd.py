@@ -47,13 +47,8 @@ def parse_args():
                         help='Learning rate, default is 0.001')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-<<<<<<< HEAD
-    parser.add_argument('--lr-decay-epoch', type=str, default='160,260,300',
-                        help='epoches at which learning rate decays. default is 160,200.')
-=======
     parser.add_argument('--lr-decay-epoch', type=str, default='160,200',
                         help='epochs at which learning rate decays. default is 160,200.')
->>>>>>> origin/master
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='SGD momentum, default is 0.9')
     parser.add_argument('--wd', type=float, default=0.0005,
@@ -254,22 +249,11 @@ if __name__ == '__main__':
         net.load_parameters(args.resume.strip())
         async_net.load_parameters(args.resume.strip())
     else:
-<<<<<<< HEAD
-        for param in net.collect_params().values():
-            if param._data is not None:
-                continue
-            if param.name.find('_caps') != -1:
-                # param.__setattr__('lr_mult', 0.1)
-                # param.__setattr__('wd_mult', 0.1)
-                param.lr_mult = .1
-                param.wd_mult = .1
-            param.initialize()
-=======
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             net.initialize()
             async_net.initialize()
->>>>>>> origin/master
+
 
 
     # training data
