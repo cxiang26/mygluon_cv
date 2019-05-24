@@ -24,14 +24,14 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
-    parser.add_argument('--network', type=str, default='caps_resnet18_v1b',
+    parser.add_argument('--network', type=str, default='caps_resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--dataset', type=str, default='voc',
+    parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='Print helpful debugging info once set.')
     parser.add_argument('--mixup', action='store_true', help='Use mixup training.')
-    parser.add_argument('--no-mixup-epochs', type=int, default=20,
+    parser.add_argument('--no-mixup-epochs', type=int,
                         help='Disable mixup training if enabled in the last N epochs.')
     args = parser.parse_args()
     if args.dataset == 'voc':
