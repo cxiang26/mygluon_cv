@@ -3,3 +3,4 @@
 from __future__ import absolute_import
 from .ssd import *
 from .vgg_atrous import *
+from .ssdexpand import *

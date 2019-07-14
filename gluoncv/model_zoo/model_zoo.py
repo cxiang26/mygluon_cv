@@ -48,6 +48,8 @@ _models = {
     'faster_rcnn_caps_resnet50_v1b_coco': faster_rcnn_caps_resnet50_v1b_coco,
     'faster_rcnn_peleenet_coco': faster_rcnn_peleenet_coco,
     'faster_rcnn_fpn_resnet50_v1b_voc': faster_rcnn_fpn_resnet50_v1b_voc,
+    'faster_rcnn_caps_resnet101_v1d_voc': faster_rcnn_caps_resnet101_v1d_voc,
+    'faster_rcnn_caps_mobilenet1_0_voc': faster_rcnn_caps_mobilenet1_0_voc,
 
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,
@@ -100,6 +102,7 @@ _models = {
     'ssd_512_vgg16_atrous_coco': ssd_512_vgg16_atrous_coco,
     'ssd_512_vgg16_atrous_custom': ssd_512_vgg16_atrous_custom,
     'ssd_512_resnet18_v1_voc': ssd_512_resnet18_v1_voc,
+    'ssd_512_fpn_resnet18_v1_voc': ssd_512_fpn_resnet18_v1_voc,
     'ssd_512_resnet18_v1_coco': ssd_512_resnet18_v1_coco,
     'ssd_512_resnet50_v1_voc': ssd_512_resnet50_v1_voc,
     'ssd_512_resnet50_v1_coco': ssd_512_resnet50_v1_coco,

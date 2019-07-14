@@ -4,6 +4,7 @@ This module provides data loaders and transformers for popular vision datasets.
 from . import transforms
 from . import batchify
 
+from .kitti.detection import KITTIDetection
 from .shapenet.shapenet3d import PartDataset
 from .modelnet.modelnet_dataset import ModelNetDataset
 

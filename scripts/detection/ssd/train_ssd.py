@@ -22,11 +22,11 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='vgg16_atrous',
+    parser.add_argument('--network', type=str, default='resnet18_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--data-shape', type=int, default=300,
+    parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=2,
+    parser.add_argument('--batch-size', type=int, default=32,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
@@ -35,7 +35,7 @@ def parse_args():
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='2',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=int, default=351,
+    parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
     parser.add_argument('--resume', type=str, default='',
                         help='Resume from previously saved parameters if not None. '
@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='debug1_',
+    parser.add_argument('--save-prefix', type=str, default='',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -66,6 +66,9 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
+    # FPN options
+    parser.add_argument('--use-fpn', action='store_true', default=True,
+                        help='Whether to use feature pyramid network.')
     args = parser.parse_args()
     return args
 
@@ -150,8 +153,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     """Training pipeline"""
     net.collect_params().reset_ctx(ctx)
     trainer = gluon.Trainer(
-        net.collect_params(), 'adam',
-        {'learning_rate': args.lr, 'wd': args.wd})#, 'momentum': args.momentum})
+        net.collect_params(), 'sgd',
+        {'learning_rate': args.lr, 'wd': args.wd, 'momentum': args.momentum})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)
@@ -236,7 +239,10 @@ if __name__ == '__main__':
     ctx = ctx if ctx else [mx.cpu()]
 
     # network
-    net_name = '_'.join(('ssd', str(args.data_shape), args.network, args.dataset))
+    if args.use_fpn:
+        net_name = '_'.join(('ssd', str(args.data_shape), 'fpn', args.network, args.dataset))
+    else:
+        net_name = '_'.join(('ssd', str(args.data_shape), args.network, args.dataset))
     args.save_prefix += net_name
     if args.syncbn and len(ctx) > 1:
         net = get_model(net_name, pretrained_base=True, norm_layer=gluon.contrib.nn.SyncBatchNorm,
