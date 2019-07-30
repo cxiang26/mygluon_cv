@@ -7,7 +7,7 @@ import mxnet as mx
 from mxnet import autograd
 from mxnet.gluon import nn
 from mxnet.gluon import HybridBlock
-from ...nn.feature import Peleenet_FeatureExpander, FPNFeatureExpander
+from ...nn.feature import Peleenet_FeatureExpander, FPNFeatureExpander, SGEFPNFeatureExpander
 from .anchor import SSDAnchorGenerator
 from ...nn.predictor import ConvPredictor
 from ...nn.coder import MultiPerClassDecoder, NormalizedBoxCenterDecoder

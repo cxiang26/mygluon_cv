@@ -7,5 +7,6 @@ from . import feature
 from . import predictor
 from . import matcher
 from . import sampler
+from . import sge
 from .block import *
 from .gn import *

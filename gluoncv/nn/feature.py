@@ -11,7 +11,7 @@ from mxnet.base import string_types
 from mxnet.gluon import HybridBlock, SymbolBlock
 from mxnet.symbol import Symbol
 from mxnet.symbol.contrib import SyncBatchNorm
-
+from .sge import SpatialGroupEnhance
 
 def _parse_network(network, outputs, inputs, pretrained, ctx, **kwargs):
     """Parse network with specified outputs and other arguments.
@@ -217,11 +217,13 @@ class FPNFeatureExpander(SymbolBlock):
                                            stride=(1, 1), no_bias=no_bias,
                                            name="P{}_conv_lat".format(num_stages - i),
                                            attr={'__init__': weight_init})
+                    # y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
                     if norm_layer is not None:
                         if norm_layer is SyncBatchNorm:
                             norm_kwargs['key'] = "P{}_lat_bn".format(num_stages - i)
                             norm_kwargs['name'] = "P{}_lat_bn".format(num_stages - i)
                         y = norm_layer(y, **norm_kwargs)
+                    y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
                 if use_p6:
                     # method 1 : use max pool (Detectron use this)
                     # y_p6 = mx.sym.Pooling(y, pool_type='max', kernel=(1, 1), pad=(0, 0),
@@ -242,11 +244,13 @@ class FPNFeatureExpander(SymbolBlock):
                                             stride=(1, 1), no_bias=no_bias,
                                             name="P{}_conv_lat".format(num_stages - i),
                                             attr={'__init__': weight_init})
+                    # y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
                     if norm_layer is not None:
                         if norm_layer is SyncBatchNorm:
                             norm_kwargs['key'] = "P{}_conv1_bn".format(num_stages - i)
                             norm_kwargs['name'] = "P{}_conv1_bn".format(num_stages - i)
                         bf = norm_layer(bf, **norm_kwargs)
+                    bf = mx.sym.Activation(bf, act_type='relu', name='expand_reu{}'.format(i))
                 if use_upsample:
                     y = mx.sym.UpSampling(y, scale=2, sample_type='nearest',
                                           name="P{}_upsp".format(num_stages - i))
@@ -260,9 +264,11 @@ class FPNFeatureExpander(SymbolBlock):
                                           name="P{}_clip".format(num_stages - i))
                     y = mx.sym.ElementWiseSum(bf, y, name="P{}_sum".format(num_stages - i))
             # Reduce the aliasing effect of upsampling described in ori paper
+
             out = mx.sym.Convolution(y, num_filter=f, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
                                      no_bias=no_bias, name='P{}_conv1'.format(num_stages - i),
                                      attr={'__init__': weight_init})
+            out = mx.sym.Activation(out, act_type='relu', name='expand_out_reu{}'.format(i))
             if norm_layer is not None:
                 if norm_layer is SyncBatchNorm:
                     norm_kwargs['key'] = "P{}_bn".format(num_stages - i)
@@ -276,33 +282,34 @@ class FPNFeatureExpander(SymbolBlock):
 
         super(FPNFeatureExpander, self).__init__(outputs, inputs, params)
 
-
-class Peleenet_FeatureExpander(SymbolBlock):
+class SGEFPNFeatureExpander(SymbolBlock):
     """Feature extractor with additional layers to append.
-    This is very common in vision networks where extra branches are attched to
-    backbone network.
+    This is specified for ``Feature Pyramid Network for Object Detection``
+    which implement ``Top-down pathway and lateral connections``.
 
     Parameters
     ----------
     network : str or HybridBlock or Symbol
-
-        Logic chain: load from gluoncv.model_zoo if network is string.
+        Logic chain: load from gluon.model_zoo.vision if network is string.
         Convert to Symbol if network is HybridBlock.
     outputs : str or list of str
         The name of layers to be extracted as features
-    num_filters : list of int
+    num_filters : list of int e.g. [256, 256, 256, 256]
         Number of filters to be appended.
-    use_1x1_transition : bool
-        Whether to use 1x1 convolution between attached layers. It is effective
-        reducing network size.
-    use_bn : bool
-        Whether to use BatchNorm between attached layers.
-    reduce_ratio : float
-        Channel reduction ratio of the transition layers.
-    min_depth : int
-        Minimum channel number of transition layers.
-    global_pool : bool
-        Whether to use global pooling as the last layer.
+    use_1x1 : bool
+        Whether to use 1x1 convolution
+    use_upsample : bool
+        Whether to use upsample
+    use_elewadd : float
+        Whether to use element-wise add operation
+    use_p6 : bool
+        Whther use P6 stage, this is used for RPN experiments in ori paper
+    no_bias : bool
+        Whether use bias for Convolution operation.
+    norm_layer : HybridBlock or SymbolBlock
+        Type of normalization layer.
+    norm_kwargs : dict
+        Arguments for normalization layer.
     pretrained : bool
         Use pretrained parameters as in gluon.model_zoo if `True`.
     ctx : Context
@@ -311,16 +318,150 @@ class Peleenet_FeatureExpander(SymbolBlock):
         Name of input variables to the network.
 
     """
-    def __init__(self, network, outputs, num_filters, use_ResBlock=True,
+    def __init__(self, network, outputs, num_filters, use_1x1=True, use_upsample=True,
+                 use_elewadd=True, use_p6=False, no_bias=True, pretrained=False, norm_layer=None,
+                 norm_kwargs=None, ctx=mx.cpu(),
+                 inputs=('data',)):
+        inputs, outputs, params = _parse_network(network, outputs, inputs, pretrained, ctx)
+        if norm_kwargs is None:
+            norm_kwargs = {}
+        # e.g. For ResNet50, the feature is :
+        # outputs = ['stage1_activation2', 'stage2_activation3',
+        #            'stage3_activation5', 'stage4_activation2']
+        # with regard to [conv2, conv3, conv4, conv5] -> [C2, C3, C4, C5]
+        # append more layers with reversed order : [P5, P4, P3, P2]
+        y = outputs[-1]
+        base_features = outputs[::-1]
+        num_stages = len(num_filters) + 1  # usually 5
+        weight_init = mx.init.Xavier(rnd_type='gaussian', factor_type='out', magnitude=2.)
+        tmp_outputs = []
+        SGE = [SpatialGroupEnhance(8), SpatialGroupEnhance(8),
+               SpatialGroupEnhance(8)]
+        # num_filter is 256 in ori paper
+        for i, (bf, f) in enumerate(zip(base_features, num_filters)):
+            if i == 0:
+                if use_1x1:
+                    y = mx.sym.Convolution(y, num_filter=f, kernel=(1, 1), pad=(0, 0),
+                                           stride=(1, 1), no_bias=no_bias,
+                                           name="P{}_sgeconv_lat".format(num_stages - i),
+                                           attr={'__init__': weight_init})
+                    # y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
+                    if norm_layer is not None:
+                        if norm_layer is SyncBatchNorm:
+                            norm_kwargs['key'] = "P{}_lat_sgebn".format(num_stages - i)
+                            norm_kwargs['name'] = "P{}_lat_sgebn".format(num_stages - i)
+                        y = norm_layer(y, **norm_kwargs)
+                    y = mx.sym.Activation(y, act_type='relu', name='expand_sgereu{}'.format(i))
+                    y, y_1 = SGE[i](y)
+                    y = mx.sym.Convolution(y, num_filter=f, kernel=(1, 1), pad=(0, 0),
+                                           stride=(1, 1), no_bias=no_bias,
+                                           name="P{}_conv_lat".format(num_stages - i),
+                                           attr={'__init__': weight_init})
+                    # y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
+                    if norm_layer is not None:
+                        if norm_layer is SyncBatchNorm:
+                            norm_kwargs['key'] = "P{}_lat_bn".format(num_stages - i)
+                            norm_kwargs['name'] = "P{}_lat_bn".format(num_stages - i)
+                        y = norm_layer(y, **norm_kwargs)
+                    y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
+                if use_p6:
+                    # method 1 : use max pool (Detectron use this)
+                    # y_p6 = mx.sym.Pooling(y, pool_type='max', kernel=(1, 1), pad=(0, 0),
+                    #                       stride=(2, 2), name="P{}_pre".format(num_stages+1))
+                    # method 2 : use conv (Deformable use this)
+                    y_p6 = mx.sym.Convolution(y, num_filter=f, kernel=(3, 3), pad=(1, 1),
+                                              stride=(2, 2), no_bias=no_bias,
+                                              name='P{}_conv1'.format(num_stages + 1),
+                                              attr={'__init__': weight_init})
+                    if norm_layer is not None:
+                        if norm_layer is SyncBatchNorm:
+                            norm_kwargs['key'] = "P{}_pre_bn".format(num_stages + 1)
+                            norm_kwargs['name'] = "P{}_pre_bn".format(num_stages + 1)
+                        y_p6 = norm_layer(y_p6, **norm_kwargs)
+            else:
+                if use_upsample:
+                    y = mx.sym.UpSampling(y_1, scale=2, sample_type='nearest',
+                                          name="P{}_upsp".format(num_stages - i))
+                if use_1x1:
+                    bf = mx.sym.Convolution(bf, num_filter=f, kernel=(1, 1), pad=(0, 0),
+                                            stride=(1, 1), no_bias=no_bias,
+                                            name="P{}_sgeconv_lat".format(num_stages - i),
+                                            attr={'__init__': weight_init})
+                    if norm_layer is not None:
+                        if norm_layer is SyncBatchNorm:
+                            norm_kwargs['key'] = "P{}_sgeconv1_bn".format(num_stages - i)
+                            norm_kwargs['name'] = "P{}_sgeconv1_bn".format(num_stages - i)
+                        bf = norm_layer(bf, **norm_kwargs)
+                    bf = mx.sym.Activation(bf, act_type='relu', name='expand_sgereu{}'.format(i))
+                    bf, y_1 = SGE[i](bf)
+                    bf = mx.sym.Convolution(bf, num_filter=f, kernel=(1, 1), pad=(0, 0),
+                                            stride=(1, 1), no_bias=no_bias,
+                                            name="P{}_conv_lat".format(num_stages - i),
+                                            attr={'__init__': weight_init})
+                    if norm_layer is not None:
+                        if norm_layer is SyncBatchNorm:
+                            norm_kwargs['key'] = "P{}_conv1_bn".format(num_stages - i)
+                            norm_kwargs['name'] = "P{}_conv1_bn".format(num_stages - i)
+                        bf = norm_layer(bf, **norm_kwargs)
+                    bf = mx.sym.Activation(bf, act_type='relu', name='expand_reu{}'.format(i))
+                if use_elewadd:
+                    # make two symbol alignment
+                    # method 1 : mx.sym.Crop
+                    # y = mx.sym.Crop(*[y, bf], name="P{}_clip".format(num_stages-i))
+                    # method 2 : mx.sym.slice_like
+                    y = mx.sym.slice_like(y, bf * 0, axes=(2, 3),
+                                          name="P{}_clip".format(num_stages - i))
+                    y = mx.sym.ElementWiseSum(bf, y, name="P{}_sum".format(num_stages - i))
+
+            # Reduce the aliasing effect of upsampling described in ori paper
+
+            out = mx.sym.Convolution(y, num_filter=f, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
+                                     no_bias=no_bias, name='P{}_conv1'.format(num_stages - i),
+                                     attr={'__init__': weight_init})
+            out = mx.sym.Activation(out, act_type='relu', name='expand_predreu{}'.format(i))
+            if norm_layer is not None:
+                if norm_layer is SyncBatchNorm:
+                    norm_kwargs['key'] = "P{}_bn".format(num_stages - i)
+                    norm_kwargs['name'] = "P{}_bn".format(num_stages - i)
+                out = norm_layer(out, **norm_kwargs)
+            tmp_outputs.append(out)
+        if use_p6:
+            outputs = tmp_outputs[::-1] + [y_p6]  # [P2, P3, P4, P5] + [P6]
+        else:
+            outputs = tmp_outputs[::-1]  # [P2, P3, P4, P5]
+
+        super(SGEFPNFeatureExpander, self).__init__(outputs, inputs, params)
+
+class Peleenet_FeatureExpander(SymbolBlock):
+    def __init__(self, network, outputs, num_filters, use_ResBlock=True, use_1x1_transition=True,
                  use_bn=True, reduce_ratio=1.0, min_depth=128, global_pool=False,
                  pretrained=False, ctx=mx.cpu(), inputs=('data',)):
         inputs, outputs, params = _parse_network(network, outputs, inputs, pretrained, ctx)
         # append more layers
         # y = outputs[-1]
-        output = []
+        y = outputs[-1]
         weight_init = mx.init.Xavier(rnd_type='gaussian', factor_type='out', magnitude=2)
+        for i, f in enumerate(num_filters):
+            if use_1x1_transition:
+                num_trans = max(min_depth, int(round(f * reduce_ratio)))
+                y = mx.sym.Convolution(
+                    y, num_filter=num_trans, kernel=(1, 1), no_bias=use_bn,
+                    name='expand_trans_conv{}'.format(i), attr={'__init__': weight_init})
+                if use_bn:
+                    y = mx.sym.BatchNorm(y, name='expand_trans_bn{}'.format(i))
+                y = mx.sym.Activation(y, act_type='relu', name='expand_trans_relu{}'.format(i))
+            y = mx.sym.Convolution(
+                y, num_filter=f, kernel=(3, 3), pad=(1, 1), stride=(2, 2),
+                no_bias=use_bn, name='expand_conv{}'.format(i), attr={'__init__': weight_init})
+            if use_bn:
+                y = mx.sym.BatchNorm(y, name='expand_bn{}'.format(i))
+            y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
+            outputs.append(y)
+
+        output = []
+        pred_block = [128]
         for j, y in enumerate(outputs):
-            for i, f in enumerate(num_filters):
+            for i, f in enumerate(pred_block):
                 if use_ResBlock:
                     num_trans = max(min_depth, int(round(f * reduce_ratio)))
                     y1 = mx.sym.Convolution(
