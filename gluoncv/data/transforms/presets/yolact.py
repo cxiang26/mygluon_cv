@@ -142,10 +142,9 @@ class YOLACTDefaultTrainTransform(object):
         """Apply transform to training image/label."""
         # random color jittering
         img = experimental.image.random_color_distort(src)
-
         # random expansion with prob 0.5
         if np.random.uniform(0, 1) > 0.5:
-            img, expand = timage.random_expand(img, fill=[m * 255 for m in self._mean])
+            img, expand = timage.random_expand(img, max_ratio=2, fill=[m * 255 for m in self._mean])
             bbox = tbbox.translate(label, x_offset=expand[0], y_offset=expand[1])
             segm = [tmask.expand(polys, x_offset=expand[0], y_offset=expand[1]) for polys in segm]
         else:

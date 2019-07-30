@@ -475,12 +475,12 @@ def yolact_512_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **k
     from ..resnetv1b import resnet50_v1b
     base_network = resnet50_v1b(pretrained=pretrained_base,**kwargs)
     return get_yolact(base_network, 512,
-                   features=['layers1_relu8_fwd', 'layers2_relu11_fwd', 'layers3_relu17_fwd',
+                   features=['layers2_relu11_fwd', 'layers3_relu17_fwd', #'layers1_relu8_fwd',
                  'layers4_relu8_fwd'],
-                   filters = [256, 256, 256, 256],
-                   sizes=[31.2, 51.2, 102.4, 189.4, 276.4, 363.52],
-                   ratios=[[1, 2, 0.5, 3, 1.0/3]]*4 + [[1, 2, 0.5]],
-                   steps=[4, 8, 16, 32, 64],
+                   filters = [256, 256, 256],
+                   sizes=[51.2, 102.4, 189.4, 276.4, 363.52],
+                   ratios=[[1, 2, 0.5, 3, 1.0/3]]*4,
+                   steps=[8, 16, 32, 64],
                    classes=classes, dataset='coco', pretrained=pretrained,
                    pretrained_base=pretrained_base,
                    fpn=True,**kwargs)

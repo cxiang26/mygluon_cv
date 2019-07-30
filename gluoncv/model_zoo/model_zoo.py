@@ -26,6 +26,7 @@ from .simple_pose.simple_pose_resnet import *
 from .squeezenet import *
 from .ssd import *
 from .vgg import *
+from .yolact import *
 
 from .pointnet import *
 from .peleenet import *
@@ -50,6 +51,9 @@ _models = {
     'faster_rcnn_fpn_resnet50_v1b_voc': faster_rcnn_fpn_resnet50_v1b_voc,
     'faster_rcnn_caps_resnet101_v1d_voc': faster_rcnn_caps_resnet101_v1d_voc,
     'faster_rcnn_caps_mobilenet1_0_voc': faster_rcnn_caps_mobilenet1_0_voc,
+    'yolact_512_resnet18_v1_coco': yolact_512_resnet18_v1_coco,
+    'yolact_512_fpn_resnet18_v1_coco': yolact_512_fpn_resnet18_v1_coco,
+    'yolact_512_fpn_resnet50_v1b_coco': yolact_512_fpn_resnet50_v1b_coco,
 
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,

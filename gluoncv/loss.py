@@ -3,11 +3,12 @@
 Losses are subclasses of gluon.loss.Loss which is a HybridBlock actually.
 """
 from __future__ import absolute_import
-from mxnet import gluon
+from mxnet import gluon, autograd
 from mxnet import nd
 from mxnet.gluon.loss import Loss, _apply_weighting, _reshape_like
+from .nn.coder import NormalizedBoxCenterDecoder
 
-__all__ = ['FocalLoss', 'SSDMultiBoxLoss', 'YOLOV3Loss',
+__all__ = ['FocalLoss', 'SSDMultiBoxLoss', 'YOLOV3Loss', 'YOLACTMultiBoxLoss',
            'MixSoftmaxCrossEntropyLoss', 'MixSoftmaxCrossEntropyOHEMLoss',
            'DistillationSoftmaxCrossEntropyLoss']
 
@@ -453,3 +454,127 @@ class DistillationSoftmaxCrossEntropyLoss(gluon.HybridBlock):
                                                                   soft_target)
             hard_loss = self.hard_loss(output, label)
             return (1 - self._hard_weight) * soft_loss  + self._hard_weight * hard_loss
+
+
+class YOLACTMultiBoxLoss(gluon.Block):
+    r"""Single-Shot Multibox Object Detection Loss.
+
+    .. note::
+
+        Since cross device synchronization is required to compute batch-wise statistics,
+        it is slightly sub-optimal compared with non-sync version. However, we find this
+        is better for converged model performance.
+
+    Parameters
+    ----------
+    negative_mining_ratio : float, default is 3
+        Ratio of negative vs. positive samples.
+    rho : float, default is 1.0
+        Threshold for trimmed mean estimator. This is the smooth parameter for the
+        L1-L2 transition.
+    lambd : float, default is 1.0
+        Relative weight between classification and box regression loss.
+        The overall loss is computed as :math:`L = loss_{class} + \lambda \times loss_{loc}`.
+    min_hard_negatives : int, default is 0
+        Minimum number of negatives samples.
+
+    """
+    def __init__(self, negative_mining_ratio=3, rho=1.0, lambd=1.0, mlambd=1.0,
+                 min_hard_negatives=0, **kwargs):
+        super(YOLACTMultiBoxLoss, self).__init__(**kwargs)
+        self._negative_mining_ratio = max(0, negative_mining_ratio)
+        self._rho = rho
+        self._lambd = lambd
+        self._mlambd = mlambd
+        self._min_hard_negatives = max(0, min_hard_negatives)
+
+    def crop(self, bboxes, h, w, masks):
+        scale = 4
+        b = bboxes.shape[0]
+        ctx = bboxes.context
+        with autograd.pause():
+            _h = nd.arange(h, ctx = ctx)
+            _w = nd.arange(w, ctx = ctx)
+            _h = nd.tile(_h, reps=(b, 1))
+            _w = nd.tile(_w, reps=(b, 1))
+            x1, y1 = nd.round(bboxes[:, 0]/scale), nd.round(bboxes[:, 1]/scale)
+            x2, y2 = nd.round((bboxes[:, 2])/scale), nd.round((bboxes[:, 3])/scale)
+            _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
+            _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+            _mask = nd.batch_dot(_h.expand_dims(axis=-1),  _w.expand_dims(axis=-1), transpose_b=True)
+        masks = _mask * masks
+        return masks
+
+    def mask_loss(self, mask_pred, mask_eoc, mask_target, matches, bt_target):
+        samples = matches >= 0
+        pos_num = samples.sum(axis=-1).asnumpy().astype('int')
+        rank = (-matches).argsort(axis=-1)
+        # pos_bboxes = []
+        # pos_masks = []
+        # mask_preds = []
+        losses = []
+        for i in range(mask_pred.shape[0]):
+            idx = rank[i, :pos_num[i]]
+            pos_bboxe = nd.take(bt_target[i], idx)
+            mask_gt = mask_target[i, matches[i, idx], :, :]
+            mask_preds = nd.sigmoid(nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i]))
+            _, h, w = mask_preds.shape
+            mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
+            loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
+            losses.append(nd.sum(loss))
+        # pos_bboxes = nd.concat(*pos_bboxes, dim=0)
+        # pos_masks = nd.concat(*pos_masks, dim=0)
+        # mask_preds = nd.concat(*mask_preds, dim=-1).transpose((2,0,1))
+        # loss = 0.5 * nd.square(pos_masks - nd.sigmoid(mask_preds))
+        return nd.concat(*losses, dim=0)
+
+    def forward(self, cls_pred, box_pred, mask_pred, mask_eoc, cls_target, box_target, mask_target, matches, bts):
+        """Compute loss in entire batch across devices."""
+        # require results across different devices at this time
+        cls_pred, box_pred, cls_target, box_target = [_as_list(x) \
+            for x in (cls_pred, box_pred, cls_target, box_target)]
+        # cross device reduction to obtain positive samples in entire batch
+        num_pos = []
+        for cp, bp, ct, bt in zip(*[cls_pred, box_pred, cls_target, box_target]):
+            pos_samples = (ct > 0)
+            num_pos.append(pos_samples.sum())
+        num_pos_all = sum([p.asscalar() for p in num_pos])
+        if num_pos_all < 1 and self._min_hard_negatives < 1:
+            # no positive samples and no hard negatives, return dummy losses
+            cls_losses = [nd.sum(cp * 0) for cp in cls_pred]
+            box_losses = [nd.sum(bp * 0) for bp in box_pred]
+            mask_losses = [nd.sum(me * 0) for me in mask_eoc]
+            sum_losses = [nd.sum(cp * 0) + nd.sum(bp * 0) + nd.sum(me * 0) for cp, bp, me in zip(cls_pred, box_pred, mask_eoc)]
+            return sum_losses, cls_losses, box_losses, mask_losses
+
+
+        # compute element-wise cross entropy loss and sort, then perform negative mining
+        cls_losses = []
+        box_losses = []
+        sum_losses = []
+        mask_losses = []
+        for cp, bp, ct, bt, mp, me, mt, ma, btt in zip(*[cls_pred, box_pred, cls_target, box_target, mask_pred, mask_eoc, mask_target, matches, bts]):
+            # mask loss
+            mask_losses.append(self.mask_loss(mp, me, mt, ma, btt))
+
+            pred = nd.log_softmax(cp, axis=-1)
+            pos = ct > 0
+            cls_loss = -nd.pick(pred, ct, axis=-1, keepdims=False)
+            rank = (cls_loss * (pos - 1)).argsort(axis=1).argsort(axis=1)
+            hard_negative = rank < nd.maximum(self._min_hard_negatives, pos.sum(axis=1)
+                                              * self._negative_mining_ratio).expand_dims(-1)
+            # mask out if not positive or negative
+            cls_loss = nd.where((pos + hard_negative) > 0, cls_loss, nd.zeros_like(cls_loss))
+            cls_losses.append(nd.sum(cls_loss, axis=0, exclude=True) / max(1., num_pos_all))
+
+            bp = _reshape_like(nd, bp, bt)
+            box_loss = nd.abs(bp - bt)
+            box_loss = nd.where(box_loss > self._rho, box_loss - 0.5 * self._rho,
+                                (0.5 / self._rho) * nd.square(box_loss))
+            # box loss only apply to positive samples
+            box_loss = box_loss * pos.expand_dims(axis=-1)
+            box_losses.append(nd.sum(box_loss, axis=0, exclude=True) / max(1., num_pos_all))
+            sum_losses.append(cls_losses[-1] + self._lambd * box_losses[-1] + self._mlambd * mask_losses[-1])
+
+        return sum_losses, cls_losses, box_losses, mask_losses
+
