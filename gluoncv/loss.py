@@ -487,6 +487,7 @@ class YOLACTMultiBoxLoss(gluon.Block):
         self._lambd = lambd
         self._mlambd = mlambd
         self._min_hard_negatives = max(0, min_hard_negatives)
+        self.SBCELoss = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
 
     def crop(self, bboxes, h, w, masks):
         scale = 4
@@ -520,12 +521,9 @@ class YOLACTMultiBoxLoss(gluon.Block):
             mask_preds = nd.sigmoid(nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i]))
             _, h, w = mask_preds.shape
             mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
-            loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
-            losses.append(nd.sum(loss))
-        # pos_bboxes = nd.concat(*pos_bboxes, dim=0)
-        # pos_masks = nd.concat(*pos_masks, dim=0)
-        # mask_preds = nd.concat(*mask_preds, dim=-1).transpose((2,0,1))
-        # loss = 0.5 * nd.square(pos_masks - nd.sigmoid(mask_preds))
+            loss = self.SBCELoss(mask_preds, mask_gt)
+            # loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
+            losses.append(nd.sum(loss)/len(loss))
         return nd.concat(*losses, dim=0)
 
     def forward(self, cls_pred, box_pred, mask_pred, mask_eoc, cls_target, box_target, mask_target, matches, bts):

@@ -4,7 +4,7 @@ import numpy as np
 import mxnet as mx
 from ..mscoco.utils import try_import_pycocotools
 
-__all__ = ['flip', 'resize', 'to_mask', 'fill', 'crop', 'expand']
+__all__ = ['flip', 'resize', 'to_mask', 'fill', 'crop', 'expand', 'proto_fill']
 
 def flip(polys, size, flip_x=False, flip_y=False):
     """Flip polygons according to image flipping directions.
@@ -161,4 +161,15 @@ def expand(polys, x_offset, y_offset):
         poly[:, 1] = poly[:, 1] + y_offset
     return polys
 
+def proto_fill(mask, size):
+    width, height = size
+    # pad mask
+    mask = mx.nd.array(mask)
+    mask = mask.reshape((0, 0, 1))
+    mask = mx.image.imresize(mask, w=width, h=height, interp=1)
+    mask = mask.reshape((0, 0))
+    mask = mask.asnumpy()
+    # binarize and fill
+    mask = (mask > 0.5).astype('uint8')
+    return mask
 

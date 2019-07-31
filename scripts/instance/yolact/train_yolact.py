@@ -22,9 +22,9 @@ from gluoncv.utils import utils
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train YOLACT networks.')
-    parser.add_argument('--network', type=str, default='resnet18_v1',
+    parser.add_argument('--network', type=str, default='resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--data-shape', type=int, default=512,
+    parser.add_argument('--data-shape', type=int, default=550,
                         help="Input data shape, use 300, 512.")
     parser.add_argument('--batch-size', type=int, default='8',
                         help='Training mini-batch size')
@@ -35,7 +35,7 @@ def parse_args():
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='0,1',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=int, default=240,
+    parser.add_argument('--epochs', type=int, default=55,
                         help='Training epochs.')
     parser.add_argument('--resume', type=str, default='',
                         help='Resume from previously saved parameters if not None. '
@@ -47,7 +47,7 @@ def parse_args():
                         help='Learning rate, default is 0.001')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-    parser.add_argument('--lr-decay-epoch', type=str, default='160,200',
+    parser.add_argument('--lr-decay-epoch', type=str, default='20,40,47, 51',
                         help='epochs at which learning rate decays. default is 160,200.')
     parser.add_argument('--momentum', type=float, default=0.9,
                         help='SGD momentum, default is 0.9')
@@ -59,7 +59,7 @@ def parse_args():
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
-    parser.add_argument('--val-interval', type=int, default=1,
+    parser.add_argument('--val-interval', type=int, default=10,
                         help='Epoch interval for validation, increase the number will reduce the '
                              'training time if validation is slow.')
     parser.add_argument('--seed', type=int, default=233,
@@ -108,51 +108,58 @@ def save_params(net, best_map, current_map, epoch, save_interval, prefix):
     if save_interval and epoch % save_interval == 0:
         net.save_parameters('{:s}_{:04d}_{:.4f}.params'.format(prefix, epoch, current_map))
 
+
+def crop(bboxes, h, w, masks):
+    scale = 4
+    b = masks.shape[0]
+    with autograd.pause():
+        ctx = bboxes.context
+        _h = mx.nd.arange(h, ctx=ctx)
+        _w = mx.nd.arange(w, ctx = ctx)
+        _h = mx.nd.tile(_h, reps=(b, 1))
+        _w = mx.nd.tile(_w, reps=(b, 1))
+        x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
+        x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
+        _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
+        _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+        _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
+    masks = _mask * masks
+    return masks
+
+
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
-    clipper = gcv.nn.bbox.BBoxClipToImage()
+    # clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
     # if not args.disable_hybridization:
     #     net.hybridize(static_alloc=args.static_alloc)
-    # net.hybridize()
+    net.hybridize()
     for ib, batch in enumerate(val_data):
         data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
-
-        # det_bboxes = []
-        # det_ids = []
-        # det_scores = []
-        # det_maskeocs = []
-        # det_masks = []
-
-        # for x in data:
-        #     # get prediction results
-        #     ids, scores, bboxes, maskeoc, masks = net(x)
-        #     det_bboxes.append(clipper(bboxes, x).asnumpy())
-        #     det_ids.append(ids.asnumpy())
-        #     det_scores.append(scores.asnumpy())
-        #     det_maskeocs.append(maskeoc.asnumpy())
-        #     det_masks.append(masks.asnumpy())
-
-        # update metric
-        # for det_bbox, det_id, det_score, det_maskeoc, det_mask in zip(det_bboxes, det_ids, det_scores, det_maskeocs,
-        #                                                         det_masks):
-        for x in data:
+        det_info = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
+        for x, det_inf in zip(data, det_info):
             det_id, det_score, det_bbox, det_maskeoc, det_mask = net(x)
             for i in range(det_bbox.shape[0]):
                 # numpy everything
-                det_bbox_t = det_bbox[i]
-                det_id_t = det_id[i]
-                det_score_t = det_score[i]
+                det_bbox_t = det_bbox[i] # det_bbox_t: [x1, y1, x2, y2]
+                det_id_t = det_id[i].asnumpy()
+                det_score_t = det_score[i].asnumpy()
                 det_maskeoc_t = det_maskeoc[i]
                 det_mask_t = det_mask[i]
-                # valid = mx.nd.where(((det_id_t >= 0) & (det_score_t >= 0.001)))[0]
-                # det_id_t = det_id_t[valid]
-                # det_score_t = det_score_t[valid]
-                # det_bbox_t = det_bbox_t[valid]
-                # det_maskeoc_t = det_maskeoc_t[valid]
-                full_masks = mx.nd.dot(det_maskeoc_t, det_mask_t)
-                # full_masks = 1.0 / (1.0 + 1.0 / np.exp(full_masks + 1e-7))
-                full_masks = mx.nd.sigmoid(full_masks)
+                full_mask = mx.nd.dot(det_maskeoc_t, det_mask_t)
+                im_height, im_width, h_scale, w_scale = det_inf[i].asnumpy()
+                im_height, im_width = int(round(im_height / h_scale)), int(
+                    round(im_width / w_scale))
+                full_mask = mx.nd.sigmoid(full_mask)
+                _, h, w = full_mask.shape
+                full_mask = crop(det_bbox_t, h, w, full_mask).asnumpy()
+                det_bbox_t = det_bbox_t.asnumpy()
+                det_bbox_t[:, 0], det_bbox_t[:, 2] = det_bbox_t[:, 0] / w_scale, det_bbox_t[:, 2] / w_scale
+                det_bbox_t[:, 1], det_bbox_t[:, 3] = det_bbox_t[:, 1] / h_scale, det_bbox_t[:, 3] / h_scale
+                full_masks = []
+                for mask in full_mask:
+                    full_masks.append(gdata.transforms.mask.proto_fill(mask, (im_width, im_height)))
+                full_masks = np.array(full_masks)
                 assert det_bbox_t.shape[0] == det_id_t.shape[0] == det_score_t.shape[0] == full_masks.shape[0], \
                     print(det_bbox_t.shape[0], det_id_t.shape[0], det_score_t.shape[0], full_masks.shape[0])
                 eval_metric.update(det_bbox_t, det_id_t, det_score_t, full_masks)
@@ -163,7 +170,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     net.collect_params().reset_ctx(ctx)
     trainer = gluon.Trainer(
         net.collect_params(), 'sgd',
-        {'learning_rate': args.lr, 'wd': args.wd,'momentum': args.momentum})
+        {'learning_rate': args.lr, 'wd': args.wd, 'momentum': args.momentum})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)
@@ -173,7 +180,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     mbox_loss = gcv.loss.YOLACTMultiBoxLoss()
     ce_metric = mx.metric.Loss('CrossEntropy')
     smoothl1_metric = mx.metric.Loss('SmoothL1')
-    sq_metric = mx.metric.Loss('MAE')
+    sq_metric = mx.metric.Loss('SigmoidBCE')
 
     # set up logger
     logging.basicConfig()
@@ -199,7 +206,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         sq_metric.reset()
         tic = time.time()
         btic = time.time()
-        # net.hybridize()
+        net.hybridize()
         for i, batch in enumerate(train_data):
             batch_size = batch[0].shape[0]
             data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
@@ -212,14 +219,16 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 box_preds = []
                 masks = []
                 maskeocs = []
+                bts = []
                 for x, bt in zip(data, box_targets):
-                    cls_pred, box_pred, _, maskeoc, mask = net(x)
+                    cls_pred, box_pred, anchor, maskeoc, mask = net(x)
+                    bts.append(net.bbox_decoder(bt, anchor))
                     cls_preds.append(cls_pred)
                     box_preds.append(box_pred)
                     masks.append(mask)
                     maskeocs.append(maskeoc)
                 sum_loss, cls_loss, box_loss, mask_loss = mbox_loss(
-                    cls_preds, box_preds, masks, maskeocs, cls_targets, box_targets, mask_targets, matches)
+                    cls_preds, box_preds, masks, maskeocs, cls_targets, box_targets, mask_targets, matches, bts)
 
 
                 autograd.backward(sum_loss)
@@ -242,7 +251,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         name3, loss3 = sq_metric.get()
         logger.info('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}, {}={:.3f}'.format(
             epoch, (time.time()-tic), name1, loss1, name2, loss2, name3, loss3))
-        if (epoch % args.val_interval == 0) or (args.save_interval and epoch % args.save_interval == 0):
+        if (epoch % args.val_interval == 0) or (args.save_interval and epoch % args.save_interval == 0) or (epoch >= 50):
             # consider reduce the frequency of validation to save time
             map_name, mean_ap = validate(net, val_data, ctx, eval_metric)
             val_msg = '\n'.join(['{}={}'.format(k, v) for k, v in zip(map_name, mean_ap)])
@@ -272,7 +281,7 @@ if __name__ == '__main__':
                         norm_kwargs={'num_devices': len(ctx)})
         async_net = get_model(net_name, pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=True, norm_layer=gluon.nn.BatchNorm)
+        net = get_model(net_name, pretrained_base=True)
         async_net = net
     if args.resume.strip():
         net.load_parameters(args.resume.strip())

@@ -159,7 +159,7 @@ class YOLACTDefaultTrainTransform(object):
 
         # resize with random interpolation
         h, w, _ = img.shape
-        masks_width, masks_height = int(self._width/self._scale), int(self._height/self._scale)
+        masks_width, masks_height = int(np.ceil(self._width/self._scale)), int(np.ceil(self._height/self._scale))
         interp = np.random.randint(0, 5)
         img = timage.imresize(img, self._width, self._height, interp=interp)
         bbox = tbbox.resize(bbox, (w, h), (self._width, self._height))
@@ -248,7 +248,7 @@ class YOLACTDefaultValTransform(object):
         # mask_width, mask_height = int(self._width/self._scale), int(self._height/self._scale)
         img = timage.imresize(src, self._width, self._height, interp=9)
         # segm = [tmask.resize(polys, in_size=(w, h), out_size=(mask_width, mask_height)) for polys in segm]
-
+        h_scale, w_scale = float(img.shape[0]/h), float(img.shape[1]/w)
         img = mx.nd.image.to_tensor(img)
         img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
         # masks = [mx.nd.array(tmask.to_mask(polys, (mask_width, mask_height))) for polys in segm]
@@ -256,4 +256,4 @@ class YOLACTDefaultValTransform(object):
         # gt_masks = mx.nd.zeros(shape=(25, mask_width, mask_height))
         # assert masks.shape[0] <= 25, "gt masks has less channels!"
         # gt_masks[:masks.shape[0], :, :] = masks
-        return img, mx.nd.array([img.shape[-2], img.shape[-1], self._scale])
+        return img, mx.nd.array([img.shape[-2], img.shape[-1], h_scale, w_scale])

@@ -19,6 +19,7 @@ class Protonet(gluon.HybridBlock):
                     self.net.add(gluon.nn.BatchNorm())
                 else:
                     self.mask.add(gluon.nn.Conv2D(channels=channel, kernel_size=(1,1), strides=(1,1), padding=(0, 0), use_bias=False))
+                    self.mask.add(gluon.nn.Activation('relu'))
     def hybrid_forward(self, F, x):
         x = self.net(x)
         x = F.UpSampling(x, scale=self.upsampling_ratio, sample_type='nearest')

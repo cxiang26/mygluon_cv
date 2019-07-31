@@ -7,7 +7,7 @@ import mxnet as mx
 from mxnet import autograd
 from mxnet.gluon import nn
 from mxnet.gluon import HybridBlock
-from ...nn.feature import FeatureExpander, FPNFeatureExpander
+from ...nn.feature import FeatureExpander, FPNFeatureExpander, RetinaFeatureExpander
 from .anchor import SSDAnchorGenerator
 from ...nn.predictor import ConvPredictor
 from ...nn.protomask import Protonet
@@ -17,8 +17,24 @@ __all__ = ['YOLACT', 'get_yolact',
            'yolact_512_resnet18_v1_coco',
            'yolact_512_fpn_resnet18_v1_coco',
            'yolact_512_fpn_resnet50_v1b_coco',
-           'yolact_512_fpn_resnet101_v1d_coco']
+           'yolact_512_fpn_resnet101_v1d_coco',
+           'yolact_550_fpn_resnet50_v1b_coco']
 
+
+class RetinaHead(nn.HybridBlock):
+    def __init__(self, prefix=None, **kwargs):
+        super(RetinaHead, self).__init__(**kwargs)
+        with self.name_scope():
+            self.conv = nn.HybridSequential(prefix=prefix)
+            for i in range(2):
+                self.conv.add(nn.Conv2D(256, 3, 1, 1, activation='relu',
+                    weight_initializer=mx.init.Normal(sigma=0.01),
+                    bias_initializer='zeros'))
+                self.conv.add(nn.BatchNorm())
+
+    def hybrid_forward(self, F, x):
+        x = self.conv(x)
+        return x
 
 class YOLACT(HybridBlock):
     """Single-shot Object Detection Network: https://arxiv.org/abs/1512.02325.
@@ -90,21 +106,13 @@ class YOLACT(HybridBlock):
         for :class:`mxnet.gluon.contrib.nn.SyncBatchNorm`.
 
     """
-    def __init__(self, network, base_size, features, num_filters, sizes, ratios,
-                 steps, classes, use_1x1_transition=True, use_bn=True,
-                 reduce_ratio=1.0, min_depth=128, global_pool=False, pretrained=False,
+    def __init__(self, network, base_size, features, sizes, ratios,
+                 steps, classes, num_prototypes=64, global_pool=False, pretrained=False,
                  stds=(0.1, 0.1, 0.2, 0.2), nms_thresh=0.45, nms_topk=400, post_nms=100,
-                 anchor_alloc_size=128, ctx=mx.cpu(),
-                 norm_layer=nn.BatchNorm, norm_kwargs=None, fpn=False, **kwargs):
+                 anchor_alloc_size=128, **kwargs):
         super(YOLACT, self).__init__(**kwargs)
-        if norm_kwargs is None:
-            norm_kwargs = {}
-        if network is None:
-            num_layers = len(ratios)
-        elif fpn:
-            num_layers = len(features) + int(global_pool)
-        else:
-            num_layers = len(features) + len(num_filters) + int(global_pool)
+
+        num_layers = len(features) + int(global_pool)*2
         assert len(sizes) == num_layers + 1
         sizes = list(zip(sizes[:-1], sizes[1:]))
         assert isinstance(ratios, list), "Must provide ratios as list or list of list"
@@ -115,50 +123,22 @@ class YOLACT(HybridBlock):
                 num_layers, len(sizes), len(ratios))
         assert num_layers > 0, "YOLACT require at least one layer, suggest multiple."
         self._num_layers = num_layers
-        self.k = 64
+        self.k = num_prototypes
         self.classes = classes
         self.nms_thresh = nms_thresh
         self.nms_topk = nms_topk
         self.post_nms = post_nms
 
         with self.name_scope():
-            if network is None:
-                # use fine-grained manually designed block as features
-                try:
-                    self.features = features(pretrained=pretrained, ctx=ctx,
-                                             norm_layer=norm_layer, norm_kwargs=norm_kwargs)
-                except TypeError:
-                    self.features = features(pretrained=pretrained, ctx=ctx)
-            elif fpn:
-                try:
-                    self.features = FPNFeatureExpander(
-                        network=network,
-                        outputs=features, num_filters=num_filters, use_1x1=True,
-                        use_upsample=True, use_elewadd=True, use_p6=global_pool, no_bias=False, pretrained=pretrained)
-                except TypeError:
-                    self.features = FPNFeatureExpander(
-                        network=network,
-                        outputs=features, num_filters=num_filters, use_1x1=True,
-                        use_upsample=True, use_elewadd=True, use_p6=global_pool, no_bias=False, pretrained=pretrained)
-            else:
-                try:
-                    self.features = FeatureExpander(
-                        network=network, outputs=features, num_filters=num_filters,
-                        use_1x1_transition=use_1x1_transition,
-                        use_bn=use_bn, reduce_ratio=reduce_ratio, min_depth=min_depth,
-                        global_pool=global_pool, pretrained=pretrained, ctx=ctx,
-                        norm_layer=norm_layer, norm_kwargs=norm_kwargs)
-                except TypeError:
-                    self.features = FeatureExpander(
-                        network=network, outputs=features, num_filters=num_filters,
-                        use_1x1_transition=use_1x1_transition,
-                        use_bn=use_bn, reduce_ratio=reduce_ratio, min_depth=min_depth,
-                        global_pool=global_pool, pretrained=pretrained, ctx=ctx)
+            self.features = RetinaFeatureExpander(network=network,
+                                     pretrained=pretrained,
+                                     outputs=features)
+            self.heads = nn.HybridSequential()
             self.protomask = nn.HybridSequential()
             self.class_predictors = nn.HybridSequential()
             self.box_predictors = nn.HybridSequential()
             self.anchor_generators = nn.HybridSequential()
-            self.maskcoe = nn.HybridSequential()
+            self.maskcoe_predictors = nn.HybridSequential()
             asz = anchor_alloc_size
             im_size = (base_size, base_size)
             for i, s, r, st in zip(range(num_layers), sizes, ratios, steps):
@@ -166,9 +146,10 @@ class YOLACT(HybridBlock):
                 self.anchor_generators.add(anchor_generator)
                 asz = max(asz // 2, 16)  # pre-compute larger than 16x16 anchor map
                 num_anchors = anchor_generator.num_depth
+                self.heads.add(RetinaHead())
                 self.class_predictors.add(ConvPredictor(num_anchors * (len(self.classes) + 1)))
                 self.box_predictors.add(ConvPredictor(num_anchors * 4))
-                self.maskcoe.add(ConvPredictor(num_anchors*self.k, activation='tanh'))
+                self.maskcoe_predictors.add(ConvPredictor(num_anchors*self.k, activation='tanh'))
             self.protomask.add(Protonet([256, 256, 256, self.k]))
             self.bbox_decoder = NormalizedBoxCenterDecoder(stds)
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
@@ -214,7 +195,8 @@ class YOLACT(HybridBlock):
     def hybrid_forward(self, F, x):
         """Hybrid forward"""
         features = self.features(x)
-        mask = self.protomask(features[0])
+        mask = self.protomask(features[-1])
+        features = [hd(feat) for feat, hd in zip(features[::-1], self.heads)]
         cls_preds = [F.flatten(F.transpose(cp(feat), (0, 2, 3, 1)))
                      for feat, cp in zip(features, self.class_predictors)]
         box_preds = [F.flatten(F.transpose(bp(feat), (0, 2, 3, 1)))
@@ -222,7 +204,7 @@ class YOLACT(HybridBlock):
         anchors = [F.reshape(ag(feat), shape=(1, -1))
                    for feat, ag in zip(features, self.anchor_generators)]
         maskeoc_preds = [F.flatten(F.transpose(bp(feat), (0, 2, 3, 1)))
-                     for feat, bp in zip(features, self.maskcoe)]
+                     for feat, bp in zip(features, self.maskcoe_predictors)]
         cls_preds = F.concat(*cls_preds, dim=1).reshape((0, -1, self.num_classes + 1))
         box_preds = F.concat(*box_preds, dim=1).reshape((0, -1, 4))
         maskeoc_preds = F.concat(*maskeoc_preds, dim=1).reshape((0, -1, self.k))
@@ -346,9 +328,9 @@ class YOLACT(HybridBlock):
             self.class_predictors = class_predictors
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
 
-def get_yolact(name, base_size, features, filters, sizes, ratios, steps, classes,
+def get_yolact(name, base_size, features, sizes, ratios, steps, classes,
             dataset, pretrained=False, pretrained_base=True, ctx=mx.cpu(),
-            root=os.path.join('~', '.mxnet', 'models'), fpn=False, **kwargs):
+            root=os.path.join('~', '.mxnet', 'models'), **kwargs):
     """Get YOLACT models.
 
     Parameters
@@ -404,16 +386,10 @@ def get_yolact(name, base_size, features, filters, sizes, ratios, steps, classes
     HybridBlock
         A YOLACT detection network.
     """
-    if fpn:
-        pretrained_base = False if pretrained else pretrained_base
-        base_name = None if callable(features) else name
-        net = YOLACT(base_name, base_size, features, filters, sizes, ratios, steps,
-                     pretrained=pretrained_base, global_pool=True, classes=classes, ctx=ctx, fpn=fpn,**kwargs)
-    else:
-        pretrained_base = False if pretrained else pretrained_base
-        base_name = None if callable(features) else name
-        net = YOLACT(base_name, base_size, features, filters, sizes, ratios, steps,
-                  pretrained=pretrained_base, classes=classes, ctx=ctx, fpn=fpn, **kwargs)
+    pretrained_base = False if pretrained else pretrained_base
+    base_name = None if callable(features) else name
+    net = YOLACT(base_name, base_size, features, sizes, ratios, steps,
+                 pretrained=pretrained_base, global_pool=True, classes=classes,**kwargs)
     if pretrained:
         from ..model_store import get_model_file
         full_name = '_'.join(('yolact', str(base_size), name, dataset))
@@ -500,3 +476,17 @@ def yolact_512_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **
                    classes=classes, dataset='coco', pretrained=pretrained,
                    pretrained_base=pretrained_base,
                    fpn=True,**kwargs)
+
+def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwargs):
+    from ...data import COCODetection
+    classes = COCODetection.CLASSES
+    from ..resnetv1b import resnet50_v1b
+    base_network = resnet50_v1b(pretrained=pretrained_base,**kwargs)
+    return get_yolact(base_network, 550,
+                   features=['layers2_relu11_fwd', 'layers3_relu17_fwd', 'layers4_relu8_fwd'],  #'layers1_relu8_fwd',
+                   sizes=[24, 51.2, 102.4, 204.8, 384, 448.52],
+                   ratios=[[1, 2, 0.5]]*5,
+                   steps=[8, 16, 32, 64, 128],
+                   classes=classes, dataset='coco', pretrained=pretrained,
+                   pretrained_base=pretrained_base,
+                   **kwargs)

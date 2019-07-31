@@ -54,7 +54,8 @@ _models = {
     'yolact_512_resnet18_v1_coco': yolact_512_resnet18_v1_coco,
     'yolact_512_fpn_resnet18_v1_coco': yolact_512_fpn_resnet18_v1_coco,
     'yolact_512_fpn_resnet50_v1b_coco': yolact_512_fpn_resnet50_v1b_coco,
-    'fcos_resnet50_v1_coco': fcos_resnet50_v1_coco,
+    'yolact_550_fpn_resnet50_v1b_coco': yolact_550_fpn_resnet50_v1b_coco,
+    # 'fcos_resnet50_v1_coco': fcos_resnet50_v1_coco,
 
     'resnet18_v1': resnet18_v1,
     'resnet34_v1': resnet34_v1,
