@@ -23,7 +23,7 @@ from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train FCOS networks e2e.')
-    parser.add_argument('--network', type=str, default='resnet50_v1b',
+    parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--batch-size', type=int, default=1,
                         help='Training mini-batch size')
@@ -33,7 +33,7 @@ def parse_args():
                         default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='3',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -57,7 +57,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/fcos/',
+    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/fcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -117,8 +117,8 @@ def get_dataset(dataset, args):
         #     splits=[(2007, 'test')])
         # val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017', use_crowd=False)
-        val_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_train2017', use_crowd=False)
+        val_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
@@ -243,7 +243,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
 
     # losses and metrics
     fcos_cls_loss = gcv.loss.SigmoidFocalLoss(
-            from_logits=False, sparse_label=True, num_class=net.classes+1)
+            from_logits=False, sparse_label=True, num_class=len(net.classes)+1)
     fcos_ctr_loss = gcv.loss.CtrNessLoss()
     fcos_box_loss = gcv.loss.IOULoss(return_iou=False)
 

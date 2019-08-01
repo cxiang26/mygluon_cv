@@ -126,8 +126,9 @@ class ClsBiasInit(mx.init.Initializer):
             pass
 
 class FCOS(HybridBlock):
-    def __init__(self, network, features, num_filters, classes, steps=None,
-                 use_p6_p7=True, pretrained=False,   stds=(0.1, 0.1, 0.2, 0.2),
+    def __init__(self, network, features, classes, steps=None, short=600, max_size=1000,
+                 valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+                 use_p6_p7=True, pretrained_base=False,
                  nms_thresh=0.45, nms_topk=400, post_nms=100, share_params = False, **kwargs):
         super(FCOS, self).__init__(**kwargs)
         num_layers = len(features) + int(use_p6_p7)*2
@@ -138,12 +139,16 @@ class FCOS(HybridBlock):
         self.post_nms = post_nms
         self.share_params = share_params
         self._scale = steps[::-1]
+        self.short = short
+        self.max_size = max_size
+        self.base_stride = steps[-1]
+        self.valid_range = valid_range
 
         with self.name_scope():
-            bias_init = ClsBiasInit(self.classes)
+            bias_init = ClsBiasInit(len(self.classes))
             self.box_converter = FCOSBoxConverter()
             self.features = RetinaFeatureExpander(network=network,
-                                     pretrained=pretrained,
+                                     pretrained=pretrained_base,
                                      outputs=features)
             self.classes_head = nn.HybridSequential()
             self.box_head = nn.HybridSequential()
@@ -155,17 +160,17 @@ class FCOS(HybridBlock):
             share_box_pred_params = None, None, None
             for i in range(self._num_layers):
                 # classes
-                cls_head = RetinaHead(share_params=share_cls_params, prefix='cls')
+                cls_head = RetinaHead(share_params=share_cls_params, prefix='cls_{}'.format(i))
                 self.classes_head.add(cls_head)
                 share_cls_params = cls_head.get_params()
 
                 # bbox
-                box_head = RetinaHead(share_params=share_box_params, prefix='box')
+                box_head = RetinaHead(share_params=share_box_params, prefix='box_{}'.format(i))
                 self.box_head.add(box_head)
                 share_box_params = box_head.get_params()
 
                 # classes preds
-                cls_pred = ConvPredictor(num_channels=self.classes,
+                cls_pred = ConvPredictor(num_channels=len(self.classes),
                                          share_params=share_cls_pred_params, bias_init=bias_init)
                 self.class_predictors.add(cls_pred)
                 share_cls_pred_params = cls_pred.get_params()
@@ -203,17 +208,19 @@ class FCOS(HybridBlock):
     def hybrid_forward(self, F, x):
         """Hybrid forward"""
         features = self.features(x)
-        cls_preds = [F.flatten(F.transpose(cp(feat), (0, 2, 3, 1)))
-                     for feat, cp in zip(features, self.class_predictors)]
-        center_preds = [F.flatten(F.transpose(bp(feat), (0, 2, 3, 1)))
-                     for feat, bp in zip(features, self.center_predictors)]
+        cls_head_feat = [cp(feat) for feat, cp in zip(features, self.classes_head)]
+        box_head_feat = [cp(feat) for feat, cp in zip(features, self.box_head)]
+        cls_preds = [F.transpose(F.reshape(cp(feat), (0, 0, -1)), (0, 2, 1))
+                     for feat, cp in zip(cls_head_feat, self.class_predictors)]
+        center_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
+                     for feat, bp in zip(cls_head_feat, self.center_predictors)]
 
-        box_preds = [F.flatten(F.exp(F.transpose(bp(feat), (0, 2, 3, 1)))) * sc
-                     for feat, bp, sc in zip(features, self.box_predictors, self._scale)]
+        box_preds = [F.transpose(F.exp(F.reshape(bp(feat), (0, 0, -1))), (0, 2, 1)) * sc
+                     for feat, bp, sc in zip(box_head_feat, self.box_predictors, self._scale)]
 
-        cls_preds = F.concat(*cls_preds, dim=1).reshape((0, -1, self.num_classes + 1))
-        center_preds = F.concat(*center_preds, dim=1).reshape((0, -1, 1))
-        box_preds = F.concat(*box_preds, dim=1).reshape((0, -1, 4))
+        cls_preds = F.concat(*cls_preds, dim=1)
+        center_preds = F.concat(*center_preds, dim=1)
+        box_preds = F.concat(*box_preds, dim=1)
 
         if autograd.is_training():
             return [cls_preds, center_preds, box_preds]
@@ -225,7 +232,8 @@ class FCOS(HybridBlock):
 def get_fcos(name, dataset, pretrained=False, ctx=mx.cpu(),
              root=os.path.join('~', '.mxnet', 'models'), **kwargs):
     "return FCOS network"
-    net = FCOS(**kwargs)
+    base_name = name
+    net = FCOS(base_name, **kwargs)
     if pretrained:
         from ..model_store import get_model_file
         full_name = '_'.join(('fcos', name, dataset))
@@ -233,32 +241,29 @@ def get_fcos(name, dataset, pretrained=False, ctx=mx.cpu(),
     return net
 
 
-def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
-    from ..resnet import resnet50_v1
-    from ...data import COCODetection
-    classes = COCODetection.CLASSES
-    pretrained_base = False if pretrained else pretrained_base
-    base_network = resnet50_v1(pretrained=pretrained_base, **kwargs)
-    features = RetinaFeatureExpander(network=base_network,
-                                     pretrained=pretrained_base,
-                                     outputs=['stage2_activation3',
-                                              'stage3_activation5',
-                                              'stage4_activation2'])
-    return get_fcos(name="resnet50_v1", dataset="coco", pretrained=pretrained,
-                    features=features, classes=classes, base_stride=128, short=800,
-                    max_size=1333, norm_layer=None, norm_kwargs=None,
-                    valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
-                    nms_thresh=0.6, nms_topk=1000, save_topk=100)
+# def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
+#     from ..resnet import resnet50_v1
+#     from ...data import COCODetection
+#     classes = COCODetection.CLASSES
+#     pretrained_base = False if pretrained else pretrained_base
+#     base_network = resnet50_v1(pretrained=pretrained_base, **kwargs)
+#     features = RetinaFeatureExpander(network=base_network,
+#                                      pretrained=pretrained_base,
+#                                      outputs=['stage2_activation3',
+#                                               'stage3_activation5',
+#                                               'stage4_activation2'])
+#     return get_fcos(name="resnet50_v1", dataset="coco", pretrained=pretrained,
+#                     features=features, classes=classes, base_stride=128, short=800,
+#                     max_size=1333, norm_layer=None, norm_kwargs=None,
+#                     valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+#                     nms_thresh=0.6, nms_topk=1000, save_topk=100)
 
 def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
     from ...data import COCODetection
     classes = COCODetection.CLASSES
-    return get_fcos('resnet18_v1',
-                   features=['layers2_relu11_fwd', 'layers3_relu68_fwd', 'layers4_relu8_fwd'],
-                   filters=[512, 512, 256, 256],
-                   sizes=[51.2, 102.4, 189.4, 276.4, 363.52, 450.6, 492],
-                   ratios=[[1, 2, 0.5]] + [[1, 2, 0.5, 3, 1.0 / 3]] * 3 + [[1, 2, 0.5]] * 2,
+    return get_fcos('resnet50_v1',
+                   features=['stage2_activation3', 'stage3_activation5', 'stage4_activation2'],
+                   classes=classes,
                    steps=[8, 16, 32, 64, 128],
-                   classes=classes, dataset='coco', pretrained=pretrained,
-                   pretrained_base=pretrained_base,
-                   fpn=False, **kwargs)
+                   dataset='coco', pretrained=pretrained,
+                   pretrained_base=pretrained_base, share_params = True, **kwargs)
