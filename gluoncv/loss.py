@@ -10,7 +10,7 @@ from .nn.coder import NormalizedBoxCenterDecoder
 
 __all__ = ['FocalLoss', 'SSDMultiBoxLoss', 'YOLOV3Loss', 'YOLACTMultiBoxLoss',
            'MixSoftmaxCrossEntropyLoss', 'MixSoftmaxCrossEntropyOHEMLoss',
-           'DistillationSoftmaxCrossEntropyLoss']
+           'DistillationSoftmaxCrossEntropyLoss', 'MaskLoss']
 
 class FocalLoss(Loss):
     """Focal Loss for inbalanced classification.
@@ -525,15 +525,17 @@ class YOLACTMultiBoxLoss(gluon.Block):
         for i in range(mask_pred.shape[0]):
             idx = rank[i, :pos_num[i]]
             pos_bboxe = nd.take(bt_target[i], idx)
+            area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
+            area = area / area.min()
             mask_gt = mask_target[i, matches[i, idx], :, :]
             mask_preds = nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i])
             _, h, w = mask_preds.shape
             mask_preds = self.global_aware(mask_preds)
             mask_preds = nd.sigmoid(mask_preds)
             mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
-            loss = self.SBCELoss(mask_preds, mask_gt)
+            loss = self.SBCELoss(mask_preds, mask_gt) * (1. / area)
             # loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
-            losses.append(nd.sum(loss)/len(loss))
+            losses.append(nd.mean(loss))
         return nd.concat(*losses, dim=0)
 
     def forward(self, cls_pred, box_pred, mask_pred, mask_eoc, cls_target, box_target, mask_target, matches, bts):
@@ -664,3 +666,57 @@ class SigmoidFocalLoss(Loss):
         # loss = _apply_weighting(F, loss, self._weight, sample_weight)
         pos_mask = (label > 0)
         return F.sum(loss) / F.maximum(F.sum(pos_mask), 1)
+
+class MaskLoss(gluon.Block):
+    def __init__(self, **kwargs):
+        super(MaskLoss, self).__init__(**kwargs)
+        self.SBCELoss = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
+
+    def crop(self, bboxes, h, w, masks):
+        scale = 4
+        b = bboxes.shape[0]
+        ctx = bboxes.context
+        with autograd.pause():
+            _h = nd.arange(h, ctx = ctx)
+            _w = nd.arange(w, ctx = ctx)
+            _h = nd.tile(_h, reps=(b, 1))
+            _w = nd.tile(_w, reps=(b, 1))
+            x1, y1 = nd.round(bboxes[:, 0]/scale), nd.round(bboxes[:, 1]/scale)
+            x2, y2 = nd.round((bboxes[:, 2])/scale), nd.round((bboxes[:, 3])/scale)
+            _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
+            _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+            _mask = nd.batch_dot(_h.expand_dims(axis=-1),  _w.expand_dims(axis=-1), transpose_b=True)
+        masks = _mask * masks
+        return masks
+
+    def global_aware(self, masks):
+        _, h, w = masks.shape
+        masks = masks.reshape((0, -1))
+        masks = masks - nd.mean(masks, axis=-1, keepdims=True)
+        std = nd.sqrt(nd.mean(nd.square(masks), axis=-1, keepdims=True))
+        masks = (masks / (std + 1e-6)).reshape((0, h, w))
+        return masks
+
+    def mask_loss(self, mask_pred, mask_eoc, mask_target, matches, bt_target):
+        samples = (matches >= 0)
+        pos_num = samples.sum(axis=-1).asnumpy().astype('int')
+        rank = (-matches).argsort(axis=-1)
+        losses = []
+        for i in range(mask_pred.shape[0]):
+            idx = rank[i, :pos_num[i]]
+            pos_bboxe = nd.take(bt_target[i], idx)
+            area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
+            area = area / area.min()
+            mask_gt = mask_target[i, matches[i, idx], :, :]
+            mask_preds = nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i])
+            _, h, w = mask_preds.shape
+            # mask_preds = self.global_aware(mask_preds)
+            mask_preds = nd.sigmoid(mask_preds)
+            mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
+            loss = self.SBCELoss(mask_preds, mask_gt) * (1. / area)
+            losses.append(nd.mean(loss))
+        return nd.concat(*losses, dim=0)
+
+    def forward(self, box_target, gt_masks, matches, masks, maskeoc_pred):
+        mask_loss = self.mask_loss(masks, maskeoc_pred, gt_masks, matches, box_target)
+        return nd.mean(mask_loss)

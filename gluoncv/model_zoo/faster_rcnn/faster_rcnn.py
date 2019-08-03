@@ -1335,9 +1335,9 @@ def faster_rcnn_caps_resnet50_v1b_coco(pretrained=False, pretrained_base=True, *
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=0,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
-        subspace_dim=8, caps_dim=256,
+        subspace_dim=8, caps_dim=2048,
         **kwargs)
 
 def faster_rcnn_fpn_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):

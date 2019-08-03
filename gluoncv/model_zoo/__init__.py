@@ -16,6 +16,8 @@ from .resnetv1b import *
 from .se_resnet import *
 from .nasnet import *
 from .yolact import *
+from .fcos import *
+from .mask_fcos import *
 
 from .simple_pose.simple_pose_resnet import *
 
