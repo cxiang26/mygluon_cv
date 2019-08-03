@@ -517,13 +517,15 @@ class YOLACTMultiBoxLoss(gluon.Block):
         for i in range(mask_pred.shape[0]):
             idx = rank[i, :pos_num[i]]
             pos_bboxe = nd.take(bt_target[i], idx)
+            area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
+            area = area / area.min()
             mask_gt = mask_target[i, matches[i, idx], :, :]
             mask_preds = nd.sigmoid(nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i]))
             _, h, w = mask_preds.shape
             mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
-            loss = self.SBCELoss(mask_preds, mask_gt)
+            loss = self.SBCELoss(mask_preds, mask_gt) * (1. / area)
             # loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
-            losses.append(nd.sum(loss)/len(loss))
+            losses.append(nd.mean(loss))
         return nd.concat(*losses, dim=0)
 
     def forward(self, cls_pred, box_pred, mask_pred, mask_eoc, cls_target, box_target, mask_target, matches, bts):
