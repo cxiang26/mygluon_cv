@@ -479,13 +479,16 @@ class YOLACTMultiBoxLoss(gluon.Block):
         Minimum number of negatives samples.
 
     """
-    def __init__(self, negative_mining_ratio=3, rho=1.0, lambd=1.0, mlambd=1.0,
+    def __init__(self, negative_mining_ratio=3, rho=1.0, box_lambd=1.5, conf_lambd=1.0, mask_lambd=1.25,
                  min_hard_negatives=0, **kwargs):
         super(YOLACTMultiBoxLoss, self).__init__(**kwargs)
         self._negative_mining_ratio = max(0, negative_mining_ratio)
         self._rho = rho
-        self._lambd = lambd
-        self._mlambd = mlambd
+        self.box_lambd = box_lambd
+        self.conf_lambd = conf_lambd
+        self.mask_lambd = mask_lambd
+        self.gt_weidth = 550
+        self.gt_height = 550
         self._min_hard_negatives = max(0, min_hard_negatives)
         self.SBCELoss = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
 
@@ -515,15 +518,18 @@ class YOLACTMultiBoxLoss(gluon.Block):
         # mask_preds = []
         losses = []
         for i in range(mask_pred.shape[0]):
+            if pos_num[i] == 0:
+                losses.append(nd.zeros(shape=(1,), ctx=mask_pred.context))
+                continue
             idx = rank[i, :pos_num[i]]
             pos_bboxe = nd.take(bt_target[i], idx)
             area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
-            area = area / area.min()
+            weight = self.gt_weidth * self.gt_height / area
             mask_gt = mask_target[i, matches[i, idx], :, :]
             mask_preds = nd.sigmoid(nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i]))
             _, h, w = mask_preds.shape
             mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
-            loss = self.SBCELoss(mask_preds, mask_gt) * (1. / area)
+            loss = self.SBCELoss(mask_preds, mask_gt) * weight
             # loss = 0.5 * nd.square(mask_gt - mask_preds) / (mask_gt.shape[0]*mask_gt.shape[1]*mask_gt.shape[2])
             losses.append(nd.mean(loss))
         return nd.concat(*losses, dim=0)
@@ -555,7 +561,7 @@ class YOLACTMultiBoxLoss(gluon.Block):
         mask_losses = []
         for cp, bp, ct, bt, mp, me, mt, ma, btt in zip(*[cls_pred, box_pred, cls_target, box_target, mask_pred, mask_eoc, mask_target, matches, bts]):
             # mask loss
-            mask_losses.append(self.mask_loss(mp, me, mt, ma, btt))
+            mask_losses.append(self.mask_lambd * self.mask_loss(mp, me, mt, ma, btt))
 
             pred = nd.log_softmax(cp, axis=-1)
             pos = ct > 0
@@ -565,7 +571,7 @@ class YOLACTMultiBoxLoss(gluon.Block):
                                               * self._negative_mining_ratio).expand_dims(-1)
             # mask out if not positive or negative
             cls_loss = nd.where((pos + hard_negative) > 0, cls_loss, nd.zeros_like(cls_loss))
-            cls_losses.append(nd.sum(cls_loss, axis=0, exclude=True) / max(1., num_pos_all))
+            cls_losses.append(self.conf_lambd * nd.sum(cls_loss, axis=0, exclude=True) / max(1., num_pos_all))
 
             bp = _reshape_like(nd, bp, bt)
             box_loss = nd.abs(bp - bt)
@@ -573,8 +579,8 @@ class YOLACTMultiBoxLoss(gluon.Block):
                                 (0.5 / self._rho) * nd.square(box_loss))
             # box loss only apply to positive samples
             box_loss = box_loss * pos.expand_dims(axis=-1)
-            box_losses.append(nd.sum(box_loss, axis=0, exclude=True) / max(1., num_pos_all))
-            sum_losses.append(cls_losses[-1] + self._lambd * box_losses[-1] + self._mlambd * mask_losses[-1])
+            box_losses.append(self.box_lambd * nd.sum(box_loss, axis=0, exclude=True) / max(1., num_pos_all))
+            sum_losses.append(cls_losses[-1] + box_losses[-1] + mask_losses[-1])
 
         return sum_losses, cls_losses, box_losses, mask_losses
 
