@@ -703,6 +703,9 @@ class MaskLoss(gluon.Block):
         rank = (-matches).argsort(axis=-1)
         losses = []
         for i in range(mask_pred.shape[0]):
+            if pos_num[i] == 0:
+                losses.append(nd.zeros(shape=(1,), ctx=mask_pred.context))
+                continue
             idx = rank[i, :pos_num[i]]
             pos_bboxe = nd.take(bt_target[i], idx)
             area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
