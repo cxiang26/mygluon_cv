@@ -4,7 +4,7 @@ from __future__ import absolute_import, division
 import numpy as np
 import mxnet as mx
 
-from ...data.transforms.mask import fill
+from ...data.transforms.mask import fill, proto_fill
 
 def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
     """Expand instance segmentation mask to full image size.
@@ -53,7 +53,7 @@ def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
             continue
         mask = masks[i]
         bbox = bboxes[i]
-        full_masks.append(fill(mask, bbox, im_shape))
+        full_masks.append(proto_fill(mask, bbox, im_shape))
     full_masks = np.array(full_masks)
     return full_masks
 
@@ -86,3 +86,30 @@ def plot_mask(img, masks, alpha=0.5):
         mask = np.repeat((mask > 0)[:, :, np.newaxis], repeats=3, axis=2)
         img = np.where(mask, img * (1 - alpha) + color * alpha, img)
     return img.astype('uint8')
+
+def expand_yolactmask(masks, bboxes, im_shape, scores=None, thresh=0.5):
+    if len(masks) != len(bboxes):
+        raise ValueError('The length of bboxes and masks mismatch, {} vs {}'
+                         .format(len(bboxes), len(masks)))
+    if scores is not None and len(masks) != len(scores):
+        raise ValueError('The length of scores and masks mismatch, {} vs {}'
+                         .format(len(scores), len(masks)))
+
+    if isinstance(masks, mx.nd.NDArray):
+        masks = masks.asnumpy()
+    if isinstance(bboxes, mx.nd.NDArray):
+        bboxes = bboxes.asnumpy()
+    if isinstance(scores, mx.nd.NDArray):
+        scores = scores.asnumpy()
+
+    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+    sorted_inds = np.argsort(-areas)
+
+    full_masks = []
+    for i in sorted_inds:
+        if scores is not None and scores[i] < thresh:
+            continue
+        mask = masks[i]
+        full_masks.append(proto_fill(mask, im_shape))
+    full_masks = np.array(full_masks)
+    return full_masks
