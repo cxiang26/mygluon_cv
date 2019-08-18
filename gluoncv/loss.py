@@ -457,28 +457,6 @@ class DistillationSoftmaxCrossEntropyLoss(gluon.HybridBlock):
 
 
 class YOLACTMultiBoxLoss(gluon.Block):
-    r"""Single-Shot Multibox Object Detection Loss.
-
-    .. note::
-
-        Since cross device synchronization is required to compute batch-wise statistics,
-        it is slightly sub-optimal compared with non-sync version. However, we find this
-        is better for converged model performance.
-
-    Parameters
-    ----------
-    negative_mining_ratio : float, default is 3
-        Ratio of negative vs. positive samples.
-    rho : float, default is 1.0
-        Threshold for trimmed mean estimator. This is the smooth parameter for the
-        L1-L2 transition.
-    lambd : float, default is 1.0
-        Relative weight between classification and box regression loss.
-        The overall loss is computed as :math:`L = loss_{class} + \lambda \times loss_{loc}`.
-    min_hard_negatives : int, default is 0
-        Minimum number of negatives samples.
-
-    """
     def __init__(self, negative_mining_ratio=3, rho=1.0, box_lambd=1.5, conf_lambd=1.0, mask_lambd=1.25,
                  min_hard_negatives=0, **kwargs):
         super(YOLACTMultiBoxLoss, self).__init__(**kwargs)
@@ -507,6 +485,14 @@ class YOLACTMultiBoxLoss(gluon.Block):
             _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
             _mask = nd.batch_dot(_h.expand_dims(axis=-1),  _w.expand_dims(axis=-1), transpose_b=True)
         masks = _mask * masks
+        return masks
+
+    def global_aware(self, masks):
+        _, h, w = masks.shape
+        masks = masks.reshape((0, -1))
+        masks = masks - nd.mean(masks, axis=-1, keepdims=True)
+        std = nd.sqrt(nd.mean(nd.square(masks), axis=-1, keepdims=True))
+        masks = (masks / (std + 1e-6)).reshape((0, h, w))
         return masks
 
     def mask_loss(self, mask_pred, mask_eoc, mask_target, matches, bt_target):

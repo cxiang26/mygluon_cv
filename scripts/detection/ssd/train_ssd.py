@@ -26,14 +26,14 @@ def parse_args():
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=64,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
@@ -55,11 +55,11 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/relu_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
-    parser.add_argument('--val-interval', type=int, default=10,
+    parser.add_argument('--val-interval', type=int, default=1,
                         help='Epoch interval for validation, increase the number will reduce the '
                              'training time if validation is slow.')
     parser.add_argument('--seed', type=int, default=233,
@@ -67,21 +67,21 @@ def parse_args():
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
     # FPN options
-    parser.add_argument('--use-fpn', action='store_true', default=True,
+    parser.add_argument('--use-fpn', action='store_true', default=False,
                         help='Whether to use feature pyramid network.')
     args = parser.parse_args()
     return args
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
-        train_dataset = gdata.VOCDetection( root='/mnt/mdisk/xcq/VOCdevkit/',
+        train_dataset = gdata.VOCDetection( root='/home/xcq/PycharmProjects/datasets/VOCdevkit/',
             splits=[(2007, 'trainval'), (2012, 'trainval')])
-        val_dataset = gdata.VOCDetection( root='/mnt/mdisk/xcq/VOCdevkit/',
+        val_dataset = gdata.VOCDetection( root= '/home/xcq/PycharmProjects/datasets/VOCdevkit/',
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_train2017')
-        val_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017')
+        val_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(
             val_dataset, args.save_prefix + '_eval', cleanup=True,
             data_shape=(args.data_shape, args.data_shape))
@@ -115,7 +115,8 @@ def save_params(net, best_map, current_map, epoch, save_interval, prefix):
         net.save_parameters('{:s}_best.params'.format(prefix, epoch, current_map))
         with open(prefix+'_best_map.log', 'a') as f:
             f.write('{:04d}:\t{:.4f}\n'.format(epoch, current_map))
-    if save_interval and epoch % save_interval == 0:
+    # if save_interval and epoch % save_interval == 0:
+    if save_interval and epoch >= 200:
         net.save_parameters('{:s}_{:04d}_{:.4f}.params'.format(prefix, epoch, current_map))
 
 def validate(net, val_data, ctx, eval_metric):
@@ -214,12 +215,13 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}={:.3f}, {}={:.3f}'.format(
                     epoch, i, batch_size/(time.time()-btic), name1, loss1, name2, loss2))
             btic = time.time()
+            break
 
         name1, loss1 = ce_metric.get()
         name2, loss2 = smoothl1_metric.get()
         logger.info('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}'.format(
             epoch, (time.time()-tic), name1, loss1, name2, loss2))
-        if (epoch % args.val_interval == 0) or (args.save_interval and epoch % args.save_interval == 0):
+        if epoch>=0:
             # consider reduce the frequency of validation to save time
             map_name, mean_ap = validate(net, val_data, ctx, eval_metric)
             val_msg = '\n'.join(['{}={}'.format(k, v) for k, v in zip(map_name, mean_ap)])

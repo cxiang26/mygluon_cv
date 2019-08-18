@@ -5,3 +5,4 @@ from . import yolo
 from . import imagenet
 from . import simple_pose
 from . import fcos
+from . import yolact
