@@ -108,7 +108,7 @@ def main():
     num_batches = num_training_samples // batch_size
 
     lr_scheduler = LRSequential([
-        LRScheduler('linear', base_lr=0, target_lr=opt.lr,,
+        LRScheduler('linear', base_lr=0, target_lr=opt.lr,
                     nepochs=opt.warmup_epochs, iters_per_epoch=num_batches),
         LRScheduler(opt.lr_mode, base_lr=opt.lr, target_lr=0,
                     nepochs=opt.num_epochs - opt.warmup_epochs,
@@ -316,7 +316,6 @@ def main():
                     loss = [L(yhat[0], yhat[1], y) for yhat, y in zip(outputs, label_smooth)]
                 for l in loss:
                     l.backward()
-                lr_scheduler.update(i, epoch)
                 trainer.step(batch_size)
 
                 acc_top1.update(label, [o[0] for o in outputs])

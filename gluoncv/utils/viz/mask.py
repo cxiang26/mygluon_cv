@@ -6,7 +6,7 @@ import mxnet as mx
 
 from ...data.transforms.mask import fill, proto_fill
 
-def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
+def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5, scale=1.0, sortby=None):
     """Expand instance segmentation mask to full image size.
 
     Parameters
@@ -23,12 +23,18 @@ def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
         Display threshold if `scores` is provided. Scores with less than `thresh`
         will be ignored in display, this is visually more elegant if you have
         a large number of bounding boxes with very small scores.
+    sortby : str, optional, default None
+        If not None, sort the color palette for masks by the given attributes of each bounding box.
+        Valid inputs are 'area', 'xmin', 'ymin', 'xmax', 'ymax'.
+    scale : float
+        The scale of output image, which may affect the positions of boxes
 
     Returns
     -------
     numpy.ndarray
         Binary images with shape `N, height, width`
-
+    numpy.ndarray
+        Index array of sorted masks
     """
     if len(masks) != len(bboxes):
         raise ValueError('The length of bboxes and masks mismatch, {} vs {}'
@@ -44,10 +50,26 @@ def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
     if isinstance(scores, mx.nd.NDArray):
         scores = scores.asnumpy()
 
-    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
-    sorted_inds = np.argsort(-areas)
+    if sortby is not None:
+        if sortby == 'area':
+            areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+            sorted_inds = np.argsort(-areas)
+        elif sortby == 'xmin':
+            sorted_inds = np.argsort(-bboxes[:, 0])
+        elif sortby == 'ymin':
+            sorted_inds = np.argsort(-bboxes[:, 1])
+        elif sortby == 'xmax':
+            sorted_inds = np.argsort(-bboxes[:, 2])
+        elif sortby == 'ymax':
+            sorted_inds = np.argsort(-bboxes[:, 3])
+        else:
+            raise ValueError('argument sortby cannot take value {}'
+                             .format(sortby))
+    else:
+        sorted_inds = np.argsort(range(len(masks)))
 
     full_masks = []
+    bboxes *= scale
     for i in sorted_inds:
         if scores is not None and scores[i] < thresh:
             continue
@@ -55,7 +77,7 @@ def expand_mask(masks, bboxes, im_shape, scores=None, thresh=0.5):
         bbox = bboxes[i]
         full_masks.append(proto_fill(mask, bbox, im_shape))
     full_masks = np.array(full_masks)
-    return full_masks
+    return full_masks, sorted_inds
 
 
 def plot_mask(img, masks, alpha=0.5):
@@ -87,6 +109,7 @@ def plot_mask(img, masks, alpha=0.5):
         img = np.where(mask, img * (1 - alpha) + color * alpha, img)
     return img.astype('uint8')
 
+<<<<<<< HEAD
 def expand_yolactmask(masks, bboxes, im_shape, scores=None, thresh=0.5):
     if len(masks) != len(bboxes):
         raise ValueError('The length of bboxes and masks mismatch, {} vs {}'
@@ -113,3 +136,36 @@ def expand_yolactmask(masks, bboxes, im_shape, scores=None, thresh=0.5):
         full_masks.append(proto_fill(mask, im_shape))
     full_masks = np.array(full_masks)
     return full_masks
+=======
+def cv_merge_two_images(img1, img2, alpha=0.5, size=None):
+    """Merge two images with OpoenCV.
+
+    Parameters
+    ----------
+    img1 : numpy.ndarray or mxnet.nd.NDArray
+        Image with shape `H, W, 3`.
+    img2 : numpy.ndarray or mxnet.nd.NDArray
+        Image with shape `H, W, 3`.
+    alpha : float, optional, default 0.5
+        Transparency of `img2`
+    size : list, optional, default None
+        The output size of the merged image
+
+    Returns
+    -------
+    numpy.ndarray
+        The merged image
+
+    """
+    from ..filesystem import try_import_cv2
+    cv2 = try_import_cv2()
+
+    if isinstance(img1, mx.nd.NDArray):
+        img1 = img1.asnumpy()
+    if isinstance(img2, mx.nd.NDArray):
+        img2 = img2.asnumpy()
+    img = cv2.addWeighted(img1, 1-alpha, img2, alpha, 0)
+    if size is not None:
+        img = cv2.resize(img, (int(size[1]), int(size[0])))
+    return img
+>>>>>>> origin
