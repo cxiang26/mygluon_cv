@@ -32,6 +32,8 @@ class capsDense(nn.HybridBlock):
         output = F.mean(F.sum(inputs_r * inputs_1, axis=-1), axis=-1)
         output = F.sqrt(F.relu(output)).squeeze()
         output = output - output.mean(axis=1, keepdims=True)
+        #L2Norm
+        #output = output/output.sum(axis=-1, keepdims=True)
         return output
 
     # def hybrid_forward(self, F, x, w):
