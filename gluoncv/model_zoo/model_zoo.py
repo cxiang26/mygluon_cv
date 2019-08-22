@@ -27,7 +27,7 @@ from .simple_pose.simple_pose_resnet import *
 from .squeezenet import *
 from .ssd import *
 from .vgg import *
-<<<<<<< HEAD
+
 from .yolact import *
 from .fcos import *
 from .mask_fcos import *
@@ -35,9 +35,7 @@ from .mask_fcos import *
 from .pointnet import *
 from .peleenet import *
 
-=======
 from .xception import *
->>>>>>> origin
 from .yolo import *
 from .alpha_pose import *
 from .action_recognition import *

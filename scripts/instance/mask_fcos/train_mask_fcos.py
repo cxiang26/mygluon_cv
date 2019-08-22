@@ -25,7 +25,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=4,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
@@ -33,7 +33,7 @@ def parse_args():
                         default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2, 3',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
@@ -189,12 +189,7 @@ def validate(net, val_data, ctx, eval_metric):
     clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
     net.hybridize(static_alloc=True)
-    k = 0
-    tic = time.time()
     for batch in val_data:
-        print(k, time.time() - tic)
-        tic = time.time()
-        k = k + 1
         data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
         det_info = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
         for x, det_inf in zip(data, det_info):
@@ -337,6 +332,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
+                break
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
         if not (epoch + 1) % args.val_interval:

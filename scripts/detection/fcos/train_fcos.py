@@ -178,10 +178,10 @@ def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
     clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
-    net.hybridize(static_alloc=True)
+    # net.hybridize(static_alloc=True)
     nms_thresh = net.nms_thresh
     nms_topk = net.nms_topk
-    save_topk = net.save_topk
+    save_topk = net.post_nms
     for batch in val_data:
         batch = split_and_load(batch, ctx_list=ctx)
         det_bboxes = []
@@ -278,8 +278,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             logger.info("[Epoch {}] Set learning rate to {}".format(epoch, new_lr))
         tic = time.time()
         btic = time.time()
-        if not args.disable_hybridization:
-            net.hybridize(static_alloc=args.static_alloc)
+        # if not args.disable_hybridization:
+        #     net.hybridize(static_alloc=args.static_alloc)
         base_lr = trainer.learning_rate
         for i, batch in enumerate(train_data):
             if epoch == 0 and i <= lr_warmup:
@@ -328,6 +328,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
+            break
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
         if not (epoch + 1) % args.val_interval:

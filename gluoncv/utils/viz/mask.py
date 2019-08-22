@@ -109,34 +109,6 @@ def plot_mask(img, masks, alpha=0.5):
         img = np.where(mask, img * (1 - alpha) + color * alpha, img)
     return img.astype('uint8')
 
-<<<<<<< HEAD
-def expand_yolactmask(masks, bboxes, im_shape, scores=None, thresh=0.5):
-    if len(masks) != len(bboxes):
-        raise ValueError('The length of bboxes and masks mismatch, {} vs {}'
-                         .format(len(bboxes), len(masks)))
-    if scores is not None and len(masks) != len(scores):
-        raise ValueError('The length of scores and masks mismatch, {} vs {}'
-                         .format(len(scores), len(masks)))
-
-    if isinstance(masks, mx.nd.NDArray):
-        masks = masks.asnumpy()
-    if isinstance(bboxes, mx.nd.NDArray):
-        bboxes = bboxes.asnumpy()
-    if isinstance(scores, mx.nd.NDArray):
-        scores = scores.asnumpy()
-
-    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
-    sorted_inds = np.argsort(-areas)
-
-    full_masks = []
-    for i in sorted_inds:
-        if scores is not None and scores[i] < thresh:
-            continue
-        mask = masks[i]
-        full_masks.append(proto_fill(mask, im_shape))
-    full_masks = np.array(full_masks)
-    return full_masks
-=======
 def cv_merge_two_images(img1, img2, alpha=0.5, size=None):
     """Merge two images with OpoenCV.
 
@@ -168,4 +140,31 @@ def cv_merge_two_images(img1, img2, alpha=0.5, size=None):
     if size is not None:
         img = cv2.resize(img, (int(size[1]), int(size[0])))
     return img
->>>>>>> origin
+
+def expand_yolactmask(masks, bboxes, im_shape, scores=None, thresh=0.5):
+    if len(masks) != len(bboxes):
+        raise ValueError('The length of bboxes and masks mismatch, {} vs {}'
+                         .format(len(bboxes), len(masks)))
+    if scores is not None and len(masks) != len(scores):
+        raise ValueError('The length of scores and masks mismatch, {} vs {}'
+                         .format(len(scores), len(masks)))
+
+    if isinstance(masks, mx.nd.NDArray):
+        masks = masks.asnumpy()
+    if isinstance(bboxes, mx.nd.NDArray):
+        bboxes = bboxes.asnumpy()
+    if isinstance(scores, mx.nd.NDArray):
+        scores = scores.asnumpy()
+
+    areas = (bboxes[:, 2] - bboxes[:, 0]) * (bboxes[:, 3] - bboxes[:, 1])
+    sorted_inds = np.argsort(-areas)
+
+    full_masks = []
+    for i in sorted_inds:
+        if scores is not None and scores[i] < thresh:
+            continue
+        mask = masks[i]
+        full_masks.append(proto_fill(mask, im_shape))
+    full_masks = np.array(full_masks)
+    return full_masks
+

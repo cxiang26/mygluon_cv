@@ -127,6 +127,30 @@ class ClsBiasInit(mx.init.Initializer):
         elif self._cls_method == "softmax":
             pass
 
+def cor_target(short, scale):
+    h, w, = short, short
+    fh = int(np.ceil(np.ceil(np.ceil(h / 2) / 2) / 2))
+    fw = int(np.ceil(np.ceil(np.ceil(w / 2) / 2) / 2))
+    #
+    fm_list = []
+    for _ in range(len(scale)):
+        fm_list.append((fh, fw))
+        fh = int(np.ceil(fh / 2))
+        fw = int(np.ceil(fw / 2))
+    fm_list = fm_list[::-1]
+    #
+    cor_targets = []
+    for i, stride in enumerate(scale):
+        fh, fw = fm_list[i]
+        cx = mx.nd.arange(0, fw).reshape((1, -1))
+        cy = mx.nd.arange(0, fh).reshape((-1, 1))
+        sx = mx.nd.tile(cx, reps=(fh, 1))
+        sy = mx.nd.tile(cy, reps=(1, fw))
+        syx = mx.nd.stack(sy.reshape(-1), sx.reshape(-1)).transpose()
+        cor_targets.append(mx.nd.flip(syx, axis=1) * stride)
+    cor_targets = mx.nd.concat(*cor_targets, dim=0)
+    return cor_targets
+
 class MaskFCOS(HybridBlock):
     def __init__(self, network, features, classes, steps=None, short=600,
                  valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
@@ -147,14 +171,15 @@ class MaskFCOS(HybridBlock):
         self.valid_range = valid_range
         self.k = num_prototypes
 
+        # input size are solid
+        self.cor_targets = self.params.get_constant(name='cor_', value=cor_target(self.short, self._scale))
+
         with self.name_scope():
             bias_init = ClsBiasInit(len(self.classes))
             self.box_converter = FCOSBoxConverter()
             self.cliper = BBoxClipToImage()
-            self.features = RetinaFeatureExpander(network=network,
-                                     pretrained=pretrained_base,
-                                     outputs=features)
-            self.protonet = Protonet([256, 256, 256, self.k])
+            self.features = RetinaFeatureExpander(network=network, pretrained=pretrained_base, outputs=features)
+            self.protonet = Protonet([256, 256, 256, 256, self.k])
             self.classes_head = nn.HybridSequential()
             self.box_head = nn.HybridSequential()
             self.class_predictors = nn.HybridSequential()
@@ -228,7 +253,7 @@ class MaskFCOS(HybridBlock):
         return len(self.classes)
 
     # pylint: disable=arguments-differ
-    def hybrid_forward(self, F, x, s1, s2, s3, s4, s5):
+    def hybrid_forward(self, F, x, s1, s2, s3, s4, s5, cor_targets):
         """Hybrid forward"""
         scale_params = [s1, s2, s3, s4, s5]
         features = self.features(x)
@@ -244,7 +269,7 @@ class MaskFCOS(HybridBlock):
         box_preds = [F.transpose(F.exp(F.broadcast_mul(s, F.reshape(bp(feat), (0, 0, -1)))), (0, 2, 1)) * sc
                      for s, feat, bp, sc in zip(scale_params, box_head_feat, self.box_predictors, self._scale)]
 
-        maskeoc_preds = [F.transpose(F.exp(F.reshape(bp(feat), (0, 0, -1))), (0, 2, 1))
+        maskeoc_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
                          for feat, bp in zip(box_head_feat, self.maskcoe_predictors)]
 
         cls_preds = F.concat(*cls_preds, dim=1)
@@ -252,28 +277,28 @@ class MaskFCOS(HybridBlock):
         box_preds = F.concat(*box_preds, dim=1)
         maskeoc_preds = F.concat(*maskeoc_preds, dim=1)
         maskeoc_preds = F.tanh(maskeoc_preds)
-        with autograd.pause():
-            h, w, = self.short, self.short
-            fh = int(np.ceil(np.ceil(np.ceil(h / 2) / 2) / 2))
-            fw = int(np.ceil(np.ceil(np.ceil(w / 2) / 2) / 2))
-            #
-            fm_list = []
-            for _ in range(len(self._scale)):
-                fm_list.append((fh, fw))
-                fh = int(np.ceil(fh / 2))
-                fw = int(np.ceil(fw / 2))
-            fm_list = fm_list[::-1]
-            #
-            cor_targets = []
-            for i, stride in enumerate(self._scale):
-                fh, fw = fm_list[i]
-                cx = F.arange(0, fw).reshape((1, -1))
-                cy = F.arange(0, fh).reshape((-1, 1))
-                sx = F.tile(cx, reps=(fh, 1))
-                sy = F.tile(cy, reps=(1, fw))
-                syx = F.stack(sy.reshape(-1), sx.reshape(-1)).transpose()
-                cor_targets.append(F.flip(syx, axis=1) * stride)
-            cor_targets = F.concat(*cor_targets, dim=0)
+        # with autograd.pause():
+        #     h, w, = self.short, self.short
+        #     fh = int(np.ceil(np.ceil(np.ceil(h / 2) / 2) / 2))
+        #     fw = int(np.ceil(np.ceil(np.ceil(w / 2) / 2) / 2))
+        #     #
+        #     fm_list = []
+        #     for _ in range(len(self._scale)):
+        #         fm_list.append((fh, fw))
+        #         fh = int(np.ceil(fh / 2))
+        #         fw = int(np.ceil(fw / 2))
+        #     fm_list = fm_list[::-1]
+        #     #
+        #     cor_targets = []
+        #     for i, stride in enumerate(self._scale):
+        #         fh, fw = fm_list[i]
+        #         cx = F.arange(0, fw).reshape((1, -1))
+        #         cy = F.arange(0, fh).reshape((-1, 1))
+        #         sx = F.tile(cx, reps=(fh, 1))
+        #         sy = F.tile(cy, reps=(1, fw))
+        #         syx = F.stack(sy.reshape(-1), sx.reshape(-1)).transpose()
+        #         cor_targets.append(F.flip(syx, axis=1) * stride)
+        #     cor_targets = F.concat(*cor_targets, dim=0)
         box_preds = self.box_converter(box_preds, cor_targets)
 
         if autograd.is_training():
@@ -338,4 +363,5 @@ def maskfcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
                    valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
                    nms_thresh=0.45, nms_topk=1000, post_nms=100,
                    dataset='coco', pretrained=pretrained,
+                   num_prototypes=32,
                    pretrained_base=pretrained_base, share_params = True, **kwargs)

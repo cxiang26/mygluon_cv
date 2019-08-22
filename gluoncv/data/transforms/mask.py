@@ -161,7 +161,7 @@ def expand(polys, x_offset, y_offset):
         poly[:, 1] = poly[:, 1] + y_offset
     return polys
 
-def proto_fill(mask, size):
+def proto_fill(mask, size, threshold=0.3):
     width, height = size
     # pad mask
     mask = mx.nd.array(mask)
@@ -170,6 +170,6 @@ def proto_fill(mask, size):
     mask = mask.reshape((0, 0))
     mask = mask.asnumpy()
     # binarize and fill
-    mask = (mask > 0.5).astype('uint8')
+    mask = (mask > threshold).astype('uint8')
     return mask
 

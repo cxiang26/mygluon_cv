@@ -25,25 +25,25 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=8,
+    parser.add_argument('--batch-size', type=int, default=4,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='2, 3',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='',
+    parser.add_argument('--resume', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/maskfcos_resnet50_v1_coco_best.params',
                         help='Resume from previously saved parameters if not None. '
                              'For example, you can resume from ./faster_rcnn_xxx_0123.params')
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                              'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=str, default='',
+    parser.add_argument('--lr', type=str, default='0.001',
                         help='Learning rate, default is 0.001 for voc single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
@@ -114,7 +114,7 @@ def get_dataset(dataset, args):
     elif dataset.lower() == 'coco':
         train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_train2017')
         val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
-        val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
+        val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval',  cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.mixup:
@@ -178,8 +178,8 @@ def crop(bboxes, h, w, masks):
         _w = mx.nd.tile(_w, reps=(b, 1))
         x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
         x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-        _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
-        _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
         _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
@@ -300,8 +300,20 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 ctr_losses = []
                 box_losses = []
                 mask_losses = []
+                cls_preds = []
+                ctr_preds = []
+                box_preds = []
+                masks_preds = []
+                maskeoc_preds = []
                 for dat, cls, ctr, box, gmk, mat in zip(datas, cls_targets, ctr_targets, box_targets, gt_masks, matches):
                     cls_pred, ctr_pred, box_pred, masks, maskeoc_pred = net(dat)
+                    cls_preds.append(cls_pred)
+                    ctr_preds.append(ctr_pred)
+                    box_preds.append(box_pred)
+                    masks_preds.append(masks)
+                    maskeoc_preds.append(maskeoc_pred)
+                for cls, ctr, box, gmk, mat, cls_pred, ctr_pred, box_pred, masks, maskeoc_pred in zip(cls_targets, ctr_targets, box_targets, gt_masks, matches,
+                                                                                                      cls_preds, ctr_preds, box_preds, masks_preds, maskeoc_preds):
                     cls_loss = maskfcos_cls_loss(cls_pred, cls)
                     ctr_loss = maskfcos_ctr_loss(ctr_pred, ctr, cls)
                     box_loss = maskfcos_box_loss(box_pred, box, cls)
@@ -332,6 +344,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
+
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
         if not (epoch + 1) % args.val_interval:

@@ -37,7 +37,7 @@ class FCOSTargetGenerator(nn.Block):
         boxes_id = nd.argsort(areas)
         boxes_id = nd.concat(nd.array([-1]), boxes_id, dim=0)
 
-        boxes = boxes[nd.argsort(areas)]
+        boxes = boxes[nd.argsort(areas)] # min -> max
         boxes = nd.concat(nd.zeros((1, 5)), boxes, dim=0) # for gt assign confusion
         x0, y0, x1, y1, cls = nd.split(boxes, num_outputs=5, axis=-1, squeeze_axis=True)
         n = boxes.shape[0]
@@ -129,7 +129,9 @@ class FCOSTargetGenerator(nn.Block):
         cls_targets = nd.concat(*cls_targets, dim=0)
         ctr_targets = nd.concat(*ctr_targets, dim=0)
         match_targets = nd.concat(*match_targets, dim=0)
-
+        # rank = match_targets.argsort()[-1]
+        # if match_targets[rank] != boxes_id.max():
+        #     print('unmatch')
         return cls_targets, ctr_targets, box_targets, match_targets
 
     def forward(self, img, boxes):

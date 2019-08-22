@@ -220,10 +220,11 @@ class MaskFCOSDefaultTrainTransform(object):
         # resize shorter side but keep in max_size
         if np.random.uniform(0, 1) > 0.5:
             img = experimental.image.random_color_distort(src)
+            bbox = label
         else:
-            img = src
+            img, bbox = src, label
 
-            # random expansion with prob 0.5
+        # random expansion with prob 0.5
         # if np.random.uniform(0, 1) > 0.5:
         #     img, expand = timage.random_expand(img, max_ratio=1.5, fill=[m * 255 for m in self._mean])
         #     bbox = tbbox.translate(label, x_offset=expand[0], y_offset=expand[1])
@@ -232,11 +233,14 @@ class MaskFCOSDefaultTrainTransform(object):
         #     img, bbox, segm = img, label, segm
 
         # random cropping
-        h, w, _ = img.shape
-        bbox, crop = experimental.bbox.random_crop_with_constraints(label, (w, h), min_scale=0.8)
-        x0, y0, w, h = crop
-        img = mx.image.fixed_crop(img, x0, y0, w, h)
-        segm = [tmask.crop(polys, x0, y0, w, h) for polys in segm]
+        # h, w, _ = img.shape
+        # bbox, crop = experimental.bbox.random_crop_with_constraints(label, (w, h), min_scale=0.8)
+        # if bbox.shape[0] == label.shape[0]:
+        #     x0, y0, w, h = crop
+        #     img = mx.image.fixed_crop(img, x0, y0, w, h)
+        #     segm = [tmask.crop(polys, x0, y0, w, h) for polys in segm]
+        # else:
+        #     bbox = label
 
         # random horizontal flip
         h, w, _ = img.shape
@@ -246,8 +250,8 @@ class MaskFCOSDefaultTrainTransform(object):
 
         # resize with random interpolation
         h, w, _ = img.shape
-        masks_width, masks_height = int(np.ceil(self._width / (self._scale*2))*2), int(
-            np.ceil(self._height / (self._scale*2))*2)
+        masks_width, masks_height = int(np.ceil(self._width / (self._scale*2))*2), \
+                                    int(np.ceil(self._height / (self._scale*2))*2)
         interp = np.random.randint(0, 5)
         img = timage.imresize(img, self._width, self._height, interp=interp)
         bbox = tbbox.resize(bbox, (w, h), (self._width, self._height))
@@ -255,6 +259,9 @@ class MaskFCOSDefaultTrainTransform(object):
 
         masks = [mx.nd.array(tmask.to_mask(polys, (masks_width, masks_height))) for polys in segm]
         masks = mx.nd.stack(*masks, axis=0)
+
+        assert masks.shape[0] == bbox.shape[0],\
+            print('the number of masks is:', masks.shape[0], 'but the number of bbox is:', bbox.shape[0])
 
         # generate training targets for fcos
         tbox = mx.nd.round(mx.nd.array(bbox))
