@@ -8,10 +8,12 @@ The output of sampler is an NDArray of the same shape as the matching results.
 Note: 1 for positive, -1 for negative, 0 for ignore.
 """
 from __future__ import absolute_import
+import random
 import numpy as np
 import mxnet as mx
 from mxnet import gluon
 from mxnet import nd
+from mxnet.gluon.data import Sampler
 
 
 class NaiveSampler(gluon.HybridBlock):
@@ -62,7 +64,7 @@ class OHEMSampler(gluon.Block):
         num_total = x.shape[1]  # scalar
         num_negative = F.minimum(F.maximum(self._min_samples, num_negative),
                                  num_total - num_positive)
-        positive = logits.slice_axis(axis=2, begin=1, end=-1)
+        positive = logits.slice_axis(axis=2, begin=1, end=None)
         background = logits.slice_axis(axis=2, begin=0, end=1).reshape((0, -1))
         maxval = positive.max(axis=2)
         esum = F.exp(logits - maxval.reshape((0, 0, 1))).sum(axis=2)
@@ -351,3 +353,37 @@ class QuotaSamplerProp(mx.operator.CustomOpProp):
         return QuotaSamplerOp(self.num_sample, self.pos_thresh, self.neg_thresh_high,
                               self.neg_thresh_low, self.pos_ratio, self.neg_ratio,
                               self.fill_negative)
+
+class SplitSampler(Sampler):
+    """Split the dataset into `num_parts` parts and randomly sample from the part
+    with index `part_index`.
+
+    The data is randomly shuffled at each iteration within each partition.
+
+    Parameters
+    ----------
+    length: int
+      Number of examples in the dataset
+    num_parts: int
+      Number of partitions which the data is split into
+    part_index: int
+      The index of the part to read from
+    """
+    def __init__(self, length, num_parts=1, part_index=0):
+        # Compute the length of each partition
+        part_len = length // num_parts
+        # Compute the start index for this partition
+        self._start = part_len * part_index
+        # Compute the end index for this partition
+        self._end = self._start + part_len
+        if part_index == num_parts - 1:
+            self._end = length
+
+    def __iter__(self):
+        # Extract examples between `start` and `end`, shuffle and return them.
+        indices = list(range(self._start, self._end))
+        random.shuffle(indices)
+        return iter(indices)
+
+    def __len__(self):
+        return self._end - self._start

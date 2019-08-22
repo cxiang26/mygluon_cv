@@ -55,6 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
+
     parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/yolact/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
@@ -74,6 +75,7 @@ def parse_args():
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'coco':
+
         train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_train2017')
         val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
@@ -126,13 +128,6 @@ def crop(bboxes, h, w, masks):
     masks = _mask * masks
     return masks
 
-def global_aware(masks):
-    _, h, w = masks.shape
-    masks = masks.reshape((0, -1))
-    masks = masks - mx.nd.mean(masks, axis=-1, keepdims=True)
-    std = mx.nd.sqrt(mx.nd.mean(mx.nd.square(masks), axis=-1, keepdims=True))
-    masks = (masks / (std + 1e-6)).reshape((0, h, w))
-    return masks
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
@@ -150,6 +145,7 @@ def validate(net, val_data, ctx, eval_metric):
                 # numpy everything
                 det_bbox_t = det_bbox[i] # det_bbox_t: [x1, y1, x2, y2]
                 det_bbox_t = clipper(det_bbox_t, x)
+
                 det_id_t = det_id[i].asnumpy()
                 det_score_t = det_score[i].asnumpy()
                 det_maskeoc_t = det_maskeoc[i]
@@ -158,7 +154,6 @@ def validate(net, val_data, ctx, eval_metric):
                 im_height, im_width, h_scale, w_scale = det_inf[i].asnumpy()
                 im_height, im_width = int(round(im_height / h_scale)), int(
                     round(im_width / w_scale))
-                full_mask = global_aware(full_mask)
                 full_mask = mx.nd.sigmoid(full_mask)
                 _, h, w = full_mask.shape
                 full_mask = crop(det_bbox_t, h, w, full_mask).asnumpy()

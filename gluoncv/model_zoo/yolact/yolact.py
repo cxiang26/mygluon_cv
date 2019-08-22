@@ -18,7 +18,8 @@ __all__ = ['YOLACT', 'get_yolact',
            'yolact_512_fpn_resnet18_v1_coco',
            'yolact_512_fpn_resnet50_v1b_coco',
            'yolact_512_fpn_resnet101_v1d_coco',
-           'yolact_550_fpn_resnet50_v1b_coco']
+           'yolact_550_fpn_resnet50_v1b_coco',
+           'yolact_550_fpn_resnet101_v1d_coco']
 
 
 class RetinaHead(nn.HybridBlock):
@@ -150,7 +151,7 @@ class YOLACT(HybridBlock):
                 self.class_predictors.add(ConvPredictor(num_anchors * (len(self.classes) + 1)))
                 self.box_predictors.add(ConvPredictor(num_anchors * 4))
                 self.maskcoe_predictors.add(ConvPredictor(num_anchors*self.k, activation='tanh'))
-            self.protomask.add(Protonet([256, 256, 256, self.k]))
+            self.protomask.add(Protonet([256, 256, 256, 256, self.k]))
             self.bbox_decoder = NormalizedBoxCenterDecoder(stds)
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
 
@@ -477,16 +478,32 @@ def yolact_512_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **
                    pretrained_base=pretrained_base,
                    fpn=True,**kwargs)
 
-def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwargs):
+def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, num_prototypes=32, **kwargs):
     from ...data import COCODetection
     classes = COCODetection.CLASSES
     from ..resnetv1b import resnet50_v1b
     base_network = resnet50_v1b(pretrained=pretrained_base,**kwargs)
     return get_yolact(base_network, 550,
                    features=['layers2_relu11_fwd', 'layers3_relu17_fwd', 'layers4_relu8_fwd'],  #'layers1_relu8_fwd',
+                   sizes=[24, 48, 96, 192, 384, 768],
+                   ratios=[[1, 2, 0.5]]*5,
+                   steps=[8, 16, 32, 64, 128],
+                   classes=classes, dataset='coco', pretrained=pretrained,
+                   pretrained_base=pretrained_base,
+                   num_prototypes=num_prototypes,
+                   **kwargs)
+
+def yolact_550_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwargs):
+    from ...data import COCODetection
+    classes = COCODetection.CLASSES
+    from ..resnetv1b import resnet101_v1d
+    base_network = resnet101_v1d(pretrained=pretrained_base,**kwargs)
+    return get_yolact(base_network, 550,
+                   features=['layers2_relu11_fwd', 'layers3_relu68_fwd', 'layers4_relu8_fwd'],  #'layers1_relu8_fwd',
                    sizes=[24, 51.2, 102.4, 204.8, 384, 448.52],
                    ratios=[[1, 2, 0.5]]*5,
                    steps=[8, 16, 32, 64, 128],
                    classes=classes, dataset='coco', pretrained=pretrained,
                    pretrained_base=pretrained_base,
+                   num_prototypes=32,
                    **kwargs)

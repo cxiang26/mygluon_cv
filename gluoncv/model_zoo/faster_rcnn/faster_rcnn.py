@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import os
 import warnings
-
+import numpy as np
 import mxnet as mx
 from mxnet import autograd
 from mxnet.gluon import nn
@@ -33,7 +33,9 @@ __all__ = ['FasterRCNN', 'get_faster_rcnn',
            'faster_rcnn_peleenet_voc',
            'faster_rcnn_peleenet_coco',
            'faster_rcnn_caps_resnet18_v1b_voc',
-           'faster_rcnn_fpn_resnet50_v1b_voc']
+           'faster_rcnn_fpn_resnet50_v1b_voc',
+           'faster_rcnn_caps_resnet101_v1d_voc',
+           'faster_rcnn_caps_mobilenet1_0_voc']
 
 class FasterRCNN_Caps(RCNN_Caps):
 
@@ -302,10 +304,12 @@ class FasterRCNN(RCNN):
         Filter top proposals before NMS in training of RPN.
     rpn_train_post_nms : int, default is 2000
         Return top proposal results after NMS in training of RPN.
+        Will be set to rpn_train_pre_nms if it is larger than rpn_train_pre_nms.
     rpn_test_pre_nms : int, default is 6000
         Filter top proposals before NMS in testing of RPN.
     rpn_test_post_nms : int, default is 300
         Return top proposal results after NMS in testing of RPN.
+        Will be set to rpn_test_pre_nms if it is larger than rpn_test_pre_nms.
     rpn_nms_thresh : float, default is 0.7
         IOU threshold for NMS. It is used to remove overlapping proposals.
     train_pre_nms : int, default is 12000
@@ -330,6 +334,9 @@ class FasterRCNN(RCNN):
         necessarily very precise. However, using a very big number may impact the training speed.
     additional_output : boolean, default is False
         ``additional_output`` is only used for Mask R-CNN to get internal outputs.
+    force_nms : bool, default is False
+        Appy NMS to all categories, this is to avoid overlapping detection results from different
+        categories.
 
     Attributes
     ----------
@@ -348,6 +355,9 @@ class FasterRCNN(RCNN):
     nms_topk : int
         Apply NMS to top k detection results, use -1 to disable so that every Detection
          result is used in NMS.
+    force_nms : bool
+        Appy NMS to all categories, this is to avoid overlapping detection results
+        from different categories.
     post_nms : int
         Only return top `post_nms` detection results, the rest is discarded. The number is
         based on COCO dataset which has maximum 100 objects per image. You can adjust this
@@ -366,13 +376,18 @@ class FasterRCNN(RCNN):
                  rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
                  rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
                  num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=300,
-                 additional_output=False, **kwargs):
+                 additional_output=False, force_nms=False, **kwargs):
         super(FasterRCNN, self).__init__(
             features=features, top_features=top_features, classes=classes,
             box_features=box_features, short=short, max_size=max_size,
             train_patterns=train_patterns, nms_thresh=nms_thresh, nms_topk=nms_topk,
             post_nms=post_nms, roi_mode=roi_mode, roi_size=roi_size, strides=strides, clip=clip,
-            **kwargs)
+            force_nms=force_nms, **kwargs)
+        if rpn_train_post_nms > rpn_train_pre_nms:
+            rpn_train_post_nms = rpn_train_pre_nms
+        if rpn_test_post_nms > rpn_test_pre_nms:
+            rpn_test_post_nms = rpn_test_pre_nms
+
         self.ashape = alloc_size[0]
         self._min_stage = min_stage
         self._max_stage = max_stage
@@ -523,7 +538,20 @@ class FasterRCNN(RCNN):
                 return x
             else:
                 return [x]
-
+        # if autograd.is_training():
+        #     if np.random.random() > .5:
+        #         layers = np.random.choice([3,4,5,6], size=(2), replace=False)
+        #         for i, net in enumerate(self.features):
+        #             if i == 0:
+        #                 feat = net(x)
+        #             elif i in layers:
+        #                 feat = net(F.flip(feat, axis=2))
+        #             else:
+        #                 feat = net(feat)
+        #     else:
+        #         feat = self.features(x)
+        # else:
+        #     feat = self.features(x)
         feat = self.features(x)
         if not isinstance(feat, (list, tuple)):
             feat = [feat]
@@ -607,10 +635,13 @@ class FasterRCNN(RCNN):
             bbox = self.box_decoder(box_pred, self.box_to_center(rpn_box))
             # res (C, N, 6)
             res = F.concat(*[cls_id, score, bbox], dim=-1)
+            if self.force_nms:
+                # res (1, C*N, 6), to allow cross-catogory suppression
+                res = res.reshape((1, -1, 0))
             # res (C, self.nms_topk, 6)
             res = F.contrib.box_nms(
                 res, overlap_thresh=self.nms_thresh, topk=self.nms_topk, valid_thresh=0.0001,
-                id_index=0, score_index=1, coord_start=2, force_suppress=True)
+                id_index=0, score_index=1, coord_start=2, force_suppress=self.force_nms)
             # res (C * self.nms_topk, 6)
             res = res.reshape((-3, 0))
             results.append(res)
@@ -654,6 +685,12 @@ def get_faster_rcnn(name, dataset, pretrained=False, ctx=mx.cpu(),
         from ..model_store import get_model_file
         full_name = '_'.join(('faster_rcnn', name, dataset))
         net.load_parameters(get_model_file(full_name, tag=pretrained, root=root), ctx=ctx)
+    else:
+        for v in net.collect_params().values():
+            try:
+                v.reset_ctx(ctx)
+            except ValueError:
+                pass
     return net
 
 def get_faster_rcnn_caps(name, dataset, pretrained=False, ctx=mx.cpu(),
@@ -756,11 +793,11 @@ def faster_rcnn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwar
         features=features, top_features=top_features, classes=classes,
         short=800, max_size=1333, train_patterns=train_patterns,
         nms_thresh=0.5, nms_topk=-1, post_nms=-1,
-        roi_mode='align', roi_size=(14, 14), strides=16, clip=4.42,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=4.14,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=1,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25,
         max_num_gt=100, **kwargs)
 
@@ -814,11 +851,11 @@ def faster_rcnn_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **
         name='fpn_resnet50_v1b', dataset='coco', pretrained=pretrained, features=features,
         top_features=top_features, classes=classes, box_features=box_features,
         short=800, max_size=1333, min_stage=2, max_stage=6, train_patterns=train_patterns,
-        nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(14, 14),
-        strides=(4, 8, 16, 32, 64), clip=4.42, rpn_channel=1024, base_size=16,
+        nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(7, 7),
+        strides=(4, 8, 16, 32, 64), clip=4.14, rpn_channel=1024, base_size=16,
         scales=(2, 4, 8, 16, 32), ratios=(0.5, 1, 2), alloc_size=(384, 384),
         rpn_nms_thresh=0.7, rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0, num_sample=512,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=1, num_sample=512,
         pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100, **kwargs)
 
 
@@ -879,10 +916,10 @@ def faster_rcnn_fpn_bn_resnet50_v1b_coco(pretrained=False, pretrained_base=True,
         top_features=top_features, classes=classes, box_features=box_features,
         short=(640, 800), max_size=1333, min_stage=2, max_stage=6, train_patterns=train_patterns,
         nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(7, 7),
-        strides=(4, 8, 16, 32, 64), clip=4.42, rpn_channel=1024, base_size=16,
+        strides=(4, 8, 16, 32, 64), clip=4.14, rpn_channel=1024, base_size=16,
         scales=(2, 4, 8, 16, 32), ratios=(0.5, 1, 2), alloc_size=(384, 384),
         rpn_nms_thresh=0.7, rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0, num_sample=512,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=1, num_sample=512,
         pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100, **kwargs)
 
 
@@ -1036,11 +1073,11 @@ def faster_rcnn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwa
         features=features, top_features=top_features, classes=classes,
         short=800, max_size=1333, train_patterns=train_patterns,
         nms_thresh=0.5, nms_topk=-1, post_nms=-1,
-        roi_mode='align', roi_size=(14, 14), strides=16, clip=4.42,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=4.14,
         rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
         ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=1,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
         **kwargs)
 
@@ -1094,11 +1131,11 @@ def faster_rcnn_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, *
         name='fpn_resnet101_v1d', dataset='coco', pretrained=pretrained, features=features,
         top_features=top_features, classes=classes, box_features=box_features,
         short=800, max_size=1333, min_stage=2, max_stage=6, train_patterns=train_patterns,
-        nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(14, 14),
-        strides=(4, 8, 16, 32, 64), clip=4.42, rpn_channel=1024, base_size=16,
+        nms_thresh=0.5, nms_topk=-1, post_nms=-1, roi_mode='align', roi_size=(7, 7),
+        strides=(4, 8, 16, 32, 64), clip=4.14, rpn_channel=1024, base_size=16,
         scales=(2, 4, 8, 16, 32), ratios=(0.5, 1, 2), alloc_size=(384, 384),
         rpn_nms_thresh=0.7, rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
-        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0, num_sample=512,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=1, num_sample=512,
         pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100, **kwargs)
 
 
@@ -1257,6 +1294,34 @@ def faster_rcnn_caps_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **
         subspace_dim=8, caps_dim=2048,
         **kwargs)
 
+def faster_rcnn_caps_resnet101_v1d_voc(pretrained=False, pretrained_base=True, **kwargs):
+    from ..resnetv1b import resnet101_v1d
+    from ...data import VOCDetection
+    classes = VOCDetection.CLASSES
+    pretrained_base = False if pretrained else pretrained_base
+    base_network = resnet101_v1d(pretrained=pretrained_base, dilated=False,
+                                 use_global_stats=True, **kwargs)
+    features = nn.HybridSequential()
+    top_features = nn.HybridSequential()
+    for layer in ['conv1', 'bn1', 'relu', 'maxpool', 'layer1', 'layer2', 'layer3']:
+        features.add(getattr(base_network, layer))
+    for layer in ['layer4']:
+        top_features.add(getattr(base_network, layer))
+    train_patterns = '|'.join(['.*dense', '.*rpn', '.*down(2|3|4)_conv', '.*layers(2|3|4)_conv'])
+    return get_faster_rcnn_caps(
+        name='resnet101_v1d', dataset='voc', pretrained=pretrained,
+        features=features, top_features=top_features, classes=classes,
+        short=600, max_size=1000, train_patterns=train_patterns,
+        nms_thresh=0.3, nms_topk=400, post_nms=100,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
+        rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
+        ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
+        rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
+        num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=2048,
+        **kwargs)
+
 def faster_rcnn_caps_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
     from ..resnetv1b import resnet18_v1b
     from ...data import VOCDetection
@@ -1273,6 +1338,33 @@ def faster_rcnn_caps_resnet18_v1b_voc(pretrained=False, pretrained_base=True, **
     train_patterns = '|'.join(['.*dense', '.*rpn', '.*down(2|3|4)_conv', '.*layers(2|3|4)_conv'])
     return get_faster_rcnn_caps(
         name='resnet18_v1b', dataset='voc', pretrained=pretrained,
+        features=features, top_features=top_features, classes=classes,
+        short=600, max_size=1000, train_patterns=train_patterns,
+        nms_thresh=0.3, nms_topk=400, post_nms=100,
+        roi_mode='align', roi_size=(14, 14), strides=16, clip=None,
+        rpn_channel=1024, base_size=16, scales=(2, 4, 8, 16, 32),
+        ratios=(0.5, 1, 2), alloc_size=(128, 128), rpn_nms_thresh=0.7,
+        rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
+        rpn_test_pre_nms=6000, rpn_test_post_nms=300, rpn_min_size=16,
+        num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
+        subspace_dim=8, caps_dim=512,
+        **kwargs)
+
+def faster_rcnn_caps_mobilenet1_0_voc(pretrained=False, pretrained_base=True, **kwargs):
+    from ..mobilenet import mobilenet_v2_1_0
+    from ...data import VOCDetection
+    classes = VOCDetection.CLASSES
+    pretrained_base = False if pretrained else pretrained_base
+    base_network = mobilenet_v2_1_0(pretrained=pretrained_base, **kwargs)
+    features = nn.HybridSequential()
+    top_features = nn.HybridSequential()
+    for layer in ['conv1', 'bn1', 'relu', 'maxpool', 'layer1', 'layer2', 'layer3']:
+        features.add(getattr(base_network, layer))
+    for layer in ['layer4']:
+        top_features.add(getattr(base_network, layer))
+    train_patterns = '|'.join(['.*dense', '.*rpn', '.*down(2|3|4)_conv', '.*layers(2|3|4)_conv'])
+    return get_faster_rcnn_caps(
+        name='mobilenet_v2_1_0', dataset='voc', pretrained=pretrained,
         features=features, top_features=top_features, classes=classes,
         short=600, max_size=1000, train_patterns=train_patterns,
         nms_thresh=0.3, nms_topk=400, post_nms=100,
@@ -1337,7 +1429,7 @@ def faster_rcnn_caps_resnet50_v1b_coco(pretrained=False, pretrained_base=True, *
         rpn_train_pre_nms=12000, rpn_train_post_nms=2000,
         rpn_test_pre_nms=6000, rpn_test_post_nms=1000, rpn_min_size=0,
         num_sample=128, pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
-        subspace_dim=8, caps_dim=2048,
+        subspace_dim=8, caps_dim=512,
         **kwargs)
 
 def faster_rcnn_fpn_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **kwargs):
@@ -1373,3 +1465,4 @@ def faster_rcnn_fpn_resnet50_v1b_voc(pretrained=False, pretrained_base=True, **k
         pos_iou_thresh=0.5, pos_ratio=0.25, max_num_gt=100,
         subspace_dim=8, caps_dim=256,
         **kwargs)
+

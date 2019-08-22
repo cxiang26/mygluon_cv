@@ -279,7 +279,11 @@ class SoftmaxCrossEntropyLoss(Loss):
             pred, label.astype(pred.dtype), ignore_label=self._ignore_label,
             multi_output=self._sparse_label,
             use_ignore=True, normalization='valid' if self._size_average else 'null')
-        loss = -F.pick(F.log(softmaxout), label, axis=1, keepdims=True)
+        if self._sparse_label:
+            loss = -F.pick(F.log(softmaxout), label, axis=1, keepdims=True)
+        else:
+            label = _reshape_like(F, label, pred)
+            loss = -F.sum(F.log(softmaxout) * label, axis=-1, keepdims=True)
         loss = F.where(label.expand_dims(axis=1) == self._ignore_label,
                        F.zeros_like(loss), loss)
         return F.mean(loss, axis=self._batch_axis, exclude=True)
@@ -485,6 +489,14 @@ class YOLACTMultiBoxLoss(gluon.Block):
             _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
             _mask = nd.batch_dot(_h.expand_dims(axis=-1),  _w.expand_dims(axis=-1), transpose_b=True)
         masks = _mask * masks
+        return masks
+
+    def global_aware(self, masks):
+        _, h, w = masks.shape
+        masks = masks.reshape((0, -1))
+        masks = masks - nd.mean(masks, axis=-1, keepdims=True)
+        std = nd.sqrt(nd.mean(nd.square(masks), axis=-1, keepdims=True))
+        masks = (masks / (std + 1e-6)).reshape((0, h, w))
         return masks
 
     def mask_loss(self, mask_pred, mask_eoc, mask_target, matches, bt_target):

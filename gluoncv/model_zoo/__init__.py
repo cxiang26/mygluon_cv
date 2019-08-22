@@ -11,6 +11,7 @@ from .cifarwideresnet import *
 from .fcn import *
 from .pspnet import *
 from .deeplabv3 import *
+from .deeplabv3_plus import *
 from . import segbase
 from .resnetv1b import *
 from .se_resnet import *
@@ -20,10 +21,12 @@ from .fcos import *
 from .mask_fcos import *
 
 from .simple_pose.simple_pose_resnet import *
+from .action_recognition import *
 
 from .alexnet import *
 from .densenet import *
 from .inception import *
+from .xception import *
 from .resnet import *
 from .squeezenet import *
 from .vgg import *

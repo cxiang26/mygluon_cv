@@ -136,7 +136,7 @@ def global_aware(masks):
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
-    # clipper = gcv.nn.bbox.BBoxClipToImage()
+    clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
     # if not args.disable_hybridization:
     #     net.hybridize(static_alloc=args.static_alloc)
@@ -146,8 +146,8 @@ def validate(net, val_data, ctx, eval_metric):
         det_info = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
         for x, det_inf in zip(data, det_info):
             det_id, det_score, det_bbox, det_maskeoc, det_mask = net(x)
+            det_bbox = clipper(det_bbox, x)
             for i in range(det_bbox.shape[0]):
-                # numpy everything
                 det_bbox_t = det_bbox[i] # det_bbox_t: [x1, y1, x2, y2]
                 det_id_t = det_id[i].asnumpy()
                 det_score_t = det_score[i].asnumpy()
@@ -155,9 +155,9 @@ def validate(net, val_data, ctx, eval_metric):
                 det_mask_t = det_mask[i]
                 full_mask = mx.nd.dot(det_maskeoc_t, det_mask_t)
                 im_height, im_width, h_scale, w_scale = det_inf[i].asnumpy()
-                im_height, im_width = int(round(im_height / h_scale)), int(
-                    round(im_width / w_scale))
-                full_mask = global_aware(full_mask)
+                im_height, im_width = int(round(im_height / h_scale)), \
+                                      int(round(im_width / w_scale))
+
                 full_mask = mx.nd.sigmoid(full_mask)
                 _, h, w = full_mask.shape
                 full_mask = crop(det_bbox_t, h, w, full_mask).asnumpy()
