@@ -17,7 +17,6 @@ class SpatialGroupEnhance(nn.HybridBlock):
         weight = weight.split(self.groups, axis=1)
         bias = bias.split(self.groups, axis=1)
         results = []
-        results_b = []
         for i, data, w, b in zip(range(self.groups), x, weight, bias):
             data = data * self.avg_pool[i](data).broadcast_like(data)
             data1 = F.sum(data, axis=1, keepdims=True)
@@ -29,7 +28,5 @@ class SpatialGroupEnhance(nn.HybridBlock):
             t = t * w.broadcast_like(t) + b.broadcast_like(t)
             result = data * F.sigmoid(t).broadcast_like(data)
             results.append(result)
-            results_b.append(data * (1-F.sigmoid(t)).broadcast_like(data))
         results = F.Concat(*results, dim=1)
-        results_b = F.Concat(*results_b, dim=1)
-        return results, results_b
+        return results
