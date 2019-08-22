@@ -233,22 +233,22 @@ def get_fcos(name, dataset, pretrained=False, ctx=mx.cpu(),
     return net
 
 
-def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
-    from ..resnet import resnet50_v1
-    from ...data import COCODetection
-    classes = COCODetection.CLASSES
-    pretrained_base = False if pretrained else pretrained_base
-    base_network = resnet50_v1(pretrained=pretrained_base, **kwargs)
-    features = RetinaFeatureExpander(network=base_network,
-                                     pretrained=pretrained_base,
-                                     outputs=['stage2_activation3',
-                                              'stage3_activation5',
-                                              'stage4_activation2'])
-    return get_fcos(name="resnet50_v1", dataset="coco", pretrained=pretrained,
-                    features=features, classes=classes, base_stride=128, short=800,
-                    max_size=1333, norm_layer=None, norm_kwargs=None,
-                    valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
-                    nms_thresh=0.6, nms_topk=1000, save_topk=100)
+# def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
+#     from ..resnet import resnet50_v1
+#     from ...data import COCODetection
+#     classes = COCODetection.CLASSES
+#     pretrained_base = False if pretrained else pretrained_base
+#     base_network = resnet50_v1(pretrained=pretrained_base, **kwargs)
+#     features = RetinaFeatureExpander(network=base_network,
+#                                      pretrained=pretrained_base,
+#                                      outputs=['stage2_activation3',
+#                                               'stage3_activation5',
+#                                               'stage4_activation2'])
+#     return get_fcos(name="resnet50_v1", dataset="coco", pretrained=pretrained,
+#                     features=features, classes=classes, base_stride=128, short=800,
+#                     max_size=1333, norm_layer=None, norm_kwargs=None,
+#                     valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+#                     nms_thresh=0.6, nms_topk=1000, save_topk=100)
 
 def fcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
     from ...data import COCODetection
