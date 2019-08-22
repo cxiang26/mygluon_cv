@@ -11,7 +11,6 @@ from ...nn.feature import FeatureExpander
 from .anchor import SSDAnchorGenerator
 from ...nn.predictor import ConvPredictor
 from ...nn.coder import MultiPerClassDecoder, NormalizedBoxCenterDecoder
-<<<<<<< HEAD
 from .vgg_atrous import vgg16_atrous_300, vgg16_atrous_512
 from ...data import VOCDetection
 from .ssdexpand import Pelee_SSD, get_fpn_ssd
@@ -36,11 +35,6 @@ __all__ = ['get_pelee_ssd',
            'ssd_512_mobilenet1_0_voc',
            'ssd_512_mobilenet1_0_coco',
            'ssd_512_mobilenet1_0_custom',
-=======
-
-__all__ = ['SSD', 'get_ssd']
->>>>>>> origin
-
            'ssd_224_peleenet50_voc',
            'ssd_300_peleenet50_voc',]
 
@@ -427,7 +421,6 @@ def get_ssd(name, base_size, features, filters, sizes, ratios, steps, classes,
         full_name = '_'.join(('ssd', str(base_size), name, dataset))
         net.load_parameters(get_model_file(full_name, tag=pretrained, root=root), ctx=ctx)
     return net
-<<<<<<< HEAD
 
 def ssd_300_vgg16_atrous_voc(pretrained=False, pretrained_base=True, **kwargs):
     """SSD architecture with VGG16 atrous 300x300 base network for Pascal VOC.
@@ -1058,5 +1051,3 @@ def ssd_512_fpn_resnet18_v1_voc(pretrained=False, pretrained_base=True, **kwargs
                    steps=[8, 16, 32, 64],
                    classes=classes, dataset='voc', pretrained=pretrained,
                    pretrained_base=pretrained_base, **kwargs)
-=======
->>>>>>> origin
