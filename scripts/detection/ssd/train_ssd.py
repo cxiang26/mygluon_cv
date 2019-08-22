@@ -22,13 +22,13 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='resnet18_v1',
+    parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='Training mini-batch size')
-    parser.add_argument('--dataset', type=str, default='voc',
+    parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
     # FPN options
-    parser.add_argument('--use-fpn', action='store_true', default=True,
+    parser.add_argument('--use-fpn', action='store_true', default=False,
                         help='Whether to use feature pyramid network.')
     args = parser.parse_args()
     return args
@@ -80,8 +80,8 @@ def get_dataset(dataset, args):
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_train2017')
-        val_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/', splits='instances_train2017')
+        val_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/', splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(
             val_dataset, args.save_prefix + '_eval', cleanup=True,
             data_shape=(args.data_shape, args.data_shape))
@@ -214,6 +214,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}={:.3f}, {}={:.3f}'.format(
                     epoch, i, batch_size/(time.time()-btic), name1, loss1, name2, loss2))
             btic = time.time()
+            break
 
         name1, loss1 = ce_metric.get()
         name2, loss2 = smoothl1_metric.get()

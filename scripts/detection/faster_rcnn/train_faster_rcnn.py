@@ -23,7 +23,7 @@ from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train Faster-RCNN networks e2e.')
-    parser.add_argument('--network', type=str, default='resnet50_v1b',
+    parser.add_argument('--network', type=str, default='caps_resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
@@ -31,7 +31,7 @@ def parse_args():
                         default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0,1,2',
+    parser.add_argument('--gpus', type=str, default='2,3',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='',
                         help='Training epochs.')
@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='',
+    parser.add_argument('--save-prefix', type=str, default='caps_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='Print helpful debugging info once set.')
     parser.add_argument('--mixup', action='store_true', help='Use mixup training.')
-    parser.add_argument('--no-mixup-epochs', type=int, default=20,
+    parser.add_argument('--no-mixup-epochs', type=int, default=30,
                         help='Disable mixup training if enabled in the last N epochs.')
 
     # Norm layer options
@@ -82,7 +82,7 @@ def parse_args():
                         help='Whether to use feature pyramid network.')
 
     # Performance options
-    parser.add_argument('--disable-hybridization', action='store_true',
+    parser.add_argument('--disable-hybridization', action='store_true', default=True,
                         help='Whether to disable hybridize the model. '
                              'Memory usage and speed will decrese.')
     parser.add_argument('--static-alloc', action='store_true',
@@ -201,8 +201,8 @@ def get_dataset(dataset, args):
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_train2017', use_crowd=False)
-        val_dataset = gdata.COCODetection(root='/mnt/mdisk/xcq/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/media/HDD_4TB/MSCOCO/images/',splits='instances_train2017', use_crowd=False)
+        val_dataset = gdata.COCODetection(root='/media/HDD_4TB/MSCOCO/images/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
@@ -305,7 +305,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         'sgd',
         {'learning_rate': args.lr,
          'wd': args.wd,
-         'momentum': args.momentum})
+         'momentum': args.momentum,
+         'clip_gradient': .8})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)
