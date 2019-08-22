@@ -5,44 +5,34 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a711ed93-9a6a-4680-95d9-8f357310f535" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/gluon-cv.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/gluon-cv.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/config.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/data_processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/data_processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/detection.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/detection.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/kitti_object.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/kitti_object.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/kitti_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/kitti_util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/kitti/viz_util.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/kitti/viz_util.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/mscoco/keypoints.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/mscoco/keypoints.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/pose.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/pose.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/presets/simple_pose.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/presets/simple_pose.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/mask_rcnn/mask_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/mask_rcnn/mask_rcnn.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/simple_pose/pose_target.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/simple_pose/pose_target.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gluoncv/nn/feature.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/feature.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/utils/filesystem.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/filesystem.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/utils/viz/bbox.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/viz/bbox.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/classification/cifar/CapsDense.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/classification/cifar/CapsDense.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10_copy.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10_copy.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/nn/protomask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/protomask.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/nn/sge.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/sge.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/utils/viz/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/viz/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/gluoncv/utils/viz/mask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/viz/mask.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/ssd_300_peleenet50-symbol.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn_pelee.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn_pelee.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/segmentation/show.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/segmentation/show.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/segmentation/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/segmentation/test.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/unittests/test_model_zoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/unittests/test_model_zoo.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_faster_rcnn_peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_faster_rcnn_peleenet.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssd.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/train_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_yolact.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -53,47 +43,101 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
+      <file leaf-file-name="train_yolact.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/train_yolact.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-23">
+              <caret line="145" selection-start-line="145" selection-end-line="145" />
+              <folding>
+                <element signature="e#16#31#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train_mask_rcnn.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="195">
+              <caret line="120" column="39" selection-start-line="120" selection-start-column="21" selection-end-line="120" selection-end-column="39" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="coco_instance.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/utils/metrics/coco_instance.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="386">
+              <caret line="118" column="27" selection-start-line="118" selection-start-column="18" selection-end-line="118" selection-end-column="27" />
+              <folding>
+                <element signature="e#54#92#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="cocoeval.py" pinned="false" current-in-tab="true">
+        <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/cocoeval.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3910">
+              <caret line="235" column="19" selection-start-line="235" selection-start-column="8" selection-end-line="235" selection-end-column="19" />
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="train_faster_rcnn_copy.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="765">
-              <caret line="46" column="76" selection-start-line="46" selection-start-column="76" selection-end-line="46" selection-end-column="76" />
+            <state relative-caret-position="7752">
+              <caret line="457" selection-start-line="457" selection-end-line="457" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="yolact.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="3118">
+              <caret line="206" column="16" selection-start-line="206" selection-start-column="16" selection-end-line="206" selection-end-column="16" />
               <folding>
-                <element signature="e#36#51#0" expanded="true" />
+                <element signature="e#64#102#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="train_faster_rcnn_peleenet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py">
+      <file leaf-file-name="protomask.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/nn/protomask.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="748">
-              <caret line="45" column="62" selection-start-line="45" selection-start-column="62" selection-end-line="45" selection-end-column="62" />
+            <state relative-caret-position="425">
+              <caret line="27" column="57" selection-start-line="27" selection-start-column="57" selection-end-line="27" selection-end-column="57" />
               <folding>
-                <element signature="e#36#51#0" expanded="true" />
+                <element signature="e#0#38#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="CapsDense.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/classification/cifar/CapsDense.py">
+      <file leaf-file-name="train_ssd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1411">
-              <caret line="84" selection-start-line="84" selection-end-line="84" />
+            <state relative-caret-position="5797">
+              <caret line="366" selection-start-line="366" selection-end-line="366" />
               <folding>
-                <element signature="e#0#18#0" expanded="true" />
+                <element signature="e#16#31#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="train_faster_rcnn.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py">
+      <file leaf-file-name="ssd.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="612">
-              <caret line="40" column="61" selection-start-line="40" selection-start-column="61" selection-end-line="40" selection-end-column="61" />
+            <state relative-caret-position="314">
+              <caret line="235" selection-start-line="235" selection-end-line="235" />
+              <folding>
+                <element signature="e#38#76#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -101,44 +145,11 @@
       <file leaf-file-name="model_zoo.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="379">
-              <caret line="133" column="50" selection-start-line="133" selection-start-column="29" selection-end-line="133" selection-end-column="50" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="cifarresnext.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/cifarresnext.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-117">
-              <caret line="196" column="5" lean-forward="true" selection-start-line="196" selection-start-column="5" selection-end-line="196" selection-end-column="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="resnet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/resnet.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="594">
-              <caret line="638" column="5" lean-forward="true" selection-start-line="638" selection-start-column="5" selection-end-line="638" selection-end-column="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="cifarwideresnet.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/cifarwideresnet.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-273">
-              <caret line="200" column="5" lean-forward="true" selection-start-line="200" selection-start-column="5" selection-end-line="200" selection-end-column="37" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="bbox.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/gluoncv/utils/viz/bbox.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1275">
-              <caret line="79" column="53" selection-start-line="79" selection-start-column="53" selection-end-line="79" selection-end-column="53" />
+            <state relative-caret-position="4318">
+              <caret line="287" selection-start-line="287" selection-end-line="287" />
+              <folding>
+                <element signature="e#167#189#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -154,36 +165,36 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>MaxPool2D</find>
-      <find>pooled_feat</find>
-      <find>mask_targets</find>
-      <find>mask_target</find>
-      <find>mask_pred</find>
-      <find>norm_layer</find>
-      <find>pickle</find>
+      <find>CapsPredictor</find>
+      <find>_load_label</find>
+      <find>bbox_xywh_to_xyxy</find>
+      <find>bf</find>
       <find>net</find>
-      <find>cls_pred</find>
-      <find>roi_idx</find>
-      <find>metric_losses</find>
-      <find>cls_targets</find>
-      <find>input_dim</find>
-      <find>ConvPredictor</find>
-      <find>download_aug</find>
-      <find>logging</find>
-      <find>_max_num_gt</find>
-      <find>mix_ratio</find>
-      <find>_feat_sym</find>
-      <find>cifar10</find>
-      <find>CIFAR100</find>
-      <find>TrainingHistory</find>
-      <find>FasterRCNN_Caps</find>
-      <find>stride</find>
-      <find>resnet18_v1b_voc</find>
-      <find>strides</find>
-      <find>faster_rcnn_caps_resnet18_v1b_voc</find>
-      <find>caps_resnet</find>
-      <find>disable_hybridization</find>
-      <find>fpn</find>
+      <find>ssd</find>
+      <find>batchify_fn</find>
+      <find>mbox_loss</find>
+      <find>masks</find>
+      <find>ce_metric</find>
+      <find>eval_metric</find>
+      <find>args</find>
+      <find>val_data</find>
+      <find>fpn_filters</find>
+      <find>mask</find>
+      <find>ib</find>
+      <find>split_and_load</find>
+      <find>return</find>
+      <find>det_bboxes</find>
+      <find>features</find>
+      <find>_filename</find>
+      <find>_gts</find>
+      <find>cocoGt</find>
+      <find>_results</find>
+      <find>COCOInstanceMetric</find>
+      <find>width</find>
+      <find>scores</find>
+      <find>mask_lambd</find>
+      <find>&gt;</find>
+      <find>executor</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/gluoncv/model_zoo/rcnn</dir>
@@ -195,88 +206,76 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/gluoncv/data/transforms/__init__.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/modelnet/__init__.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/modelnet/pc_tranforms.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/shapenet/shapenet3d.py" />
-        <option value="$PROJECT_DIR$/scripts/classification/pointcloud/train_pointnet.py" />
-        <option value="$PROJECT_DIR$/scripts/detection/yolo/train_yolo3.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/modelnet/modelnet_dataset.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/resnet.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/mobilenet.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/config.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/data_processing.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/kitti_util.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/kitti_object.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/viz_util.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/kitti/detection.py" />
-        <option value="$PROJECT_DIR$/../frustum-pointnets/kitti/prepare_data.py" />
-        <option value="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn_pelee.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/mixup/__init__.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/mixup/detection.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" />
-        <option value="$PROJECT_DIR$/gluoncv/nn/predictor.py" />
-        <option value="$PROJECT_DIR$/scripts/segmentation/test.py" />
-        <option value="$PROJECT_DIR$/scripts/segmentation/train.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" />
-        <option value="$PROJECT_DIR$/scripts/segmentation/show.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/mscoco/keypoints.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/transforms/pose.py" />
-        <option value="$PROJECT_DIR$/gluoncv/data/transforms/presets/simple_pose.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/mask_rcnn/mask_rcnn.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/simple_pose/pose_target.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py" />
-        <option value="$PROJECT_DIR$/gluoncv/nn/feature.py" />
-        <option value="$PROJECT_DIR$/gluoncv/utils/filesystem.py" />
-        <option value="$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py" />
-        <option value="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" />
-        <option value="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" />
-        <option value="$PROJECT_DIR$/tests/unittests/test_model_zoo.py" />
-        <option value="$PROJECT_DIR$/scripts/classification/cifar/CapsDense.py" />
-        <option value="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/__init__.py" />
-        <option value="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10.py" />
         <option value="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10_copy.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py" />
-        <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" />
         <option value="$PROJECT_DIR$/gluoncv/utils/viz/bbox.py" />
         <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py" />
-        <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" />
+        <option value="$PROJECT_DIR$/main.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/__init__.py" />
+        <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py" />
+        <option value="$PROJECT_DIR$/train_faster_rcnn_peleenet.py" />
+        <option value="$PROJECT_DIR$/gluoncv/nn/predictor.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" />
+        <option value="$PROJECT_DIR$/train_ssd.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/kitti/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/kitti/detection.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/kitti/kitti_util.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/nn/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssdexpand.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/mscoco/instance.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolact/anchor.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolact/__init__.py" />
+        <option value="$PROJECT_DIR$/gluoncv/utils/utils.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolact/target.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py" />
+        <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" />
+        <option value="$PROJECT_DIR$/scripts/detection/fcos/train_fcos.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos_target.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/transforms/presets/fcos.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py" />
+        <option value="$PROJECT_DIR$/gluoncv/utils/metrics/coco_instance.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" />
+        <option value="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" />
+        <option value="$PROJECT_DIR$/gluoncv/loss.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" />
+        <option value="$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py" />
         <option value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" />
+        <option value="$PROJECT_DIR$/gluoncv/nn/feature.py" />
+        <option value="$PROJECT_DIR$/gluoncv/utils/viz/mask.py" />
+        <option value="$PROJECT_DIR$/gluoncv/utils/viz/__init__.py" />
+        <option value="$PROJECT_DIR$/scripts/segmentation/test.py" />
+        <option value="$PROJECT_DIR$/gluoncv/nn/sge.py" />
+        <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" />
+        <option value="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" />
+        <option value="$PROJECT_DIR$/gluoncv/nn/protomask.py" />
+        <option value="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" />
+        <option value="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" />
+        <option value="$PROJECT_DIR$/train_yolact.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="1">
-    <option name="x" value="21" />
-    <option name="y" value="28" />
-    <option name="width" value="1701" />
-    <option name="height" value="958" />
+    <option name="width" value="1920" />
+    <option name="height" value="1040" />
   </component>
   <component name="ProjectView">
     <navigator proportions="" version="1">
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
             <path>
               <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
               <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
-              <item name="model_zoo" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
@@ -296,24 +295,44 @@
               <item name="detection" type="462c0819:PsiDirectoryNode" />
               <item name="faster_rcnn" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="scripts" type="462c0819:PsiDirectoryNode" />
+              <item name="detection" type="462c0819:PsiDirectoryNode" />
+              <item name="ssd" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="scripts" type="462c0819:PsiDirectoryNode" />
+              <item name="instance" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
+              <item name="scripts" type="462c0819:PsiDirectoryNode" />
+              <item name="instance" type="462c0819:PsiDirectoryNode" />
+              <item name="mask_rcnn" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SearchEverywhereHistoryKey" value="&#9;FILE&#9;file:///home/xcq/PycharmProjects/gluon-cv/gluoncv/model_zoo/deeplabv3.py" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../CapProNet-Pytorch" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../fcos-gluon-cv" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/scripts/instance/yolact" />
       <recent name="$PROJECT_DIR$/scripts/detection/faster_rcnn" />
       <recent name="$PROJECT_DIR$/scripts/instance/mask_rcnn" />
       <recent name="$PROJECT_DIR$/gluoncv/model_zoo/peleenet_ssd" />
-      <recent name="$PROJECT_DIR$/gluoncv/data/modelnet" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/gluoncv/data/transforms" />
@@ -331,8 +350,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.train_faster_rcnn">
-    <configuration name="demo_faster_rcnn" type="PythonConfigurationType" factoryName="Python" temporary="true">
+  <component name="RunManager" selected="Python.train_mask_rcnn">
+    <configuration name="demo_yolact" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -340,17 +359,17 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/faster_rcnn" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/instance/yolact" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="train_cifar10_copy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="train_mask_rcnn" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -358,17 +377,17 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/classification/cifar" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/instance/mask_rcnn" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/classification/cifar/train_cifar10_copy.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="train_faster_rcnn" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="train_ssd" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -376,17 +395,17 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/faster_rcnn" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/ssd" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="train_faster_rcnn_copy" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="train_yolact (1)" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -394,17 +413,17 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/faster_rcnn" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/train_yolact.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
-    <configuration name="train_faster_rcnn_peleenet" type="PythonConfigurationType" factoryName="Python" temporary="true">
+    <configuration name="train_yolact" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="gluon-cv" />
       <option name="INTERPRETER_OPTIONS" value="" />
       <option name="PARENT_ENVS" value="true" />
@@ -412,30 +431,30 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/detection/faster_rcnn" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/scripts/instance/yolact" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
     </configuration>
     <list>
-      <item itemvalue="Python.train_faster_rcnn_peleenet" />
-      <item itemvalue="Python.train_cifar10_copy" />
-      <item itemvalue="Python.demo_faster_rcnn" />
-      <item itemvalue="Python.train_faster_rcnn_copy" />
-      <item itemvalue="Python.train_faster_rcnn" />
+      <item itemvalue="Python.train_mask_rcnn" />
+      <item itemvalue="Python.train_yolact" />
+      <item itemvalue="Python.train_yolact (1)" />
+      <item itemvalue="Python.demo_yolact" />
+      <item itemvalue="Python.train_ssd" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Python.train_faster_rcnn" />
-        <item itemvalue="Python.demo_faster_rcnn" />
-        <item itemvalue="Python.train_faster_rcnn_copy" />
-        <item itemvalue="Python.train_cifar10_copy" />
-        <item itemvalue="Python.train_faster_rcnn_peleenet" />
+        <item itemvalue="Python.train_mask_rcnn" />
+        <item itemvalue="Python.train_yolact" />
+        <item itemvalue="Python.train_yolact (1)" />
+        <item itemvalue="Python.train_ssd" />
+        <item itemvalue="Python.demo_yolact" />
       </list>
     </recent_temporary>
   </component>
@@ -452,20 +471,28 @@
     </task>
     <servers />
   </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
   <component name="ToolWindowManager">
-    <frame x="21" y="28" width="1701" height="958" extended-state="1" />
-    <editor active="true" />
+    <frame x="0" y="0" width="1920" height="1040" extended-state="1" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.76344085" visible="true" weight="0.27625299" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.20158312" side_tool="true" weight="0.26815644" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.7478992" visible="true" weight="0.41952506" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32960895" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.20263852" side_tool="true" weight="0.33743018" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32830188" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32960895" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7984169" weight="0.40467405" />
-      <window_info id="Structure" order="1" sideWeight="0.23655914" side_tool="true" weight="0.19155672" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7973615" visible="true" weight="0.33519554" />
+      <window_info id="Structure" order="1" sideWeight="0.25210086" side_tool="true" visible="true" weight="0.41952506" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32871535" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49973616" weight="0.41082412" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.71187335" weight="0.40446928" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -477,21 +504,21 @@
     <layout-to-restore>
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.76344085" visible="true" weight="0.19155672" />
       <window_info id="Structure" order="1" sideWeight="0.23655914" side_tool="true" weight="0.19155672" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32960895" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7984169" weight="0.2916201" />
-      <window_info anchor="bottom" id="Message" order="0" />
+      <window_info anchor="bottom" id="Find" order="1" weight="0.32960895" />
+      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32960895" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49973616" visible="true" weight="0.3765363" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32960895" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.20158312" side_tool="true" weight="0.26815644" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
+      <window_info anchor="bottom" id="Version Control" order="9" weight="0.32960895" />
+      <window_info anchor="bottom" id="Message" order="0" />
       <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Find" order="1" weight="0.32960895" />
-      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32960895" />
     </layout-to-restore>
   </component>
   <component name="VcsContentAnnotationSettings">
@@ -542,7 +569,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py</url>
-          <line>215</line>
+          <line>203</line>
           <option name="timeStamp" value="72" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -552,18 +579,8 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py</url>
-          <line>218</line>
+          <line>223</line>
           <option name="timeStamp" value="105" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py</url>
-          <line>433</line>
-          <option name="timeStamp" value="149" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/mask_rcnn/mask_rcnn.py</url>
-          <line>169</line>
-          <option name="timeStamp" value="155" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/../kitti_object_vis/kitti_object.py</url>
@@ -597,7 +614,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
-          <line>664</line>
+          <line>701</line>
           <option name="timeStamp" value="189" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -611,39 +628,14 @@
           <option name="timeStamp" value="236" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py</url>
-          <line>445</line>
-          <option name="timeStamp" value="241" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py</url>
-          <line>586</line>
+          <line>327</line>
           <option name="timeStamp" value="269" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>121</line>
+          <line>72</line>
           <option name="timeStamp" value="312" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>119</line>
-          <option name="timeStamp" value="313" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>118</line>
-          <option name="timeStamp" value="314" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>116</line>
-          <option name="timeStamp" value="316" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>113</line>
-          <option name="timeStamp" value="317" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/datasets/pascal_voc.py</url>
@@ -657,12 +649,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/segmentation/test.py</url>
-          <line>77</line>
+          <line>195</line>
           <option name="timeStamp" value="334" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/segmentation/test.py</url>
-          <line>39</line>
+          <line>115</line>
           <option name="timeStamp" value="335" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -677,7 +669,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/segmentation/train.py</url>
-          <line>217</line>
+          <line>219</line>
           <option name="timeStamp" value="339" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -686,38 +678,18 @@
           <option name="timeStamp" value="340" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py</url>
-          <line>161</line>
-          <option name="timeStamp" value="372" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py</url>
-          <line>156</line>
-          <option name="timeStamp" value="377" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py</url>
-          <line>90</line>
-          <option name="timeStamp" value="378" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/nn/predictor.py</url>
-          <line>97</line>
-          <option name="timeStamp" value="387" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py</url>
-          <line>432</line>
+          <line>415</line>
           <option name="timeStamp" value="395" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
-          <line>803</line>
+          <line>840</line>
           <option name="timeStamp" value="405" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
-          <line>798</line>
+          <line>835</line>
           <option name="timeStamp" value="406" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -736,24 +708,174 @@
           <option name="timeStamp" value="440" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
-          <line>1245</line>
-          <option name="timeStamp" value="469" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py</url>
-          <line>102</line>
-          <option name="timeStamp" value="479" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py</url>
-          <line>478</line>
+          <line>470</line>
           <option name="timeStamp" value="480" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py</url>
-          <line>20</line>
-          <option name="timeStamp" value="481" />
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
+          <line>1420</line>
+          <option name="timeStamp" value="485" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
+          <line>1360</line>
+          <option name="timeStamp" value="489" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
+          <line>1303</line>
+          <option name="timeStamp" value="490" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
+          <line>542</line>
+          <option name="timeStamp" value="494" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py</url>
+          <line>540</line>
+          <option name="timeStamp" value="495" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/data/mscoco/detection.py</url>
+          <line>170</line>
+          <option name="timeStamp" value="540" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py</url>
+          <line>249</line>
+          <option name="timeStamp" value="552" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/utils/utils.py</url>
+          <line>1</line>
+          <option name="timeStamp" value="565" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/target.py</url>
+          <line>44</line>
+          <option name="timeStamp" value="582" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py</url>
+          <line>214</line>
+          <option name="timeStamp" value="624" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py</url>
+          <line>421</line>
+          <option name="timeStamp" value="630" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py</url>
+          <line>213</line>
+          <option name="timeStamp" value="652" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/utils/metrics/coco_instance.py</url>
+          <line>130</line>
+          <option name="timeStamp" value="698" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/cocoeval.py</url>
+          <line>104</line>
+          <option name="timeStamp" value="703" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/cocoeval.py</url>
+          <line>140</line>
+          <option name="timeStamp" value="704" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/cocoeval.py</url>
+          <line>103</line>
+          <option name="timeStamp" value="705" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py</url>
+          <line>201</line>
+          <option name="timeStamp" value="706" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py</url>
+          <line>154</line>
+          <option name="timeStamp" value="710" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py</url>
+          <line>161</line>
+          <option name="timeStamp" value="711" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/data/transforms/presets/fcos.py</url>
+          <line>112</line>
+          <option name="timeStamp" value="713" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py</url>
+          <line>271</line>
+          <option name="timeStamp" value="716" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py</url>
+          <line>84</line>
+          <option name="timeStamp" value="724" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/utils/viz/mask.py</url>
+          <line>38</line>
+          <option name="timeStamp" value="727" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/data/transforms/mask.py</url>
+          <line>118</line>
+          <option name="timeStamp" value="728" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py</url>
+          <line>36</line>
+          <option name="timeStamp" value="752" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py</url>
+          <line>23</line>
+          <option name="timeStamp" value="753" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py</url>
+          <line>61</line>
+          <option name="timeStamp" value="754" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py</url>
+          <line>28</line>
+          <option name="timeStamp" value="756" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py</url>
+          <line>366</line>
+          <option name="timeStamp" value="758" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/train_yolact.py</url>
+          <line>280</line>
+          <option name="timeStamp" value="761" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py</url>
+          <line>276</line>
+          <option name="timeStamp" value="762" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/train_yolact.py</url>
+          <line>288</line>
+          <option name="timeStamp" value="764" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/nn/protomask.py</url>
+          <line>19</line>
+          <option name="timeStamp" value="765" />
         </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
@@ -766,386 +888,413 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="482" />
+      <option name="time" value="767" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssdexpand.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="223" column="118" lean-forward="true" selection-start-line="214" selection-start-column="16" selection-end-line="223" selection-end-column="118" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="127">
+          <caret line="782" selection-start-line="782" selection-end-line="836" selection-end-column="69" />
+          <folding>
+            <element signature="e#25#63#0" expanded="true" />
+            <element signature="e#25715#25743#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2018.1/system/python_stubs/1634462493/pycocotools/_mask.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="320">
+          <caret line="25" column="4" selection-start-line="25" selection-start-column="4" selection-end-line="25" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/ndarray/ndarray.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="1847" selection-start-line="1847" selection-end-line="1847" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/data/dataset.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="406">
+          <caret line="123" selection-start-line="123" selection-end-line="123" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/data/dataloader.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="249">
+          <caret line="399" selection-start-line="399" selection-end-line="399" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/nn/predictor.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="986">
-          <caret line="61" column="38" selection-start-line="61" selection-start-column="38" selection-end-line="61" selection-end-column="38" />
+        <state relative-caret-position="102">
+          <caret line="42" column="34" selection-start-line="42" selection-start-column="16" selection-end-line="42" selection-end-column="34" />
           <folding>
             <element signature="e#102#140#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/site-packages/mxnet/gluon/data/dataset.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos_target.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2023">
-          <caret line="121" selection-start-line="121" selection-end-line="121" />
+        <state relative-caret-position="709">
+          <caret line="136" column="8" selection-start-line="136" selection-start-column="8" selection-end-line="136" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/site-packages/mxnet/gluon/data/dataloader.py">
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/nn/basic_layers.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6647">
-          <caret line="399" selection-start-line="399" selection-end-line="399" />
+        <state relative-caret-position="1034">
+          <caret line="327" selection-start-line="327" selection-end-line="327" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/multiprocessing/pool.py">
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/block.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1819">
-          <caret line="118" selection-start-line="118" selection-end-line="118" />
+        <state relative-caret-position="296">
+          <caret line="916" selection-start-line="916" selection-end-line="916" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/multiprocessing/process.py">
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/mask.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1496">
-          <caret line="92" selection-start-line="92" selection-end-line="92" />
+        <state relative-caret-position="1275">
+          <caret line="75" selection-start-line="75" selection-end-line="75" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../gluon-cv-master/scripts/detection/faster_rcnn/demo_faster_rcnn.py">
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/numpy/core/fromnumeric.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="522">
-          <caret line="45" column="45" selection-start-line="45" selection-start-column="45" selection-end-line="45" selection-end-column="45" />
+        <state relative-caret-position="167">
+          <caret line="2093" selection-start-line="2093" selection-end-line="2093" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/rcnn_target.py">
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/numpy/core/_methods.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1394">
-          <caret line="86" selection-start-line="86" selection-end-line="86" />
+        <state relative-caret-position="167">
+          <caret line="40" selection-start-line="40" selection-end-line="40" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/se_resnet.py">
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/numpy/core/numeric.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="296" column="17" selection-start-line="296" selection-start-column="17" selection-end-line="296" selection-end-column="17" />
+        <state relative-caret-position="167">
+          <caret line="543" selection-start-line="543" selection-end-line="543" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/pascal_voc/detection.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/mscoco/instance.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="46" column="8" selection-start-line="46" selection-start-column="8" selection-end-line="46" selection-end-column="8" />
+        <state relative-caret-position="-1563">
+          <caret line="50" column="8" selection-start-line="50" selection-start-column="8" selection-end-line="50" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/segmentation/show.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/dataloader.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="561">
-          <caret line="102" column="64" lean-forward="true" selection-start-line="102" selection-start-column="64" selection-end-line="102" selection-end-column="64" />
+        <state relative-caret-position="255">
+          <caret line="122" column="32" selection-start-line="122" selection-start-column="32" selection-end-line="122" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/detection/fcos/train_fcos.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="19" column="33" selection-start-line="19" selection-start-column="8" selection-end-line="19" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/fcos.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="119">
+          <caret line="148" column="23" selection-start-line="148" selection-start-column="23" selection-end-line="148" selection-end-column="23" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="285">
+          <caret line="253" column="36" selection-start-line="253" selection-start-column="36" selection-end-line="253" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/ssd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-136">
+          <caret line="21" column="28" lean-forward="true" selection-start-line="21" selection-start-column="28" selection-end-line="21" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="45" column="3" lean-forward="true" selection-start-line="45" selection-start-column="3" selection-end-line="51" selection-end-column="67" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/rcnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="57" selection-start-line="57" selection-end-line="57" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/codecs.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="201">
+          <caret line="308" selection-start-line="308" selection-end-line="308" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/utils/viz/bbox.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="397">
+          <caret line="66" selection-start-line="66" selection-end-line="66" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/instance/mask_rcnn/demo_mask_rcnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="44" column="39" selection-start-line="44" selection-start-column="30" selection-end-line="44" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/yolact/target.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="43" selection-start-line="43" selection-end-line="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/mask.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="675">
+          <caret line="171" column="23" lean-forward="true" selection-start-line="171" selection-start-column="23" selection-end-line="171" selection-end-column="23" />
+          <folding>
+            <element signature="e#37#48#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/nn/coder.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3859">
+          <caret line="228" column="25" selection-start-line="228" selection-start-column="25" selection-end-line="228" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret line="16" column="70" selection-start-line="16" selection-start-column="70" selection-end-line="16" selection-end-column="70" />
+          <folding>
+            <element signature="e#29#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/image.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3638">
+          <caret line="219" column="4" selection-start-line="219" selection-start-column="4" selection-end-line="219" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/bbox.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2567">
+          <caret line="152" selection-start-line="152" selection-end-line="152" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="27" column="4" selection-start-line="27" selection-start-column="4" selection-end-line="27" selection-end-column="31" />
+          <folding>
+            <element signature="e#36#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/utils/viz/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="10" lean-forward="true" selection-start-line="10" selection-end-line="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/segmentation/test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1199">
+          <caret line="297" column="4" lean-forward="true" selection-start-line="297" selection-start-column="4" selection-end-line="297" selection-end-column="4" />
           <folding>
             <element signature="e#0#9#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/mixup/detection.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="284">
-          <caret line="48" column="10" lean-forward="true" selection-start-line="48" selection-start-column="10" selection-end-line="48" selection-end-column="10" />
+        <state relative-caret-position="102">
+          <caret line="6" column="18" lean-forward="true" selection-start-line="6" selection-start-column="18" selection-end-line="6" selection-end-column="18" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/docs/how_to/contribute.md">
+    <entry file="file://$PROJECT_DIR$/gluoncv/utils/viz/mask.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-2905" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/mask_rcnn/mask_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="221">
-          <caret line="24" column="14" lean-forward="true" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/simple_pose/pose_target.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-430">
-          <caret line="22" column="39" lean-forward="true" selection-start-line="22" selection-start-column="39" selection-end-line="22" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="18" column="45" selection-start-line="18" selection-start-column="45" selection-end-line="18" selection-end-column="45" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/simple_pose.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="726">
-          <caret line="124" column="50" selection-start-line="124" selection-start-column="50" selection-end-line="124" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/pose.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2052">
-          <caret line="293" selection-start-line="293" selection-end-line="293" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/mscoco/keypoints.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="4" column="11" lean-forward="true" selection-start-line="4" selection-start-column="11" selection-end-line="4" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/yolo/yolo3.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1865">
-          <caret line="797" column="39" lean-forward="true" selection-start-line="797" selection-start-column="39" selection-end-line="797" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/utils/filesystem.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="680">
-          <caret line="40" column="34" selection-start-line="40" selection-start-column="34" selection-end-line="40" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/demo_ssd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="267">
-          <caret line="25" column="18" lean-forward="true" selection-start-line="25" selection-start-column="18" selection-end-line="25" selection-end-column="18" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/unittests/test_model_zoo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="726">
-          <caret line="344" column="20" lean-forward="true" selection-start-line="344" selection-start-column="20" selection-end-line="344" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1365">
-          <caret line="388" column="57" selection-start-line="388" selection-start-column="57" selection-end-line="388" selection-end-column="57" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="573">
-          <caret line="255" selection-start-line="255" selection-end-line="255" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/docs/model_zoo/classification.rst">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="17">
-          <caret line="112" column="70" selection-start-line="112" selection-start-column="70" selection-end-line="112" selection-end-column="70" />
+        <state relative-caret-position="46">
+          <caret line="77" column="25" selection-start-line="77" selection-start-column="25" selection-end-line="77" selection-end-column="25" />
+          <folding>
+            <element signature="e#44#92#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/nn/feature.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3961">
-          <caret line="233" column="46" lean-forward="true" selection-start-line="233" selection-start-column="46" selection-end-line="233" selection-end-column="46" />
+        <state relative-caret-position="-620">
+          <caret line="272" column="91" selection-start-line="272" selection-start-column="91" selection-end-line="272" selection-end-column="91" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5219">
-          <caret line="308" selection-start-line="308" selection-end-line="308" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/lib/python3.6/site-packages/mxnet/gluon/block.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="480">
-          <caret line="916" selection-start-line="916" selection-end-line="916" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/eval_faster_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-315">
-          <caret line="115" selection-start-line="115" selection-end-line="115" />
-          <folding>
-            <element signature="e#0#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="51">
-          <caret line="3" column="33" selection-start-line="3" selection-start-column="33" selection-end-line="3" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/classification/cifar/train_cifar10.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="97" column="50" selection-start-line="97" selection-start-column="50" selection-end-line="97" selection-end-column="50" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/classification/cifar/train_cifar10_copy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="94" column="57" lean-forward="true" selection-start-line="94" selection-start-column="57" selection-end-line="94" selection-end-column="57" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/rpn/rpn.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/loss.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="493">
-          <caret line="142" column="13" lean-forward="true" selection-start-line="142" selection-start-column="13" selection-end-line="142" selection-end-column="13" />
+          <caret line="533" column="61" selection-start-line="533" selection-start-column="61" selection-end-line="533" selection-end-column="61" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/rpn/anchor.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/nn/sge.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="508">
-          <caret line="90" selection-start-line="90" selection-end-line="90" />
+        <state relative-caret-position="357">
+          <caret line="21" column="54" selection-start-line="21" selection-start-column="54" selection-end-line="21" selection-end-column="54" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/rcnn.py">
+    <entry file="file://$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="340">
-          <caret line="180" selection-start-line="180" selection-end-line="180" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/codecs.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="869">
-          <caret line="299" column="11" lean-forward="true" selection-start-line="299" selection-start-column="11" selection-end-line="299" selection-end-column="11" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/utils/viz/bbox.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1275">
-          <caret line="79" column="53" selection-start-line="79" selection-start-column="53" selection-end-line="79" selection-end-column="53" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/classification/cifar/CapsDense.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1411">
-          <caret line="84" selection-start-line="84" selection-end-line="84" />
+        <state relative-caret-position="4454">
+          <caret line="281" column="84" selection-start-line="281" selection-start-column="84" selection-end-line="281" selection-end-column="84" />
           <folding>
-            <element signature="e#0#18#0" expanded="true" />
+            <element signature="e#16#31#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/parameter.py">
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="151">
-          <caret line="236" selection-start-line="236" selection-end-line="236" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/block.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="206">
-          <caret line="916" selection-start-line="916" selection-end-line="916" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="748">
-          <caret line="45" column="62" selection-start-line="45" selection-start-column="62" selection-end-line="45" selection-end-column="62" />
+        <state relative-caret-position="8194">
+          <caret line="494" selection-start-line="494" selection-end-line="494" />
           <folding>
-            <element signature="e#36#51#0" expanded="true" />
+            <element signature="e#38#76#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="293">
-          <caret line="49" selection-start-line="49" selection-end-line="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="23" selection-start-line="23" selection-end-line="23" />
-          <folding>
-            <element signature="e#18#56#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/rcnn/rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="952">
-          <caret line="101" column="41" lean-forward="true" selection-start-line="101" selection-start-column="41" selection-end-line="101" selection-end-column="41" />
-          <folding>
-            <element signature="e#18#56#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/faster_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="194">
-          <caret line="1346" selection-start-line="1346" selection-end-line="1346" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="765">
-          <caret line="46" column="76" selection-start-line="46" selection-start-column="76" selection-end-line="46" selection-end-column="76" />
-          <folding>
-            <element signature="e#36#51#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="612">
-          <caret line="40" column="61" selection-start-line="40" selection-start-column="61" selection-end-line="40" selection-end-column="61" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/cifarwideresnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-273">
-          <caret line="200" column="5" lean-forward="true" selection-start-line="200" selection-start-column="5" selection-end-line="200" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/resnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="638" column="5" lean-forward="true" selection-start-line="638" selection-start-column="5" selection-end-line="638" selection-end-column="36" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="379">
-          <caret line="133" column="50" selection-start-line="133" selection-start-column="29" selection-end-line="133" selection-end-column="50" />
+        <state relative-caret-position="4318">
+          <caret line="287" selection-start-line="287" selection-end-line="287" />
+          <folding>
+            <element signature="e#167#189#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/cifarresnext.py">
+    <entry file="file://$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_copy.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-117">
-          <caret line="196" column="5" lean-forward="true" selection-start-line="196" selection-start-column="5" selection-end-line="196" selection-end-column="36" />
+        <state relative-caret-position="7752">
+          <caret line="457" selection-start-line="457" selection-end-line="457" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/nn/protomask.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="27" column="57" selection-start-line="27" selection-start-column="57" selection-end-line="27" selection-end-column="57" />
+          <folding>
+            <element signature="e#0#38#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5797">
+          <caret line="366" selection-start-line="366" selection-end-line="366" />
+          <folding>
+            <element signature="e#16#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="314">
+          <caret line="235" selection-start-line="235" selection-end-line="235" />
+          <folding>
+            <element signature="e#38#76#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3118">
+          <caret line="206" column="16" selection-start-line="206" selection-start-column="16" selection-end-line="206" selection-end-column="16" />
+          <folding>
+            <element signature="e#64#102#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="120" column="39" selection-start-line="120" selection-start-column="21" selection-end-line="120" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/train_yolact.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-23">
+          <caret line="145" selection-start-line="145" selection-end-line="145" />
+          <folding>
+            <element signature="e#16#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/utils/metrics/coco_instance.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="386">
+          <caret line="118" column="27" selection-start-line="118" selection-start-column="18" selection-end-line="118" selection-end-column="27" />
+          <folding>
+            <element signature="e#54#92#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.local/lib/python3.6/site-packages/pycocotools/cocoeval.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3910">
+          <caret line="235" column="19" selection-start-line="235" selection-start-column="8" selection-end-line="235" selection-end-column="19" />
         </state>
       </provider>
     </entry>
