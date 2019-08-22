@@ -22,28 +22,28 @@ from gluoncv.utils.metrics.accuracy import Accuracy
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='vgg16_atrous',
+    parser.add_argument('--network', type=str, default='peleenet50',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=300,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=2,
+    parser.add_argument('--batch-size', type=int, default=64,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=int, default=351,
+    parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='',
+    parser.add_argument('--resume', type=str, default='ssd_300_peleenet50_voc_best.params',
                         help='Resume from previously saved parameters if not None. '
                         'For example, you can resume from ./ssd_xxx_0123.params')
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=float, default=0.001,
+    parser.add_argument('--lr', type=float, default=0.0001,
                         help='Learning rate, default is 0.001')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
@@ -55,11 +55,11 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='debug1_',
+    parser.add_argument('--save-prefix', type=str, default='',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
-    parser.add_argument('--val-interval', type=int, default=10,
+    parser.add_argument('--val-interval', type=int, default=1,
                         help='Epoch interval for validation, increase the number will reduce the '
                              'training time if validation is slow.')
     parser.add_argument('--seed', type=int, default=233,
@@ -150,8 +150,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     """Training pipeline"""
     net.collect_params().reset_ctx(ctx)
     trainer = gluon.Trainer(
-        net.collect_params(), 'adam',
-        {'learning_rate': args.lr, 'wd': args.wd})#, 'momentum': args.momentum})
+        net.collect_params(), 'sgd',
+        {'learning_rate': args.lr, 'wd': args.wd, 'momentum': args.momentum})
 
     # lr decay policy
     lr_decay = float(args.lr_decay)
