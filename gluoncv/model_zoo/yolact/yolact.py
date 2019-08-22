@@ -110,7 +110,7 @@ class YOLACT(HybridBlock):
     def __init__(self, network, base_size, features, sizes, ratios,
                  steps, classes, num_prototypes=64, global_pool=False, pretrained=False,
                  stds=(0.1, 0.1, 0.2, 0.2), nms_thresh=0.45, nms_topk=400, post_nms=100,
-                 anchor_alloc_size=128, **kwargs):
+                 anchor_alloc_size=128, sge=False, **kwargs):
         super(YOLACT, self).__init__(**kwargs)
 
         num_layers = len(features) + int(global_pool)*2
@@ -151,7 +151,7 @@ class YOLACT(HybridBlock):
                 self.class_predictors.add(ConvPredictor(num_anchors * (len(self.classes) + 1)))
                 self.box_predictors.add(ConvPredictor(num_anchors * 4))
                 self.maskcoe_predictors.add(ConvPredictor(num_anchors*self.k, activation='tanh'))
-            self.protomask.add(Protonet([256, 256, 256, 256, self.k]))
+            self.protomask.add(Protonet([256, 256, 256, 256, self.k], sge=sge))
             self.bbox_decoder = NormalizedBoxCenterDecoder(stds)
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
 
@@ -330,7 +330,7 @@ class YOLACT(HybridBlock):
             self.cls_decoder = MultiPerClassDecoder(len(self.classes) + 1, thresh=0.01)
 
 def get_yolact(name, base_size, features, sizes, ratios, steps, classes,
-            dataset, pretrained=False, pretrained_base=True, ctx=mx.cpu(),
+            dataset, pretrained=False, pretrained_base=True, ctx=mx.cpu(), sge=False,
             root=os.path.join('~', '.mxnet', 'models'), **kwargs):
     """Get YOLACT models.
 
@@ -390,7 +390,7 @@ def get_yolact(name, base_size, features, sizes, ratios, steps, classes,
     pretrained_base = False if pretrained else pretrained_base
     base_name = None if callable(features) else name
     net = YOLACT(base_name, base_size, features, sizes, ratios, steps,
-                 pretrained=pretrained_base, global_pool=True, classes=classes,**kwargs)
+                 pretrained=pretrained_base, global_pool=True, classes=classes, sge=sge, **kwargs)
     if pretrained:
         from ..model_store import get_model_file
         full_name = '_'.join(('yolact', str(base_size), name, dataset))
@@ -478,7 +478,7 @@ def yolact_512_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **
                    pretrained_base=pretrained_base,
                    fpn=True,**kwargs)
 
-def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, num_prototypes=32, **kwargs):
+def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, num_prototypes=32, sge=False, **kwargs):
     from ...data import COCODetection
     classes = COCODetection.CLASSES
     from ..resnetv1b import resnet50_v1b
@@ -491,6 +491,7 @@ def yolact_550_fpn_resnet50_v1b_coco(pretrained=False, pretrained_base=True, num
                    classes=classes, dataset='coco', pretrained=pretrained,
                    pretrained_base=pretrained_base,
                    num_prototypes=num_prototypes,
+                   sge=sge,
                    **kwargs)
 
 def yolact_550_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwargs):
@@ -500,10 +501,11 @@ def yolact_550_fpn_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **
     base_network = resnet101_v1d(pretrained=pretrained_base,**kwargs)
     return get_yolact(base_network, 550,
                    features=['layers2_relu11_fwd', 'layers3_relu68_fwd', 'layers4_relu8_fwd'],  #'layers1_relu8_fwd',
-                   sizes=[24, 51.2, 102.4, 204.8, 384, 448.52],
+                   sizes=[24, 48, 96, 192, 384, 768],
                    ratios=[[1, 2, 0.5]]*5,
                    steps=[8, 16, 32, 64, 128],
                    classes=classes, dataset='coco', pretrained=pretrained,
                    pretrained_base=pretrained_base,
                    num_prototypes=32,
+                   sge=False,
                    **kwargs)

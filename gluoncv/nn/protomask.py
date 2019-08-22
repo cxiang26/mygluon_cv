@@ -1,20 +1,23 @@
 from __future__ import absolute_import
 from mxnet import gluon
-
+from .sge import SpatialGroupEnhance
 
 class Protonet(gluon.HybridBlock):
-    def __init__(self, channels=[256, 256, 256, 64], act_fun=None, upsampling_ratio=2, **kwargs):
+    def __init__(self, channels=[256, 256, 256, 64], act_fun=None, upsampling_ratio=2, sge=False, **kwargs):
         super(Protonet, self).__init__(**kwargs)
 
         self.channels = channels
         self.upsampling_ratio=upsampling_ratio
         self.activation = act_fun
+        self.sge = sge
         with self.name_scope():
             self.net = gluon.nn.HybridSequential(prefix='protonet_')
             self.mask = gluon.nn.HybridSequential(prefix='mask_')
             for i, channel in enumerate(self.channels):
                 if i < len(self.channels)-2:
                     self.net.add(gluon.nn.Conv2D(channels=channel, kernel_size=(3,3), strides=(1,1), padding=(1, 1)))
+                    if self.sge and i in [0, 2]:
+                        self.net.add(SpatialGroupEnhance(int(64 / (2**i))))
                     self.net.add(gluon.nn.Activation('relu'))
                     # self.net.add(gluon.nn.BatchNorm())
                 elif i == len(self.channels) - 2:
