@@ -164,7 +164,7 @@ class PeleeNet(HybridBlock):
 
     def hybrid_forward(self, F, x):
         x = self.features(x)
-        x = F.Pooling(x, pool_type='avg',kernel=(7,7))
+        x = F.Pooling(x, pool_type='avg',global_pool=True)
         x = x.flatten()
         x = self.output(x)
         out = F.log_softmax(x, axis=1)
@@ -179,22 +179,10 @@ def get_peleenet(num_layers=50, pretrained=False, ctx=cpu(),
     num_init_features, growth_rate, block_config = peleenet_spec[num_layers]
     net = PeleeNet(num_classes=1000, num_init_features=num_init_features, growthRate=growth_rate,
                    nDenseBlocks=block_config, bottleneck_width=[1, 2, 4, 4], **kwargs)
-    if pretrained:
-        from .model_store import get_model_file
-        if not use_se:
-            net.load_parameters(get_model_file('resnet%d'%(num_layers),
-                                               tag=pretrained, root=root), ctx=ctx)
-        else:
-            net.load_parameters(get_model_file('se_resnet%d'%(num_layers),
-                                               tag=pretrained, root=root), ctx=ctx)
-        from ..data import ImageNet1kAttr
-        attrib = ImageNet1kAttr()
-        net.synset = attrib.synset
-        net.classes = attrib.classes
-        net.classes_long = attrib.classes_long
     return net
 
-peleenet_spec = {50:(32, 32, [3, 4, 8, 6])}
+peleenet_spec = {50:(32, 32, [3, 4, 8, 6]),
+                 }
 
 def peleenet(**kwargs):
     return get_peleenet(**kwargs)
