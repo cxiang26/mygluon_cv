@@ -4,9 +4,6 @@ from . import rcnn
 from . import yolo
 from . import imagenet
 from . import simple_pose
-<<<<<<< HEAD
 from . import fcos
 from . import yolact
-=======
 from . import segmentation
->>>>>>> origin

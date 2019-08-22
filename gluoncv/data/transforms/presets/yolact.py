@@ -48,6 +48,7 @@ def transform_test(imgs, short, max_size=1024, mean=(0.485, 0.456, 0.406),
     for img in imgs:
         img = timage.resize_short_within(img, short, max_size)
         orig_img = img.asnumpy().astype('uint8')
+        img = timage.imresize(img, short, short, interp=1)
         img = mx.nd.image.to_tensor(img)
         img = mx.nd.image.normalize(img, mean=mean, std=std)
         tensors.append(img.expand_dims(0))
@@ -144,18 +145,18 @@ class YOLACTDefaultTrainTransform(object):
         img = experimental.image.random_color_distort(src)
         # random expansion with prob 0.5
         if np.random.uniform(0, 1) > 0.5:
-            img, expand = timage.random_expand(img, max_ratio=2, fill=[m * 255 for m in self._mean])
+            img, expand = timage.random_expand(img, max_ratio=1.2, fill=[m * 255 for m in self._mean])
             bbox = tbbox.translate(label, x_offset=expand[0], y_offset=expand[1])
             segm = [tmask.expand(polys, x_offset=expand[0], y_offset=expand[1]) for polys in segm]
         else:
             img, bbox, segm = img, label, segm
-
-        # random cropping
-        h, w, _ = img.shape
-        bbox, crop = experimental.bbox.random_crop_with_constraints(bbox, (w, h))
-        x0, y0, w, h = crop
-        img = mx.image.fixed_crop(img, x0, y0, w, h)
-        segm = [tmask.crop(polys, x0, y0, w, h) for polys in segm]
+        # img, bbox = src, label
+        # random cropping  maybe bbox shape not equel with segms
+        # h, w, _ = img.shape
+        # bbox, crop = experimental.bbox.random_crop_with_constraints(bbox, (w, h), min_scale=0.8)
+        # x0, y0, w, h = crop
+        # img = mx.image.fixed_crop(img, x0, y0, w, h)
+        # segm = [tmask.crop(polys, x0, y0, w, h) for polys in segm]
 
         # resize with random interpolation
         h, w, _ = img.shape
@@ -190,46 +191,6 @@ class YOLACTDefaultTrainTransform(object):
             self._anchors, None, gt_bboxes, gt_ids)
         return img, cls_targets[0], box_targets[0], gt_masks, matches.squeeze()
 
-
-# class YOLACTDefaultValTransform(object):
-    # """Default SSD validation transform.
-    #
-    # Parameters
-    # ----------
-    # width : int
-    #     Image width.
-    # height : int
-    #     Image height.
-    # mean : array-like of size 3
-    #     Mean pixel values to be subtracted from image tensor. Default is [0.485, 0.456, 0.406].
-    # std : array-like of size 3
-    #     Standard deviation to be divided from image. Default is [0.229, 0.224, 0.225].
-    #
-    # """
-    # def __init__(self, width, height, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), scale=8):
-    #     self._width = width
-    #     self._height = height
-    #     self._mean = mean
-    #     self._std = std
-    #     self._scale = scale
-    #
-    # def __call__(self, src, label, segm):
-    #     """Apply transform to validation image/label."""
-    #     # resize
-    #     h, w, _ = src.shape
-    #     mask_width, mask_height = int(self._width/self._scale), int(self._height/self._scale)
-    #     img = timage.imresize(src, self._width, self._height, interp=9)
-    #     bbox = tbbox.resize(label, in_size=(w, h), out_size=(self._width, self._height))
-    #     segm = [tmask.resize(polys, in_size=(w, h), out_size=(mask_width, mask_height)) for polys in segm]
-    #
-    #     img = mx.nd.image.to_tensor(img)
-    #     img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
-    #     masks = [mx.nd.array(tmask.to_mask(polys, (mask_width, mask_height))) for polys in segm]
-    #     masks = mx.nd.stack(*masks, axis=0)
-    #     gt_masks = mx.nd.zeros(shape=(25, mask_width, mask_height))
-    #     assert masks.shape[0] <= 25, "gt masks has less channels!"
-    #     gt_masks[:masks.shape[0], :, :] = masks
-    #     return img, bbox.astype(img.dtype), gt_masks
 
 class YOLACTDefaultValTransform(object):
 
