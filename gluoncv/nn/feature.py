@@ -224,15 +224,8 @@ class FPNFeatureExpander(SymbolBlock):
                             norm_kwargs['key'] = "P{}_lat_bn".format(num_stages - i)
                             norm_kwargs['name'] = "P{}_lat_bn".format(num_stages - i)
                         y = norm_layer(y, **norm_kwargs)
-<<<<<<< HEAD
                     y = mx.sym.Activation(y, act_type='relu', name='expand_reu{}'.format(i))
-                if use_p6:
-                    # method 1 : use max pool (Detectron use this)
-                    # y_p6 = mx.sym.Pooling(y, pool_type='max', kernel=(1, 1), pad=(0, 0),
-                    #                       stride=(2, 2), name="P{}_pre".format(num_stages+1))
-=======
                 if use_p6 and p6_conv:
->>>>>>> origin
                     # method 2 : use conv (Deformable use this)
                     y_p6 = mx.sym.Convolution(y, num_filter=f, kernel=(3, 3), pad=(1, 1),
                                               stride=(2, 2), no_bias=no_bias,
@@ -273,14 +266,11 @@ class FPNFeatureExpander(SymbolBlock):
             out = mx.sym.Convolution(y, num_filter=f, kernel=(3, 3), pad=(1, 1), stride=(1, 1),
                                      no_bias=no_bias, name='P{}_conv1'.format(num_stages - i),
                                      attr={'__init__': weight_init})
-<<<<<<< HEAD
             out = mx.sym.Activation(out, act_type='relu', name='expand_out_reu{}'.format(i))
-=======
             if i == 0 and use_p6 and not p6_conv:
                 # method 2 : use max pool (Detectron use this)
                 y_p6 = mx.sym.Pooling(out, pool_type='max', kernel=(1, 1), pad=(0, 0),
                                       stride=(2, 2), name="P{}_pre".format(num_stages + 1))
->>>>>>> origin
             if norm_layer is not None:
                 if norm_layer is SyncBatchNorm:
                     norm_kwargs['key'] = "P{}_bn".format(num_stages - i)
