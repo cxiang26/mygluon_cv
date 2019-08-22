@@ -33,14 +33,14 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0,1',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=55,
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='',
+    parser.add_argument('--resume', type=str, default= '/mnt/mdisk/xcq/results/yolact/sge_yolact_550_fpn_resnet50_v1b_coco_best.params',
                         help='Resume from previously saved parameters if not None. '
                         'For example, you can resume from ./ssd_xxx_0123.params')
-    parser.add_argument('--start-epoch', type=int, default=0,
+    parser.add_argument('--start-epoch', type=int, default=11,
                         help='Starting epoch for resuming, default is 0 for new training.'
                         'You can specify it to 100 for example to start from 100 epoch.')
     parser.add_argument('--lr', type=float, default=0.001,
@@ -55,11 +55,11 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/yolact/',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/yolact/sge_',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
-    parser.add_argument('--val-interval', type=int, default=10,
+    parser.add_argument('--val-interval', type=int, default=1,
                         help='Epoch interval for validation, increase the number will reduce the '
                              'training time if validation is slow.')
     parser.add_argument('--seed', type=int, default=233,
@@ -120,8 +120,8 @@ def crop(bboxes, h, w, masks):
         _w = mx.nd.tile(_w, reps=(b, 1))
         x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
         x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-        _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
-        _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
         _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
@@ -129,7 +129,7 @@ def crop(bboxes, h, w, masks):
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
-    # clipper = gcv.nn.bbox.BBoxClipToImage()
+    clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
     # if not args.disable_hybridization:
     #     net.hybridize(static_alloc=args.static_alloc)
@@ -142,6 +142,8 @@ def validate(net, val_data, ctx, eval_metric):
             for i in range(det_bbox.shape[0]):
                 # numpy everything
                 det_bbox_t = det_bbox[i] # det_bbox_t: [x1, y1, x2, y2]
+                det_bbox_t = clipper(det_bbox_t, x)
+
                 det_id_t = det_id[i].asnumpy()
                 det_score_t = det_score[i].asnumpy()
                 det_maskeoc_t = det_maskeoc[i]
@@ -278,10 +280,10 @@ if __name__ == '__main__':
     args.save_prefix += net_name
     if args.syncbn and len(ctx) > 1:
         net = get_model(net_name, pretrained_base=True, norm_layer=gluon.contrib.nn.SyncBatchNorm,
-                        norm_kwargs={'num_devices': len(ctx)})
+                        norm_kwargs={'num_devices': len(ctx)}, num_prototypes=32)
         async_net = get_model(net_name, pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=True)
+        net = get_model(net_name, pretrained_base=True, num_prototypes=32, sge=True)
         async_net = net
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
