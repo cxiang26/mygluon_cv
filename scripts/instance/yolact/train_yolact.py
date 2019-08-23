@@ -74,8 +74,8 @@ def parse_args():
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'coco':
-        train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_train2017')
-        val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/', splits='instances_train2017')
+        val_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/', splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))

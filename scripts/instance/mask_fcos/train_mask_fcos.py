@@ -57,7 +57,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -112,8 +112,8 @@ def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         pass
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_train2017')
-        val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017')
+        val_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))

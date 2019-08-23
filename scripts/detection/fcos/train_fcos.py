@@ -57,7 +57,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/fcos/',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/fcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -117,8 +117,8 @@ def get_dataset(dataset, args):
         #     splits=[(2007, 'test')])
         # val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_train2017', use_crowd=False)
-        val_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017', use_crowd=False)
+        val_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCODetectionMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
