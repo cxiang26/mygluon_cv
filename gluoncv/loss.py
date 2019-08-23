@@ -10,7 +10,7 @@ from .nn.coder import NormalizedBoxCenterDecoder
 
 __all__ = ['FocalLoss', 'SSDMultiBoxLoss', 'YOLOV3Loss', 'YOLACTMultiBoxLoss',
            'MixSoftmaxCrossEntropyLoss', 'MixSoftmaxCrossEntropyOHEMLoss',
-           'DistillationSoftmaxCrossEntropyLoss']
+           'DistillationSoftmaxCrossEntropyLoss', 'MaskLoss']
 
 class FocalLoss(Loss):
     """Focal Loss for inbalanced classification.
@@ -574,3 +574,141 @@ class YOLACTMultiBoxLoss(gluon.Block):
 
         return sum_losses, cls_losses, box_losses, mask_losses
 
+class IOULoss(Loss):
+    """Implementation of IOULoss Per Card."""
+    def __init__(self, return_iou, eps=1e-5, weight=None, batch_axis=0, **kwargs):
+        super(IOULoss, self).__init__(weight, batch_axis, **kwargs)
+        self._return_iou = return_iou
+        self._eps = eps
+
+    def hybrid_forward(self, F, pred, gt, label):
+        """
+        pred : [B, N, 4]
+        gt : [B, N, 4]
+        label : [B, N]
+        """
+        px1, py1, px2, py2 = F.split(pred, num_outputs=4, axis=-1, squeeze_axis=True)
+        gx1, gy1, gx2, gy2 = F.split(gt, num_outputs=4, axis=-1, squeeze_axis=True)
+        apd = F.abs(px2 - px1 + 1) * F.abs(py2 - py1 + 1)
+        agt = F.abs(gx2 - gx1 + 1) * F.abs(gy2 - gy1 + 1)
+
+        iw = F.maximum(F.minimum(px2, gx2) - F.maximum(px1, gx1)+1., 0.)
+        ih = F.maximum(F.minimum(py2, gy2) - F.maximum(py1, gy1)+1., 0.)
+        ain = iw * ih + 1.
+        union = apd + agt - ain + 1.
+        ious = F.maximum(ain / union, 0.)
+        # label = F.squeeze(label, axis=-1)
+        fg_mask = F.where(label > 0, F.ones_like(label), F.zeros_like(label))
+        loss = -F.log(F.minimum(ious + self._eps, 1.)) * fg_mask
+        if self._return_iou:
+            return F.sum(loss) / F.maximum(F.sum(fg_mask), 1), ious
+        return F.sum(loss) / F.maximum(F.sum(fg_mask), 1)
+
+class CtrNessLoss(Loss):
+    """Implementation of CenterNess Loss Per Card."""
+    def __init__(self, eps=1e-5,  weight=None, batch_axis=0, **kwargs):
+        super(CtrNessLoss, self).__init__(weight, batch_axis, **kwargs)
+
+    def hybrid_forward(self, F, pred, ctr_gt, cls_gt):
+        pred = F.squeeze(pred, axis=-1)
+        pos_gt_mask = cls_gt > 0
+        pos_pred_mask = pred >= 0
+        loss = (pred * pos_pred_mask - pred * ctr_gt + F.log(1 + \
+                F.exp(-F.abs(pred)))) * pos_gt_mask
+        return F.sum(loss) / F.maximum(F.sum(pos_gt_mask), 1)
+
+class SigmoidFocalLoss(Loss):
+    """SigmoidFocalLoss Per GPU Card."""
+    def __init__(self, alpha=0.25, gamma=2, sparse_label=True, from_logits=False,
+                 batch_axis=0, weight=None, num_class=None, eps=1e-12, **kwargs):
+        super(SigmoidFocalLoss, self).__init__(weight, batch_axis, **kwargs)
+        self._alpha = alpha
+        self._gamma = gamma
+        self._sparse_label = sparse_label
+        if sparse_label and (not isinstance(num_class, int) or (num_class < 1)):
+            raise ValueError("Number of class > 0 must be provided if sparse label is used.")
+        self._num_class = num_class
+        self._from_logits = from_logits
+        self._eps = eps
+
+    def hybrid_forward(self, F, pred, label, sample_weight=None):
+        """Loss forward"""
+        if not self._from_logits:
+            pred = F.sigmoid(pred)
+        one_hot = F.one_hot(label, self._num_class)
+        one_hot = F.slice_axis(one_hot, begin=1, end=None, axis=-1)
+        pt = F.where(one_hot, pred, 1 - pred)
+        t = F.ones_like(one_hot)
+        alpha = F.where(one_hot, self._alpha * t, (1 - self._alpha) * t)
+        loss = -alpha * ((1 - pt) ** self._gamma) * F.log(F.minimum(pt + self._eps, 1))
+        loss = _apply_weighting(F, loss, self._weight, sample_weight)
+
+        # Method 2:
+        # pos_part = F.power(1 - pred, self._gamma) * one_hot * \
+        #         F.log(pred + self._eps)
+        # neg_part = F.power(pred, self._gamma) * (1 - one_hot) * \
+        #         F.log(1 - pred + self._eps)
+        # loss = -F.sum(self._alpha * pos_part + (1 - self._alpha) * neg_part, axis=-1)
+        # loss = _apply_weighting(F, loss, self._weight, sample_weight)
+        pos_mask = (label > 0)
+        return F.sum(loss) / F.maximum(F.sum(pos_mask), 1)
+
+class MaskLoss(gluon.Block):
+    def __init__(self, mask_lambd=1.25, **kwargs):
+        super(MaskLoss, self).__init__(**kwargs)
+        self.gt_weidth = 740
+        self.gt_height = 740
+        self.mask_lambd = mask_lambd
+        self.SBCELoss = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
+
+    def crop(self, bboxes, h, w, masks):
+        scale = 4
+        b = bboxes.shape[0]
+        ctx = bboxes.context
+        with autograd.pause():
+            _h = nd.arange(h, ctx = ctx)
+            _w = nd.arange(w, ctx = ctx)
+            _h = nd.tile(_h, reps=(b, 1))
+            _w = nd.tile(_w, reps=(b, 1))
+            x1, y1 = nd.round(bboxes[:, 0]/scale), nd.round(bboxes[:, 1]/scale)
+            x2, y2 = nd.round((bboxes[:, 2])/scale), nd.round((bboxes[:, 3])/scale)
+            _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
+            _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+            _mask = nd.batch_dot(_h.expand_dims(axis=-1),  _w.expand_dims(axis=-1), transpose_b=True)
+        masks = _mask * masks
+        return masks
+
+    def global_aware(self, masks):
+        _, h, w = masks.shape
+        masks = masks.reshape((0, -1))
+        masks = masks - nd.mean(masks, axis=-1, keepdims=True)
+        std = nd.sqrt(nd.mean(nd.square(masks), axis=-1, keepdims=True))
+        masks = (masks / (std + 1e-6)).reshape((0, h, w))
+        return masks
+
+    def mask_loss(self, mask_pred, mask_eoc, mask_target, matches, bt_target):
+        samples = (matches >= 0)
+        pos_num = samples.sum(axis=-1).asnumpy().astype('int')
+        rank = (-matches).argsort(axis=-1)
+        losses = []
+        for i in range(mask_pred.shape[0]):
+            if pos_num[i] == 0:
+                losses.append(nd.zeros(shape=(1,), ctx=mask_pred.context))
+                continue
+            idx = rank[i, :pos_num[i]]
+            pos_bboxe = nd.take(bt_target[i], idx)
+            area = (pos_bboxe[:, 3] - pos_bboxe[:, 1]) * (pos_bboxe[:, 2] - pos_bboxe[:, 0])
+            weight = self.gt_weidth * self.gt_height / area
+            mask_gt = mask_target[i, matches[i, idx], :, :]
+            mask_preds = nd.dot(nd.take(mask_eoc[i], idx), mask_pred[i])
+            _, h, w = mask_preds.shape
+            # mask_preds = self.global_aware(mask_preds)
+            mask_preds = nd.sigmoid(mask_preds)
+            mask_preds = self.crop(pos_bboxe, h, w, mask_preds)
+            loss = self.SBCELoss(mask_preds, mask_gt) * weight
+            losses.append(nd.mean(loss))
+        return nd.concat(*losses, dim=0)
+
+    def forward(self, box_target, gt_masks, matches, masks, maskeoc_pred):
+        mask_loss = self.mask_lambd * self.mask_loss(masks, maskeoc_pred, gt_masks, matches, box_target)
+        return nd.mean(mask_loss)

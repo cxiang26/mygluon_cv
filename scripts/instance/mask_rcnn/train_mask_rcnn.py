@@ -377,7 +377,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'.format(
                     epoch, i, args.log_interval * args.batch_size / (time.time() - btic), msg))
                 btic = time.time()
-            break
 
         # validate and save params
         if (not args.horovod or hvd.rank() == 0):

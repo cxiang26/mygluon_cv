@@ -55,7 +55,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/yolact/',
+    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/yolact/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=10,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -74,8 +74,8 @@ def parse_args():
 
 def get_dataset(dataset, args):
     if dataset.lower() == 'coco':
-        train_dataset = gdata.COCOInstance(splits='instances_train2017')
-        val_dataset = gdata.COCOInstance(splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_train2017')
+        val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/', splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
@@ -126,6 +126,13 @@ def crop(bboxes, h, w, masks):
     masks = _mask * masks
     return masks
 
+def global_aware(masks):
+    _, h, w = masks.shape
+    masks = masks.reshape((0, -1))
+    masks = masks - mx.nd.mean(masks, axis=-1, keepdims=True)
+    std = mx.nd.sqrt(mx.nd.mean(mx.nd.square(masks), axis=-1, keepdims=True))
+    masks = (masks / (std + 1e-6)).reshape((0, h, w))
+    return masks
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
@@ -150,6 +157,7 @@ def validate(net, val_data, ctx, eval_metric):
                 im_height, im_width, h_scale, w_scale = det_inf[i].asnumpy()
                 im_height, im_width = int(round(im_height / h_scale)), \
                                       int(round(im_width / w_scale))
+
                 full_mask = mx.nd.sigmoid(full_mask)
                 _, h, w = full_mask.shape
                 full_mask = crop(det_bbox_t, h, w, full_mask).asnumpy()
@@ -243,6 +251,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}={:.3f}, {}={:.3f}, {}={:.3f},'.format(
                     epoch, i, batch_size/(time.time()-btic), name1, loss1, name2, loss2, name3, loss3))
             btic = time.time()
+            break
 
         name1, loss1 = ce_metric.get()
         name2, loss2 = smoothl1_metric.get()

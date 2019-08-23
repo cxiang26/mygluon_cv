@@ -17,37 +17,37 @@ from gluoncv import utils as gutils
 from gluoncv.model_zoo import get_model
 from gluoncv.data import batchify
 from gluoncv.data.transforms.presets.fcos import \
-        FCOSDefaultTrainTransform, FCOSDefaultValTransform
-from gluoncv.utils.metrics.coco_detection import COCODetectionMetric
+        MaskFCOSDefaultTrainTransform, MaskFCOSDefaultValTransform
+from gluoncv.utils.metrics.coco_instance import COCOInstanceMetric
 # from IPython import embed
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train FCOS networks e2e.')
+    parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=1,
+    parser.add_argument('--batch-size', type=int, default=4,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='3',
+    parser.add_argument('--gpus', type=str, default='2, 3',
                         help='Training with GPUs, you can specify 1,3 for example.')
-    parser.add_argument('--epochs', type=str, default='',
+    parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='',
+    parser.add_argument('--resume', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/maskfcos_resnet50_v1_coco_best.params',
                         help='Resume from previously saved parameters if not None. '
                              'For example, you can resume from ./faster_rcnn_xxx_0123.params')
     parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                              'You can specify it to 100 for example to start from 100 epoch.')
-    parser.add_argument('--lr', type=str, default='',
+    parser.add_argument('--lr', type=str, default='0.001',
                         help='Learning rate, default is 0.001 for voc single gpu training.')
     parser.add_argument('--lr-decay', type=float, default=0.1,
                         help='decay rate of learning rate. default is 0.1.')
-    parser.add_argument('--lr-decay-epoch', type=str, default='',
+    parser.add_argument('--lr-decay-epoch', type=str, default='20, 40, 47, 51',
                         help='epochs at which learning rate decays. default is 14,20 for voc.')
     parser.add_argument('--lr-warmup', type=int, default=0,
                         help='warmup iterations to adjust learning rate, default is 0 for voc.')
@@ -57,7 +57,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/fcos/',
+    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -111,15 +111,10 @@ def parse_args():
 def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         pass
-        # train_dataset = gdata.VOCDetection(
-        #     splits=[(2007, 'trainval'), (2012, 'trainval')])
-        # val_dataset = gdata.VOCDetection(
-        #     splits=[(2007, 'test')])
-        # val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_train2017', use_crowd=False)
-        val_dataset = gdata.COCODetection(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
-        val_metric = COCODetectionMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
+        train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_train2017')
+        val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
+        val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval',  cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.mixup:
@@ -131,16 +126,15 @@ def get_dataset(dataset, args):
 def get_dataloader(net, train_dataset, val_dataset, train_transform, val_transform, batch_size,
                    num_workers):
     """Get dataloader."""
-    train_bfn = batchify.Tuple(*[batchify.Append() for _ in range(5)])
+    train_bfn = batchify.Tuple(*[batchify.Stack() for _ in range(6)])
     train_loader = mx.gluon.data.DataLoader(
         train_dataset.transform(train_transform(
-            net.short, net.max_size, net.base_stride, net.valid_range)),
+            net.short, net.base_stride, net.valid_range)),
             batch_size, True, batchify_fn=train_bfn, last_batch='rollover',
             num_workers=num_workers)
-    val_bfn = batchify.Tuple(*[batchify.Append() for _ in range(4)])
-    short = net.short[-1] if isinstance(net.short, (tuple, list)) else net.short
+    val_bfn = batchify.Tuple(*[batchify.Stack() for _ in range(2)])
     val_loader = mx.gluon.data.DataLoader(
-        val_dataset.transform(val_transform(short, net.max_size, net.base_stride)),
+        val_dataset.transform(val_transform(net.short, net.base_stride)),
         batch_size, False, batchify_fn=val_bfn, last_batch='keep', num_workers=num_workers)
     return train_loader, val_loader
 
@@ -173,55 +167,56 @@ def split_and_load(batch, ctx_list):
         new_batch.append(new_data)
     return new_batch
 
+def crop(bboxes, h, w, masks):
+    scale = 4
+    b = masks.shape[0]
+    with autograd.pause():
+        ctx = bboxes.context
+        _h = mx.nd.arange(h, ctx=ctx)
+        _w = mx.nd.arange(w, ctx = ctx)
+        _h = mx.nd.tile(_h, reps=(b, 1))
+        _w = mx.nd.tile(_w, reps=(b, 1))
+        x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
+        x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
+        _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
+    masks = _mask * masks
+    return masks
 
 def validate(net, val_data, ctx, eval_metric):
     """Test on validation dataset."""
     clipper = gcv.nn.bbox.BBoxClipToImage()
     eval_metric.reset()
-    # net.hybridize(static_alloc=True)
-    nms_thresh = net.nms_thresh
-    nms_topk = net.nms_topk
-    save_topk = net.post_nms
+    net.hybridize(static_alloc=True)
     for batch in val_data:
-        batch = split_and_load(batch, ctx_list=ctx)
-        det_bboxes = []
-        det_ids = []
-        det_scores = []
-        gt_bboxes = []
-        gt_ids = []
-        gt_difficults = []
-        for x, y, cor, im_scale in zip(*batch):
+        data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
+        det_info = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
+        for x, det_inf in zip(data, det_info):
             # get prediction results
-            cls_probs, bboxes = net(x)
-            cls_id = cls_probs.argmax(axis=-1)
-            probs = mx.nd.pick(cls_probs, cls_id)
-            bboxes = net.box_converter(bboxes, cor)
-            bboxes = clipper(bboxes.squeeze(axis=0), x)
-            im_scale = im_scale.reshape((-1)).asscalar()
-            bboxes *= im_scale
-            cls_id = cls_id.squeeze(axis=0)
-            probs = probs.squeeze(axis=0)
-            bboxes = bboxes.squeeze(axis=0)
-            target = mx.nd.concat(cls_id.expand_dims(axis=1),
-                        probs.expand_dims(axis=1), bboxes, dim=-1)
-            keep = mx.nd.contrib.box_nms(target, overlap_thresh=nms_thresh, coord_start=2,
-                                         topk=nms_topk, valid_thresh=0.00001, score_index=1,
-                                         id_index=0, force_suppress=False,
-                                         in_format='corner', out_format='corner')
-            keep = keep[:save_topk].expand_dims(axis=0)
-            det_ids.append(keep.slice_axis(axis=-1, begin=0, end=1))
-            det_scores.append(keep.slice_axis(axis=-1, begin=1, end=2))
-            det_bboxes.append(keep.slice_axis(axis=-1, begin=2, end=None))
-            # split ground truths
-            gt_ids.append(y.slice_axis(axis=-1, begin=4, end=5))
-            gt_bboxes.append(y.slice_axis(axis=-1, begin=0, end=4))
-            gt_bboxes[-1] *= im_scale
-            gt_difficults.append(
-                    y.slice_axis(axis=-1, begin=5, end=6) if y.shape[-1] > 5 else None)
-        # update metric
-        for det_bbox, det_id, det_score, gt_bbox, gt_id, gt_diff in \
-            zip(det_bboxes, det_ids, det_scores, gt_bboxes, gt_ids, gt_difficults):
-            eval_metric.update(det_bbox, det_id, det_score, gt_bbox, gt_id, gt_diff)
+            det_id, det_score, det_bbox, det_maskeoc, det_mask = net(x)
+            det_bbox = clipper(det_bbox, x)
+            for i in range(det_bbox.shape[0]):
+                det_bbox_t = det_bbox[i]
+                det_id_t = det_id[i].asnumpy()
+                det_score_t = det_score[i].asnumpy()
+                det_maskeoc_t = det_maskeoc[i]
+                det_mask_t = det_mask[i]
+                full_mask = mx.nd.dot(det_maskeoc_t, det_mask_t)
+                im_height, im_width, h_scale, w_scale = det_inf[i].asnumpy()
+                im_height, im_width = int(round(im_height / h_scale)), int(
+                    round(im_width / w_scale))
+                full_mask = mx.nd.sigmoid(full_mask)
+                _, h, w = full_mask.shape
+                full_mask = crop(det_bbox_t, h, w, full_mask).asnumpy()
+                det_bbox_t = det_bbox_t.asnumpy()
+                det_bbox_t[:, 0], det_bbox_t[:, 2] = det_bbox_t[:, 0] / w_scale, det_bbox_t[:, 2] / w_scale
+                det_bbox_t[:, 1], det_bbox_t[:, 3] = det_bbox_t[:, 1] / h_scale, det_bbox_t[:, 3] / h_scale
+                full_masks = []
+                for mask in full_mask:
+                    full_masks.append(gdata.transforms.mask.proto_fill(mask, (im_width, im_height)))
+                full_masks = np.array(full_masks)
+                eval_metric.update(det_bbox_t, det_id_t, det_score_t, full_masks)
     return eval_metric.get()
 
 
@@ -242,10 +237,11 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     lr_warmup = float(args.lr_warmup)
 
     # losses and metrics
-    fcos_cls_loss = gcv.loss.SigmoidFocalLoss(
+    maskfcos_cls_loss = gcv.loss.SigmoidFocalLoss(
             from_logits=False, sparse_label=True, num_class=len(net.classes)+1)
-    fcos_ctr_loss = gcv.loss.CtrNessLoss()
-    fcos_box_loss = gcv.loss.IOULoss(return_iou=False)
+    maskfcos_ctr_loss = gcv.loss.CtrNessLoss()
+    maskfcos_box_loss = gcv.loss.IOULoss(return_iou=False)
+    maskfcos_mask_loss = gcv.loss.MaskLoss()
 
     # set up logger
     logging.basicConfig()
@@ -278,10 +274,17 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             logger.info("[Epoch {}] Set learning rate to {}".format(epoch, new_lr))
         tic = time.time()
         btic = time.time()
-        # if not args.disable_hybridization:
-        #     net.hybridize(static_alloc=args.static_alloc)
+        if not args.disable_hybridization:
+            net.hybridize(static_alloc=args.static_alloc)
         base_lr = trainer.learning_rate
         for i, batch in enumerate(train_data):
+            batch_size = batch[0].shape[0]
+            datas = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0)
+            cls_targets = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
+            ctr_targets = gluon.utils.split_and_load(batch[2], ctx_list=ctx, batch_axis=0)
+            box_targets = gluon.utils.split_and_load(batch[3], ctx_list=ctx, batch_axis=0)
+            gt_masks = gluon.utils.split_and_load(batch[4], ctx_list=ctx, batch_axis=0)
+            matches = gluon.utils.split_and_load(batch[5], ctx_list=ctx, batch_axis=0)
             if epoch == 0 and i <= lr_warmup:
                 # adjust based on real percentage
                 new_lr = base_lr * get_lr_at_iter(i / lr_warmup)
@@ -290,45 +293,58 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         logger.info(
                             '[Epoch 0 Iteration {}] Set learning rate to {}'.format(i, new_lr))
                     trainer.set_learning_rate(new_lr)
-            batch = split_and_load(batch, ctx_list=ctx)
-            batch_size = len(batch[0])
-            losses = []
-            cls_losses = []
-            ctr_losses = []
-            box_losses = []
+
             with autograd.record():
-                # per card
-                for data, cls_target, ctr_target, box_target, cor_target in zip(*batch):
-                    # [B, N, C], [B, N, 1], [B, N, 4]
-                    cls_pred, ctr_pred, box_pred = net(data)
-                    box_pred = net.box_converter(box_pred, cor_target)
-                    cls_loss = fcos_cls_loss(cls_pred, cls_target)
-                    ctr_loss = fcos_ctr_loss(ctr_pred, ctr_target, cls_target)
-                    box_loss = fcos_box_loss(box_pred, box_target, cls_target)
-                    loss = cls_loss + box_loss + ctr_loss
+                losses = []
+                cls_losses = []
+                ctr_losses = []
+                box_losses = []
+                mask_losses = []
+                cls_preds = []
+                ctr_preds = []
+                box_preds = []
+                masks_preds = []
+                maskeoc_preds = []
+                for dat, cls, ctr, box, gmk, mat in zip(datas, cls_targets, ctr_targets, box_targets, gt_masks, matches):
+                    cls_pred, ctr_pred, box_pred, masks, maskeoc_pred = net(dat)
+                    cls_preds.append(cls_pred)
+                    ctr_preds.append(ctr_pred)
+                    box_preds.append(box_pred)
+                    masks_preds.append(masks)
+                    maskeoc_preds.append(maskeoc_pred)
+                for cls, ctr, box, gmk, mat, cls_pred, ctr_pred, box_pred, masks, maskeoc_pred in zip(cls_targets, ctr_targets, box_targets, gt_masks, matches,
+                                                                                                      cls_preds, ctr_preds, box_preds, masks_preds, maskeoc_preds):
+                    cls_loss = maskfcos_cls_loss(cls_pred, cls)
+                    ctr_loss = maskfcos_ctr_loss(ctr_pred, ctr, cls)
+                    box_loss = maskfcos_box_loss(box_pred, box, cls)
+                    mask_loss = maskfcos_mask_loss(box, gmk, mat, masks, maskeoc_pred)
+                    loss = cls_loss + box_loss + ctr_loss + mask_loss
                     cls_losses.append(cls_loss)
                     ctr_losses.append(ctr_loss)
                     box_losses.append(box_loss)
+                    mask_losses.append(mask_loss)
                     losses.append(loss)
                 autograd.backward(losses)
-            trainer.step(batch_size) # normalize by batch_size
+            trainer.step(1) # normalize by batch_size
             if args.log_interval and not (i + 1) % args.log_interval:
-                total_cls_loss, total_ctr_loss, total_box_loss = 0., 0., 0.
-                for cls_loss, ctr_loss, box_loss in zip(cls_losses, ctr_losses, box_losses):
+                total_cls_loss, total_ctr_loss, total_box_loss, total_mask_loss = 0., 0., 0., 0.
+                for cls_loss, ctr_loss, box_loss, mask_loss in zip(cls_losses, ctr_losses, box_losses, mask_losses):
                     total_cls_loss += cls_loss.asscalar()
                     total_ctr_loss += ctr_loss.asscalar()
                     total_box_loss += box_loss.asscalar()
+                    total_mask_loss += mask_loss.asscalar()
                 total_cls_loss /= batch_size
                 total_ctr_loss /= batch_size
                 total_box_loss /= batch_size
+                total_mask_loss /= len(ctx)
                 print_loss = {'cls_loss': total_cls_loss, 'ctr_loss': total_ctr_loss, \
-                        'box_loss': total_box_loss}
+                        'box_loss': total_box_loss, 'mask_loss': total_mask_loss}
                 msg = ', '.join(['{}={:.3f}'.format(k, v) for k, v in print_loss.items()])
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'\
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
-            break
+
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
         if not (epoch + 1) % args.val_interval:
@@ -356,7 +372,7 @@ if __name__ == '__main__':
 
     # network
     kwargs = {}
-    net_name = "_".join(("fcos", args.network, args.dataset))
+    net_name = "_".join(("maskfcos", args.network, args.dataset))
     args.save_prefix += net_name
     net = get_model(net_name, pretrained_base=True, **kwargs)
     if args.resume.strip():
@@ -371,8 +387,8 @@ if __name__ == '__main__':
     # training data
     train_dataset, val_dataset, eval_metric = get_dataset(args.dataset, args)
     train_data, val_data = get_dataloader(
-            net, train_dataset, val_dataset, FCOSDefaultTrainTransform,
-            FCOSDefaultValTransform, args.batch_size, args.num_workers)
+            net, train_dataset, val_dataset, MaskFCOSDefaultTrainTransform,
+            MaskFCOSDefaultValTransform, args.batch_size, args.num_workers)
 
     # training
     train(net, train_data, val_data, eval_metric, ctx, args)

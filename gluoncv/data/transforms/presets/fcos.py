@@ -11,9 +11,11 @@ from mxnet import nd
 from .. import bbox as tbbox
 from .. import image as timage
 from .. import mask as tmask
+from .. import experimental
 
 __all__ = ['transform_test', 'load_test',
-           'FCOSDefaultTrainTransform', 'FCOSDefaultValTransform']
+           'FCOSDefaultTrainTransform', 'FCOSDefaultValTransform',
+           'MaskFCOSDefaultTrainTransform', 'MaskFCOSDefaultValTransform']
 
 def transform_test(imgs, short=600, max_size=1000, mean=(0.485, 0.456, 0.406),
                    std=(0.229, 0.224, 0.225)):
@@ -195,3 +197,106 @@ class FCOSDefaultValTransform(object):
         img = mx.nd.image.to_tensor(img)
         img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
         return img, bbox.astype('float32'), cor_targets, mx.nd.array([im_scale])
+
+class MaskFCOSDefaultTrainTransform(object):
+    def __init__(self, short=600, base_stride=128,
+                 valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+                 scale=4, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225),
+                 flip_p=0.5, retina_stages=5, num_class=80):
+        self._width = short
+        self._height = short
+        self._scale = scale
+        self._mean = mean
+        self._std = std
+        self._flip_p = flip_p
+        self._num_class = num_class
+
+        from ....model_zoo.mask_fcos.fcos_target import FCOSTargetGenerator
+        self._target_generator = FCOSTargetGenerator(retina_stages=retina_stages,
+                                    base_stride=base_stride, valid_range=valid_range)
+
+    def __call__(self, src, label, segm):
+        "Apply transform to training image/label."
+        # resize shorter side but keep in max_size
+        if np.random.uniform(0, 1) > 0.5:
+            img = experimental.image.random_color_distort(src)
+            bbox = label
+        else:
+            img, bbox = src, label
+
+        # random expansion with prob 0.5
+        # if np.random.uniform(0, 1) > 0.5:
+        #     img, expand = timage.random_expand(img, max_ratio=1.5, fill=[m * 255 for m in self._mean])
+        #     bbox = tbbox.translate(label, x_offset=expand[0], y_offset=expand[1])
+        #     segm = [tmask.expand(polys, x_offset=expand[0], y_offset=expand[1]) for polys in segm]
+        # else:
+        #     img, bbox, segm = img, label, segm
+
+        # random cropping
+        # h, w, _ = img.shape
+        # bbox, crop = experimental.bbox.random_crop_with_constraints(label, (w, h), min_scale=0.8)
+        # if bbox.shape[0] == label.shape[0]:
+        #     x0, y0, w, h = crop
+        #     img = mx.image.fixed_crop(img, x0, y0, w, h)
+        #     segm = [tmask.crop(polys, x0, y0, w, h) for polys in segm]
+        # else:
+        #     bbox = label
+
+        # random horizontal flip
+        h, w, _ = img.shape
+        img, flips = timage.random_flip(img, px=0.5)
+        bbox = tbbox.flip(bbox, (w, h), flip_x=flips[0])
+        segm = [tmask.flip(polys, size=(w, h), flip_x=flips[0]) for polys in segm]
+
+        # resize with random interpolation
+        h, w, _ = img.shape
+        masks_width, masks_height = int(np.ceil(self._width / (self._scale*2))*2), \
+                                    int(np.ceil(self._height / (self._scale*2))*2)
+        interp = np.random.randint(0, 5)
+        img = timage.imresize(img, self._width, self._height, interp=interp)
+        bbox = tbbox.resize(bbox, (w, h), (self._width, self._height))
+        segm = [tmask.resize(polys, in_size=(w, h), out_size=(masks_width, masks_height)) for polys in segm]
+
+        masks = [mx.nd.array(tmask.to_mask(polys, (masks_width, masks_height))) for polys in segm]
+        masks = mx.nd.stack(*masks, axis=0)
+
+        assert masks.shape[0] == bbox.shape[0],\
+            print('the number of masks is:', masks.shape[0], 'but the number of bbox is:', bbox.shape[0])
+
+        # generate training targets for fcos
+        tbox = mx.nd.round(mx.nd.array(bbox))
+        tbox[:, 4] += 1. #
+        cls_targets, ctr_targets, box_targets, matches = \
+            self._target_generator.generate_targets(img, tbox)
+
+        # to tensor
+        img = mx.nd.image.to_tensor(img)
+        img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
+        gt_masks = mx.nd.zeros(shape=(100, masks_width, masks_height))
+        assert masks.shape[0] <= 100, print(masks.shape[0])
+        gt_masks[:masks.shape[0], :, :] = masks
+
+        return img, cls_targets, ctr_targets, box_targets, gt_masks, matches
+
+
+class MaskFCOSDefaultValTransform(object):
+    def __init__(self, short=800, base_stride=128, retina_stages=5,
+                 mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)):
+        self._mean = mean
+        self._std = std
+        self._width = short
+        self._height = short
+        # self._max_size = max_size
+        self._base_stride = base_stride
+        self._retina_stages = retina_stages
+
+    def __call__(self, src, label, segm):
+        """Apply transform to validation image/label."""
+        # resize
+        h, w, _ = src.shape
+        img = timage.imresize(src, self._width, self._height, interp=9)
+        h_scale, w_scale = float(img.shape[0] / h), float(img.shape[1] / w)
+
+        img = mx.nd.image.to_tensor(img)
+        img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
+        return img,  mx.nd.array([img.shape[-2], img.shape[-1], h_scale, w_scale])

@@ -34,13 +34,13 @@ except ImportError:
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train SSD networks.')
-    parser.add_argument('--network', type=str, default='resnet18_v1',
+    parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
     parser.add_argument('--batch-size', type=int, default=32,
                         help='Training mini-batch size')
-    parser.add_argument('--dataset', type=str, default='voc',
+    parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc.')
     parser.add_argument('--dataset-root', type=str, default='/home/xcq/PycharmProjects/datasets',
                         help='Path of the directory where the dataset is located.')
@@ -80,11 +80,6 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
-
-    # FPN options
-    parser.add_argument('--use-fpn', action='store_true', default=False,
-                        help='Whether to use feature pyramid network.')
-
     parser.add_argument('--dali', action='store_true',
                         help='Use DALI for data loading and data preprocessing in training. '
                         'Currently supports only COCO.')
@@ -356,7 +351,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             else:
                 current_map = 0.
             save_params(net, best_map, current_map, epoch, args.save_interval, args.save_prefix)
-
 
 if __name__ == '__main__':
     args = parse_args()

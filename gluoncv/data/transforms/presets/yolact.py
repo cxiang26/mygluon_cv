@@ -191,7 +191,6 @@ class YOLACTDefaultTrainTransform(object):
             self._anchors, None, gt_bboxes, gt_ids)
         return img, cls_targets[0], box_targets[0], gt_masks, matches.squeeze()
 
-
 class YOLACTDefaultValTransform(object):
 
     def __init__(self, width, height,

@@ -1,7 +1,6 @@
 """Visualization tools"""
 from __future__ import absolute_import
 
-
 from .image import plot_image, cv_plot_image
 from .bbox import plot_bbox, cv_plot_bbox
 from .keypoints import plot_keypoints, cv_plot_keypoints
