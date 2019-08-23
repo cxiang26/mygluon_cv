@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=55,
                         help='Training epochs.')
@@ -229,8 +229,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     maskeocs.append(maskeoc)
                 sum_loss, cls_loss, box_loss, mask_loss = mbox_loss(
                     cls_preds, box_preds, masks, maskeocs, cls_targets, box_targets, mask_targets, matches, bts)
-
-
                 autograd.backward(sum_loss)
             # since we have already normalized the loss, we don't want to normalize
             # by batch-size anymore
@@ -281,7 +279,7 @@ if __name__ == '__main__':
                         norm_kwargs={'num_devices': len(ctx)})
         async_net = get_model(net_name, pretrained_base=False)  # used by cpu worker
     else:
-        net = get_model(net_name, pretrained_base=True)
+        net = get_model(net_name, pretrained_base=True, num_prototypes=32, sge=False)
         async_net = net
     if args.resume.strip():
         net.load_parameters(args.resume.strip())
