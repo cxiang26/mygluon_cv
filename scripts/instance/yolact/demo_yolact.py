@@ -12,7 +12,7 @@ def parse_args():
                         help="Mask RCNN full network name")
     parser.add_argument('--images', type=str, default='',
                         help='Test images, use comma to split multiple.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Testing with GPUs, you can specify 0 for example.')
     parser.add_argument('--pretrained', type=str, default='/mnt/mdisk/xcq/results/yolact/yolact_550_fpn_resnet50_v1b_coco_best.params',
                         help='Load weights from previously saved parameters. You can specify parameter file name.')
@@ -30,8 +30,8 @@ def crop(bboxes, masks):
     _w = mx.nd.tile(_w, reps=(b, 1))
     x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
     x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-    _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
-    _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+    _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+    _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
     _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
@@ -66,9 +66,6 @@ if __name__ == '__main__':
         mx.nd.waitall()
         print(time.time()-tic)
         masks = mx.nd.dot(maskeoc.squeeze(), masks.squeeze())
-        tic = time.time()
-        a = crop(bboxes.squeeze(), masks).asnumpy()
-        print(time.time()-tic)
         tic = time.time()
         masks = crop(bboxes.squeeze(), masks).asnumpy()
         print(time.time()-tic)
