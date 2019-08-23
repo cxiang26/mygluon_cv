@@ -25,7 +25,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=4,
+    parser.add_argument('--batch-size', type=int, default=2,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
@@ -33,11 +33,11 @@ def parse_args():
                         default=8, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2, 3',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/maskfcos_resnet50_v1_coco_best.params',
+    parser.add_argument('--resume', type=str, default='',
                         help='Resume from previously saved parameters if not None. '
                              'For example, you can resume from ./faster_rcnn_xxx_0123.params')
     parser.add_argument('--start-epoch', type=int, default=0,
@@ -57,7 +57,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=100,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/media/HDD_4TB/xcq/experiments/maskfcos/',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -112,8 +112,8 @@ def get_dataset(dataset, args):
     if dataset.lower() == 'voc':
         pass
     elif dataset.lower() == 'coco':
-        train_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_train2017')
-        val_dataset = gdata.COCOInstance(root='/media/SSD_1TB/coco/',splits='instances_val2017', skip_empty=False)
+        train_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017')
+        val_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval',  cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))

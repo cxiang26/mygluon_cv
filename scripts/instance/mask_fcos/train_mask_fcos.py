@@ -332,7 +332,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
-                break
+
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
         if not (epoch + 1) % args.val_interval:
