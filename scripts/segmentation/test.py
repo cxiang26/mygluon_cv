@@ -249,10 +249,6 @@ if __name__ == "__main__":
 
     print("Successfully loaded %s model" % model_prefix)
     print('Testing model: ', args.resume)
-<<<<<<< HEAD
-    args.resume = '/home/xcq/.mxnet/models/fcn_resnet101_voc-12c2b9b3.params'
-    test(args)
-=======
 
     # benchmark
     if args.benchmark:
@@ -305,4 +301,4 @@ if __name__ == "__main__":
         test_quantization(model, args, test_data, size, testset.num_class, testset.pred_offset)
     else:
         test(model, args, input_transform)     
->>>>>>> origin
+
