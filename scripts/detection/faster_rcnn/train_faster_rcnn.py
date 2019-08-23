@@ -145,13 +145,8 @@ def get_dataset(dataset, args):
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
     if args.mixup:
-<<<<<<< HEAD
-        from gluoncv.data.mixup.detection import MixupDetection
-        train_dataset = MixupDetection(train_dataset)
-=======
         from gluoncv.data.mixup import detection
         train_dataset = detection.MixupDetection(train_dataset)
->>>>>>> origin
     return train_dataset, val_dataset, val_metric
 
 
@@ -372,23 +367,10 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         executor = Parallel(1 if args.horovod else args.executor_threads, rcnn_task)
         if args.mixup:
             # TODO(zhreshold) only support evenly mixup now, target generator needs to be modified otherwise
-<<<<<<< HEAD
-            try:
-                train_data._dataset.set_mixup(np.random.uniform, 0.5, 0.5)
-            except AttributeError:
-                train_data._dataset._data.set_mixup(np.random.uniform, 0.5, 0.5)
-            mix_ratio = 0.5
-            if epoch >= args.epochs - args.no_mixup_epochs:
-                try:
-                    train_data._dataset.set_mixup(None)
-                except AttributeError:
-                    train_data._dataset._data.set_mixup(None)
-=======
             train_data._dataset._data.set_mixup(np.random.uniform, 0.5, 0.5)
             mix_ratio = 0.5
             if epoch >= args.epochs - args.no_mixup_epochs:
                 train_data._dataset._data.set_mixup(None)
->>>>>>> origin
                 mix_ratio = 1.0
         while lr_steps and epoch >= lr_steps[0]:
             new_lr = trainer.learning_rate * lr_decay
@@ -438,22 +420,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'.format(
                     epoch, i, args.log_interval * args.batch_size / (time.time() - btic), msg))
                 btic = time.time()
-
-<<<<<<< HEAD
-
-        msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
-        logger.info('[Epoch {}] Training cost: {:.3f}, {}'.format(
-            epoch, (time.time() - tic), msg))
-        if not (epoch + 1) % args.val_interval:
-            # consider reduce the frequency of validation to save time
-            map_name, mean_ap = validate(net, val_data, ctx, eval_metric, args)
-            val_msg = '\n'.join(['{}={}'.format(k, v) for k, v in zip(map_name, mean_ap)])
-            logger.info('[Epoch {}] Validation: \n{}'.format(epoch, val_msg))
-            current_map = float(mean_ap[-1])
-        else:
-            current_map = 0.
-        save_params(net, logger, best_map, current_map, epoch, args.save_interval, args.save_prefix)
-=======
         if (not args.horovod) or hvd.rank() == 0:
             msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
             logger.info('[Epoch {}] Training cost: {:.3f}, {}'.format(
@@ -469,7 +435,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             save_params(net, logger, best_map, current_map, epoch, args.save_interval,
                         args.save_prefix)
         executor.__del__()
->>>>>>> origin
 
 
 if __name__ == '__main__':

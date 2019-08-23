@@ -5,34 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a711ed93-9a6a-4680-95d9-8f357310f535" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/presets/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/data/transforms/presets/yolact.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/faster_rcnn/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/fcos/fcos.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/peleenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/rcnn/opts.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/ssd/ssd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/nn/feature.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/feature.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/nn/protomask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/protomask.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/nn/sge.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/nn/sge.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/utils/viz/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/viz/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gluoncv/utils/viz/mask.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/utils/viz/mask.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/demo_faster_rcnn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/faster_rcnn/train_faster_rcnn_peleenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/ssd_300_peleenet50-symbol.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/detection/ssd/train_ssd.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/mask_rcnn/train_mask_rcnn.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/segmentation/test.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/segmentation/test.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/train_faster_rcnn_peleenet.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_faster_rcnn_peleenet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_ssd.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_ssd.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_yolact.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_yolact.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />

@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='2',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='1',
                         help='Training epochs.')
@@ -377,22 +377,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}'.format(
                     epoch, i, args.log_interval * args.batch_size / (time.time() - btic), msg))
                 btic = time.time()
-<<<<<<< HEAD
             break
 
-        msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
-        logger.info('[Epoch {}] Training cost: {:.3f}, {}'.format(
-            epoch, (time.time() - tic), msg))
-        if not (epoch + 1) % args.val_interval:
-            # consider reduce the frequency of validation to save time
-            map_name, mean_ap = validate(net, val_data, ctx, eval_metric, args)
-            val_msg = '\n'.join(['{}={}'.format(k, v) for k, v in zip(map_name, mean_ap)])
-            logger.info('[Epoch {}] Validation: \n{}'.format(epoch, val_msg))
-            current_map = float(mean_ap[-1])
-        else:
-            current_map = 0.
-        save_params(net, logger, best_map, current_map, epoch, args.save_interval, args.save_prefix)
-=======
         # validate and save params
         if (not args.horovod or hvd.rank() == 0):
             msg = ','.join(['{}={:.3f}'.format(*metric.get()) for metric in metrics])
@@ -407,7 +393,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             else:
                 current_map = 0.
             save_params(net, logger, best_map, current_map, epoch, args.save_interval, args.save_prefix)
->>>>>>> origin
 
 
 if __name__ == '__main__':

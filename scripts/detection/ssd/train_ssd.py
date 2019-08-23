@@ -38,16 +38,16 @@ def parse_args():
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=64,
+    parser.add_argument('--batch-size', type=int, default=32,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='voc',
                         help='Training dataset. Now support voc.')
-    parser.add_argument('--dataset-root', type=str, default='~/.mxnet/datasets/',
+    parser.add_argument('--dataset-root', type=str, default='/home/xcq/PycharmProjects/datasets',
                         help='Path of the directory where the dataset is located.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
                         default=4, help='Number of data workers, you can use larger '
                         'number to accelerate data loading, if you CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='1,2',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=int, default=240,
                         help='Training epochs.')
@@ -80,11 +80,11 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
-<<<<<<< HEAD
+
     # FPN options
     parser.add_argument('--use-fpn', action='store_true', default=False,
                         help='Whether to use feature pyramid network.')
-=======
+
     parser.add_argument('--dali', action='store_true',
                         help='Use DALI for data loading and data preprocessing in training. '
                         'Currently supports only COCO.')
@@ -94,7 +94,6 @@ def parse_args():
                         help='Use MXNet Horovod for distributed training. Must be run with OpenMPI. '
                         '--gpus is ignored when using --horovod.')
 
->>>>>>> origin
     args = parser.parse_args()
     return args
 
@@ -106,13 +105,8 @@ def get_dataset(dataset, args):
             splits=[(2007, 'test')])
         val_metric = VOC07MApMetric(iou_thresh=0.5, class_names=val_dataset.classes)
     elif dataset.lower() == 'coco':
-<<<<<<< HEAD
-        train_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017')
-        val_dataset = gdata.COCODetection(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
-=======
         train_dataset = gdata.COCODetection(root=args.dataset_root + "/coco", splits='instances_train2017')
         val_dataset = gdata.COCODetection(root=args.dataset_root + "/coco", splits='instances_val2017', skip_empty=False)
->>>>>>> origin
         val_metric = COCODetectionMetric(
             val_dataset, args.save_prefix + '_eval', cleanup=True,
             data_shape=(args.data_shape, args.data_shape))
@@ -229,11 +223,7 @@ def validate(net, val_data, ctx, eval_metric):
     eval_metric.reset()
     # set nms threshold and topk constraint
     net.set_nms(nms_thresh=0.45, nms_topk=400)
-<<<<<<< HEAD
-    # net.hybridize()
-=======
     net.hybridize(static_alloc=True, static_shape=True)
->>>>>>> origin
     for batch in val_data:
         data = gluon.utils.split_and_load(batch[0], ctx_list=ctx, batch_axis=0, even_split=False)
         label = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0, even_split=False)
@@ -309,12 +299,8 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
         smoothl1_metric.reset()
         tic = time.time()
         btic = time.time()
-<<<<<<< HEAD
-        # net.hybridize()
-=======
         net.hybridize(static_alloc=True, static_shape=True)
 
->>>>>>> origin
         for i, batch in enumerate(train_data):
             if args.dali:
                 # dali iterator returns a mxnet.io.DataBatch
@@ -344,31 +330,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             # since we have already normalized the loss, we don't want to normalize
             # by batch-size anymore
             trainer.step(1)
-<<<<<<< HEAD
-            ce_metric.update(0, [l * batch_size for l in cls_loss])
-            smoothl1_metric.update(0, [l * batch_size for l in box_loss])
-            if args.log_interval and not (i + 1) % args.log_interval:
-                name1, loss1 = ce_metric.get()
-                name2, loss2 = smoothl1_metric.get()
-                logger.info('[Epoch {}][Batch {}], Speed: {:.3f} samples/sec, {}={:.3f}, {}={:.3f}'.format(
-                    epoch, i, batch_size/(time.time()-btic), name1, loss1, name2, loss2))
-            btic = time.time()
-            break
-
-        name1, loss1 = ce_metric.get()
-        name2, loss2 = smoothl1_metric.get()
-        logger.info('[Epoch {}] Training cost: {:.3f}, {}={:.3f}, {}={:.3f}'.format(
-            epoch, (time.time()-tic), name1, loss1, name2, loss2))
-        if epoch>=0:
-            # consider reduce the frequency of validation to save time
-            map_name, mean_ap = validate(net, val_data, ctx, eval_metric)
-            val_msg = '\n'.join(['{}={}'.format(k, v) for k, v in zip(map_name, mean_ap)])
-            logger.info('[Epoch {}] Validation: \n{}'.format(epoch, val_msg))
-            current_map = float(mean_ap[-1])
-        else:
-            current_map = 0.
-        save_params(net, best_map, current_map, epoch, args.save_interval, args.save_prefix)
-=======
 
             if (not args.horovod or hvd.rank() == 0):
                 local_batch_size = int(args.batch_size // (hvd.size() if args.horovod else 1))
@@ -395,7 +356,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             else:
                 current_map = 0.
             save_params(net, best_map, current_map, epoch, args.save_interval, args.save_prefix)
->>>>>>> origin
+
 
 if __name__ == '__main__':
     args = parse_args()
