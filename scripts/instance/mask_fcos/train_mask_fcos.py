@@ -25,12 +25,12 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=2,
+    parser.add_argument('--batch-size', type=int, default=4,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=4, help='Number of data workers, you can use larger '
+                        default=8, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
     parser.add_argument('--gpus', type=str, default='0',
@@ -55,7 +55,7 @@ def parse_args():
                         help='SGD momentum, default is 0.9')
     parser.add_argument('--wd', type=str, default='',
                         help='Weight decay, default is 5e-4 for voc')
-    parser.add_argument('--log-interval', type=int, default=100,
+    parser.add_argument('--log-interval', type=int, default=10,
                         help='Logging mini-batch interval. Default is 100.')
     parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/',
                         help='Saving parameter prefix')
@@ -237,11 +237,13 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     lr_warmup = float(args.lr_warmup)
 
     # losses and metrics
-    maskfcos_cls_loss = gcv.loss.SigmoidFocalLoss(
-            from_logits=False, sparse_label=True, num_class=len(net.classes)+1)
-    maskfcos_ctr_loss = gcv.loss.CtrNessLoss()
-    maskfcos_box_loss = gcv.loss.IOULoss(return_iou=False)
-    maskfcos_mask_loss = gcv.loss.MaskLoss()
+    # maskfcos_cls_loss = gcv.loss.SigmoidFocalLoss(
+    #         from_logits=False, sparse_label=True, num_class=len(net.classes)+1)
+    # maskfcos_ctr_loss = gcv.loss.CtrNessLoss()
+    # maskfcos_box_loss = gcv.loss.IOULoss(return_iou=False)
+    # maskfcos_mask_loss = gcv.loss.MaskLoss()
+    maskfcos_loss = gcv.loss.MaskFCOSLoss(from_logits=False, sparse_label=True,
+                                          num_class=len(net.classes)+1, return_iou=False)
 
     # set up logger
     logging.basicConfig()
@@ -283,7 +285,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
             cls_targets = gluon.utils.split_and_load(batch[1], ctx_list=ctx, batch_axis=0)
             ctr_targets = gluon.utils.split_and_load(batch[2], ctx_list=ctx, batch_axis=0)
             box_targets = gluon.utils.split_and_load(batch[3], ctx_list=ctx, batch_axis=0)
-            gt_masks = gluon.utils.split_and_load(batch[4], ctx_list=ctx, batch_axis=0)
+            mask_targets = gluon.utils.split_and_load(batch[4], ctx_list=ctx, batch_axis=0)
             matches = gluon.utils.split_and_load(batch[5], ctx_list=ctx, batch_axis=0)
             if epoch == 0 and i <= lr_warmup:
                 # adjust based on real percentage
@@ -295,24 +297,28 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     trainer.set_learning_rate(new_lr)
 
             with autograd.record():
-                losses = []
-                cls_losses = []
-                ctr_losses = []
-                box_losses = []
-                mask_losses = []
-                for dat, cls, ctr, box, gmk, mat in zip(datas, cls_targets, ctr_targets, box_targets, gt_masks, matches):
-                    cls_pred, ctr_pred, box_pred, masks, maskeoc_pred = net(dat)
-                    cls_loss = maskfcos_cls_loss(cls_pred, cls)
-                    ctr_loss = maskfcos_ctr_loss(ctr_pred, ctr, cls)
-                    box_loss = maskfcos_box_loss(box_pred, box, cls)
-                    mask_loss = maskfcos_mask_loss(box, gmk, mat, masks, maskeoc_pred)
-                    loss = cls_loss + box_loss + ctr_loss + mask_loss
-                    cls_losses.append(cls_loss)
-                    ctr_losses.append(ctr_loss)
-                    box_losses.append(box_loss)
-                    mask_losses.append(mask_loss)
-                    losses.append(loss)
-                autograd.backward(losses)
+                # cls_targets, ctr_targets, box_targets, mask_targets, matches, cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds
+                clsps, ctrps, boxps, maskps, maskcoeps = [], [], [], [], []
+                for dat in datas:
+                    cls_pred, ctr_pred, box_pred, masks, maskcoe_pred = net(dat)
+                    clsps.append(cls_pred)
+                    ctrps.append(ctr_pred)
+                    boxps.append(box_pred)
+                    maskps.append(masks)
+                    maskcoeps.append(maskcoe_pred)
+                sum_losses, cls_losses, ctr_losses, box_losses, mask_losses = \
+                    maskfcos_loss(cls_targets, ctr_targets, box_targets, mask_targets, matches, clsps, ctrps, boxps, maskps, maskcoeps)
+                    # cls_loss = maskfcos_cls_loss(cls_pred, cls)
+                    # ctr_loss = maskfcos_ctr_loss(ctr_pred, ctr, cls)
+                    # box_loss = maskfcos_box_loss(box_pred, box, cls)
+                    # mask_loss = maskfcos_mask_loss(box, gmk, mat, masks, maskcoe_pred)
+                    # loss = cls_loss + box_loss + ctr_loss + mask_loss
+                    # cls_losses.append(cls_loss)
+                    # ctr_losses.append(ctr_loss)
+                    # box_losses.append(box_loss)
+                    # mask_losses.append(mask_loss)
+                    # losses.append(loss)
+                autograd.backward(sum_losses)
             trainer.step(1) # normalize by batch_size
             if args.log_interval and not (i + 1) % args.log_interval:
                 total_cls_loss, total_ctr_loss, total_box_loss, total_mask_loss = 0., 0., 0., 0.

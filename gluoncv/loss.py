@@ -10,7 +10,7 @@ from .nn.coder import NormalizedBoxCenterDecoder
 
 __all__ = ['FocalLoss', 'SSDMultiBoxLoss', 'YOLOV3Loss', 'YOLACTMultiBoxLoss',
            'MixSoftmaxCrossEntropyLoss', 'MixSoftmaxCrossEntropyOHEMLoss',
-           'DistillationSoftmaxCrossEntropyLoss', 'MaskLoss']
+           'DistillationSoftmaxCrossEntropyLoss', 'MaskLoss', 'MaskFCOSLoss']
 
 class FocalLoss(Loss):
     """Focal Loss for inbalanced classification.
@@ -712,3 +712,122 @@ class MaskLoss(gluon.Block):
     def forward(self, box_target, gt_masks, matches, masks, maskeoc_pred):
         mask_loss = self.mask_lambd * self.mask_loss(masks, maskeoc_pred, gt_masks, matches, box_target)
         return nd.mean(mask_loss)
+
+class MaskFCOSLoss(gluon.Block):
+    def __init__(self, return_iou, alpha=0.25, gamma=2, cls_lambd=1., box_lambd=1., ctr_lambd=1.,
+                 mask_lambd=1., img_shape=(740, 740), sparse_label=True, from_logits=False,
+                 num_class=None, eps=1e-5, **kwargs):
+        super(MaskFCOSLoss, self).__init__(**kwargs)
+        self._return_iou = return_iou
+        self._eps = eps
+        self._alpha = alpha
+        self._gamma = gamma
+        self._cls_lambd = cls_lambd
+        self._box_lambd = box_lambd
+        self._ctr_lambd = ctr_lambd
+        self._mask_lambd = mask_lambd
+        self._sparse_label = sparse_label
+        if sparse_label and (not isinstance(num_class, int) or (num_class < 1)):
+            raise ValueError("Nomber of class > 0 must be provided if sparse label is used.")
+        self._num_class = num_class
+        self._from_logits = from_logits
+        self.gt_weidth, self.gt_height = img_shape
+        self.SBCELoss = gluon.loss.SigmoidBinaryCrossEntropyLoss(from_sigmoid=True)
+        self.max=0
+
+    def forward(self, cls_targets, ctr_targets, box_targets, mask_targets, matches,
+                cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds):
+        """Compute loss in entire batch across devices."""
+        scale = 4
+        # require results across different devices at this time
+        cls_targets, ctr_targets, box_targets, mask_targets, matches, cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds = \
+            [_as_list(x) for x in (cls_targets, ctr_targets, box_targets, mask_targets, matches,
+                                   cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds)]
+
+        # compute element-wise cross entropy loss and sort, then perform negative mining
+        cls_losses = []
+        ctr_losses = []
+        box_losses = []
+        mask_losses = []
+        sum_losses = []
+        for clst, ctrt, boxt, maskt, matche, clsp, ctrp, boxp, maskp, maskcoep in zip(
+                *[cls_targets, ctr_targets, box_targets, mask_targets, matches,
+                  cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds]):
+
+            pos_gt_mask = clst > 0
+            # cls loss
+            if not self._from_logits:
+                clsp = nd.sigmoid(clsp)
+            one_hot = nd.one_hot(clst, self._num_class)
+            one_hot = nd.slice_axis(one_hot, begin=1, end=None, axis=-1)
+            pt = nd.where(one_hot, clsp, 1 - clsp)
+            t = nd.ones_like(one_hot)
+            alpha = nd.where(one_hot, self._alpha * t, (1 - self._alpha) * t)
+            cls_loss = -alpha * ((1 - pt) ** self._gamma) * nd.log(nd.minimum(pt + self._eps, 1))
+            cls_loss = nd.sum(cls_loss) / nd.maximum(nd.sum(pos_gt_mask), 1)
+            cls_losses.append(cls_loss)
+
+            # ctr loss
+            ctrp = nd.squeeze(ctrp, axis=-1)
+            pos_pred_mask = ctrp >= 0
+            ctr_loss = (ctrp * pos_pred_mask - ctrp * ctrt + nd.log(1 + nd.exp(-nd.abs(ctrp)))) * pos_gt_mask
+            ctr_loss = nd.sum(ctr_loss) / nd.maximum(nd.sum(pos_gt_mask), 1)
+            ctr_losses.append(ctr_loss)
+
+            # box loss // iou loss
+            px1, py1, px2, py2 = nd.split(boxp, num_outputs=4, axis=-1, squeeze_axis=True)
+            gx1, gy1, gx2, gy2 = nd.split(boxt, num_outputs=4, axis=-1, squeeze_axis=True)
+            apd = nd.abs(px2 - px1 + 1) * nd.abs(py2 - py1 + 1)
+            agt = nd.abs(gx2 - gx1 + 1) * nd.abs(gy2 - gy1 + 1)
+            iw = nd.maximum(nd.minimum(px2, gx2) - nd.maximum(px1, gx1) + 1., 0.)
+            ih = nd.maximum(nd.minimum(py2, gy2) - nd.maximum(py1, gy1) + 1., 0.)
+            ain = iw * ih + 1.
+            union = apd + agt - ain + 1
+            ious = nd.maximum(ain / union, 0.)
+            fg_mask = nd.where(clst > 0, nd.ones_like(clst), nd.zeros_like(clst))
+            box_loss = -nd.log(nd.minimum(ious + self._eps, 1.)) * fg_mask
+            if self._return_iou:
+                box_loss = nd.sum(box_loss) / nd.maximum(nd.sum(fg_mask), 1), ious
+            else:
+                box_loss = nd.sum(box_loss) / nd.maximum(nd.sum(fg_mask), 1)
+            box_losses.append(box_loss)
+
+            # mask loss
+            pos_num = pos_gt_mask.sum(axis=-1).astype('int').asnumpy()
+            # if sum(pos_num)>1400:
+            #     print(sum(pos_num))
+            #     print(pos_num)
+            rank = (-matche).argsort(axis=-1)
+            mask_loss = []
+            for i in range(maskp.shape[0]):
+                if pos_num[i] == 0:
+                    mask_loss.append(nd.zeros(shape=(1,), ctx=maskp.context))
+                    continue
+                idx = rank[i, :pos_num[i]]
+                if sum(pos_num)>1200 and pos_num[i]>300:
+                    idx = nd.random.shuffle(idx)
+                    idx = idx[:300]
+                pos_box = nd.take(boxt[i], idx)
+                area = (pos_box[:, 3] - pos_box[:, 1]) * (pos_box[:, 2] - pos_box[:, 0])
+                weight = self.gt_weidth * self.gt_height / area
+                maskti = maskt[i, matche[i, idx], :, :]
+                maskpi = nd.dot(nd.take(maskcoep[i], idx), maskp[i])
+                _, h, w = maskpi.shape
+                maskpi = nd.sigmoid(maskpi)
+                with autograd.pause():
+                    _h = nd.arange(h, ctx=maskpi.context)
+                    _w = nd.arange(w, ctx=maskpi.context)
+                    _h = nd.tile(_h, reps=(pos_box.shape[0], 1))
+                    _w = nd.tile(_w, reps=(pos_box.shape[0], 1))
+                    x1, y1, x2, y2 = nd.split(nd.round(pos_box / scale), num_outputs=4, axis=-1)
+                    _w = (_w >= x1) * (_w <= x2)
+                    _h = (_h >= y1) * (_h <= y2)
+                    _mask = nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
+                maskpi = maskpi * _mask
+                mask_loss.append(nd.mean(self.SBCELoss(maskpi, maskti) * weight))
+            mask_loss = nd.mean(nd.concat(*mask_loss, dim=0))
+            mask_losses.append(mask_loss)
+            sum_losses.append(self._cls_lambd*cls_losses[-1] + self._ctr_lambd * ctr_losses[-1] +
+                              self._box_lambd * box_losses[-1] + self._mask_lambd * mask_losses[-1])
+
+        return sum_losses, cls_losses, ctr_losses, box_losses, mask_losses
