@@ -25,15 +25,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=4,
+    parser.add_argument('--batch-size', type=int, default=8,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=8, help='Number of data workers, you can use larger '
+                        default=12, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='0',
+    parser.add_argument('--gpus', type=str, default='1,2',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
@@ -297,7 +297,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     trainer.set_learning_rate(new_lr)
 
             with autograd.record():
-                # cls_targets, ctr_targets, box_targets, mask_targets, matches, cls_preds, ctr_preds, box_preds, mask_preds, maskcoe_preds
                 clsps, ctrps, boxps, maskps, maskcoeps = [], [], [], [], []
                 for dat in datas:
                     cls_pred, ctr_pred, box_pred, masks, maskcoe_pred = net(dat)
@@ -308,16 +307,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                     maskcoeps.append(maskcoe_pred)
                 sum_losses, cls_losses, ctr_losses, box_losses, mask_losses = \
                     maskfcos_loss(cls_targets, ctr_targets, box_targets, mask_targets, matches, clsps, ctrps, boxps, maskps, maskcoeps)
-                    # cls_loss = maskfcos_cls_loss(cls_pred, cls)
-                    # ctr_loss = maskfcos_ctr_loss(ctr_pred, ctr, cls)
-                    # box_loss = maskfcos_box_loss(box_pred, box, cls)
-                    # mask_loss = maskfcos_mask_loss(box, gmk, mat, masks, maskcoe_pred)
-                    # loss = cls_loss + box_loss + ctr_loss + mask_loss
-                    # cls_losses.append(cls_loss)
-                    # ctr_losses.append(ctr_loss)
-                    # box_losses.append(box_loss)
-                    # mask_losses.append(mask_loss)
-                    # losses.append(loss)
                 autograd.backward(sum_losses)
             trainer.step(1) # normalize by batch_size
             if args.log_interval and not (i + 1) % args.log_interval:

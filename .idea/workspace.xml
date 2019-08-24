@@ -5,8 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a711ed93-9a6a-4680-95d9-8f357310f535" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/gluoncv/loss.py" beforeDir="false" afterPath="$PROJECT_DIR$/gluoncv/loss.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train_mask_fcos.py" beforeDir="false" afterPath="$PROJECT_DIR$/train_mask_fcos.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -17,6 +17,18 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
+      <file leaf-file-name="train_yolact.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/train_yolact.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="323">
+              <caret line="233" column="111" selection-start-line="233" selection-start-column="108" selection-end-line="233" selection-end-column="111" />
+              <folding>
+                <element signature="e#16#31#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file leaf-file-name="model_zoo.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gluoncv/model_zoo/model_zoo.py">
           <provider selected="true" editor-type-id="text-editor">
@@ -41,20 +53,44 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="train_mask_fcos.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="train_mask_fcos.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="187">
-              <caret line="114" column="90" selection-start-line="114" selection-start-column="48" selection-end-line="114" selection-end-column="90" />
+            <state relative-caret-position="305">
+              <caret line="27" column="59" selection-start-line="27" selection-start-column="59" selection-end-line="27" selection-end-column="59" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="train_mask_fcos.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="block.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/block.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="347">
+              <caret line="547" selection-start-line="547" selection-end-line="547" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="loss.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gluoncv/loss.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="12291">
+              <caret line="806" column="36" selection-start-line="806" selection-start-column="36" selection-end-line="808" selection-end-column="34" />
+              <folding>
+                <element signature="e#26559#27840#0" />
+                <element signature="e#27871#28408#0" />
+                <element signature="e#28444#30180#0" />
+                <element signature="e#29170#30180#0" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="train_mask_fcos.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/train_mask_fcos.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-238">
-              <caret line="116" column="95" lean-forward="true" selection-start-line="116" selection-start-column="95" selection-end-line="116" selection-end-column="95" />
+            <state relative-caret-position="17">
+              <caret line="115" column="88" selection-start-line="115" selection-start-column="88" selection-end-line="115" selection-end-column="88" />
             </state>
           </provider>
         </entry>
@@ -70,8 +106,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>CapsPredictor</find>
-      <find>_load_label</find>
       <find>bbox_xywh_to_xyxy</find>
       <find>bf</find>
       <find>net</find>
@@ -100,6 +134,8 @@
       <find>mask_lambd</find>
       <find>&gt;</find>
       <find>executor</find>
+      <find>bts</find>
+      <find>num_pos_all</find>
     </findStrings>
     <dirStrings>
       <dir>$PROJECT_DIR$/gluoncv/model_zoo/rcnn</dir>
@@ -140,7 +176,6 @@
         <option value="$PROJECT_DIR$/gluoncv/utils/metrics/coco_instance.py" />
         <option value="$PROJECT_DIR$/gluoncv/data/transforms/mask.py" />
         <option value="$PROJECT_DIR$/scripts/instance/yolact/demo_yolact.py" />
-        <option value="$PROJECT_DIR$/gluoncv/loss.py" />
         <option value="$PROJECT_DIR$/scripts/segmentation/test.py" />
         <option value="$PROJECT_DIR$/gluoncv/nn/sge.py" />
         <option value="$PROJECT_DIR$/gluoncv/model_zoo/yolact/yolact.py" />
@@ -160,13 +195,14 @@
         <option value="$PROJECT_DIR$/scripts/detection/fcos/train_fcos.py" />
         <option value="$PROJECT_DIR$/scripts/instance/yolact/train_yolact.py" />
         <option value="$PROJECT_DIR$/train_yolact.py" />
-        <option value="$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py" />
         <option value="$PROJECT_DIR$/train_mask_fcos.py" />
+        <option value="$PROJECT_DIR$/gluoncv/loss.py" />
+        <option value="$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py" />
       </list>
     </option>
   </component>
-  <component name="ProjectFrameBounds">
-    <option name="x" value="8" />
+  <component name="ProjectFrameBounds" extendedState="1">
+    <option name="x" value="-8" />
     <option name="y" value="-8" />
     <option name="width" value="1920" />
     <option name="height" value="1040" />
@@ -186,47 +222,7 @@
             <path>
               <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
               <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="detection" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="detection" type="462c0819:PsiDirectoryNode" />
-              <item name="fcos" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="instance" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="instance" type="462c0819:PsiDirectoryNode" />
-              <item name="mask_fcos" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="instance" type="462c0819:PsiDirectoryNode" />
-              <item name="mask_rcnn" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="gluon-cv" type="b2602c69:ProjectViewProjectNode" />
-              <item name="gluon-cv" type="462c0819:PsiDirectoryNode" />
-              <item name="scripts" type="462c0819:PsiDirectoryNode" />
-              <item name="instance" type="462c0819:PsiDirectoryNode" />
-              <item name="yolact" type="462c0819:PsiDirectoryNode" />
+              <item name="gluoncv" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -395,15 +391,15 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="8" y="-8" width="1920" height="1040" extended-state="0" />
+    <frame x="-8" y="-8" width="1920" height="1040" extended-state="1" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.7462185" visible="true" weight="0.21424802" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.7462185" visible="true" weight="0.21424802" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32960895" />
       <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.20263852" side_tool="true" weight="0.33743018" />
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.32830188" />
       <window_info anchor="bottom" id="Python Console" order="7" weight="0.32960895" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.7973615" visible="true" weight="0.33519554" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.7973615" visible="true" weight="0.33519554" />
       <window_info id="Structure" order="1" sideWeight="0.25378153" side_tool="true" visible="true" weight="0.21424802" />
       <window_info anchor="bottom" id="Terminal" order="9" weight="0.32871535" />
       <window_info id="Favorites" order="2" side_tool="true" />
@@ -792,6 +788,21 @@
           <line>19</line>
           <option name="timeStamp" value="765" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/loss.py</url>
+          <line>809</line>
+          <option name="timeStamp" value="773" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/loss.py</url>
+          <line>799</line>
+          <option name="timeStamp" value="774" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/gluoncv/loss.py</url>
+          <line>795</line>
+          <option name="timeStamp" value="775" />
+        </line-breakpoint>
       </breakpoints>
       <breakpoints-dialog>
         <breakpoints-dialog />
@@ -803,7 +814,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="767" />
+      <option name="time" value="776" />
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
@@ -828,13 +839,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1034">
           <caret line="327" selection-start-line="327" selection-end-line="327" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/block.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="916" selection-start-line="916" selection-end-line="916" />
         </state>
       </provider>
     </entry>
@@ -994,13 +998,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/gluoncv/loss.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="493">
-          <caret line="533" column="61" selection-start-line="533" selection-start-column="61" selection-end-line="533" selection-end-column="61" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/nn/sge.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="357">
@@ -1144,16 +1141,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/train_yolact.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="78" column="82" selection-start-line="78" selection-start-column="82" selection-end-line="78" selection-end-column="82" />
-          <folding>
-            <element signature="e#16#31#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/gluoncv/nn/protomask.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="459">
@@ -1194,17 +1181,47 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py">
+    <entry file="file://$PROJECT_DIR$/train_yolact.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="187">
-          <caret line="114" column="90" selection-start-line="114" selection-start-column="48" selection-end-line="114" selection-end-column="90" />
+        <state relative-caret-position="323">
+          <caret line="233" column="111" selection-start-line="233" selection-start-column="108" selection-end-line="233" selection-end-column="111" />
+          <folding>
+            <element signature="e#16#31#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/train_mask_fcos.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-238">
-          <caret line="116" column="95" lean-forward="true" selection-start-line="116" selection-start-column="95" selection-end-line="116" selection-end-column="95" />
+        <state relative-caret-position="17">
+          <caret line="115" column="88" selection-start-line="115" selection-start-column="88" selection-end-line="115" selection-end-column="88" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../../../public/anaconda3/envs/mxnet/lib/python3.6/site-packages/mxnet/gluon/block.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="347">
+          <caret line="547" selection-start-line="547" selection-end-line="547" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/gluoncv/loss.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="12291">
+          <caret line="806" column="36" selection-start-line="806" selection-start-column="36" selection-end-line="808" selection-end-column="34" />
+          <folding>
+            <element signature="e#26559#27840#0" />
+            <element signature="e#27871#28408#0" />
+            <element signature="e#28444#30180#0" />
+            <element signature="e#29170#30180#0" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/instance/mask_fcos/train_mask_fcos.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="305">
+          <caret line="27" column="59" selection-start-line="27" selection-start-column="59" selection-end-line="27" selection-end-column="59" />
         </state>
       </provider>
     </entry>

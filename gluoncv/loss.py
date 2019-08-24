@@ -793,7 +793,7 @@ class MaskFCOSLoss(gluon.Block):
             box_losses.append(box_loss)
 
             # mask loss
-            pos_num = pos_gt_mask.sum(axis=-1).astype('int').asnumpy()
+            pos_num = nd.cast(pos_gt_mask.sum(axis=-1), 'int')
             # if sum(pos_num)>1400:
             #     print(sum(pos_num))
             #     print(pos_num)
@@ -803,10 +803,10 @@ class MaskFCOSLoss(gluon.Block):
                 if pos_num[i] == 0:
                     mask_loss.append(nd.zeros(shape=(1,), ctx=maskp.context))
                     continue
-                idx = rank[i, :pos_num[i]]
-                if sum(pos_num)>1200 and pos_num[i]>300:
+                idx = rank[i, :pos_num[i].asscalar()]
+                if nd.sum(pos_num)>1000 and pos_num[i]>50:
                     idx = nd.random.shuffle(idx)
-                    idx = idx[:300]
+                    idx = idx[:50]
                 pos_box = nd.take(boxt[i], idx)
                 area = (pos_box[:, 3] - pos_box[:, 1]) * (pos_box[:, 2] - pos_box[:, 0])
                 weight = self.gt_weidth * self.gt_height / area
