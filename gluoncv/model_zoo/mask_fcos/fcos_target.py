@@ -32,12 +32,14 @@ class FCOSTargetGenerator(nn.Block):
         sx = nd.tile(rx, reps=(rh, 1))
         sy = nd.tile(ry, reps=(1, rw))
 
-        areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+        x1, y1, x2, y2, _ = nd.split(boxes, 5, axis=-1, squeeze_axis=True)
+        areas = (x2 - x1) * (y2 - y1)
+        # areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
 
         boxes_id = nd.argsort(areas)
         boxes_id = nd.concat(nd.array([-1]), boxes_id, dim=0)
 
-        boxes = boxes[nd.argsort(areas)] # min -> max
+        boxes = nd.take(boxes, nd.argsort(areas)) # min -> max
         boxes = nd.concat(nd.zeros((1, 5)), boxes, dim=0) # for gt assign confusion
         x0, y0, x1, y1, cls = nd.split(boxes, num_outputs=5, axis=-1, squeeze_axis=True)
         n = boxes.shape[0]
@@ -90,11 +92,13 @@ class FCOSTargetGenerator(nn.Block):
             # bugs in this type
             # bx = sxy[:, 0] * stride + nd.floor(sxy[:, 0] / 2).astype(np.int32)
             # by = sxy[:, 1] * stride + nd.floor(sxy[:, 1] / 2).astype(np.int32)
-            by = syx[:, 0] * stride
-            bx = syx[:, 1] * stride
+            by, bx = nd.split(syx*stride, 2, axis=-1, squeeze_axis=True)
+            # by = syx[:, 0] * stride
+            # bx = syx[:, 1] * stride
 
             # [FH*FW, N, 4]
             of_byx = offsets[by, bx]
+            ctr_aware = ctr[by, bx]
             # of_byx = nd.gather_nd(offsets, indices=byx.transpose())
             min_vr, max_vr = self._valid_range[i]
             # [FH*FW, N]
@@ -103,7 +107,7 @@ class FCOSTargetGenerator(nn.Block):
             # [FH*FW, N]
             valid_pos = nd.elemwise_mul(is_in_box, is_valid_area)
             of_valid = nd.zeros((fh, fw, n))
-            of_valid[syx[:, 0], syx[:, 1], :] = valid_pos # 1, 0
+            of_valid[syx[:, 0], syx[:, 1], :] = valid_pos * ctr_aware # 1, 0
             of_valid[:, :, 0] = 0
             # [FH, FW]
             gt_inds = nd.argmax(of_valid, axis=-1)
