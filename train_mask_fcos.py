@@ -178,8 +178,8 @@ def crop(bboxes, h, w, masks):
         _w = mx.nd.tile(_w, reps=(b, 1))
         x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
         x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y1.expand_dims(axis=-1))
-        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x1.expand_dims(axis=-1))
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
         _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
