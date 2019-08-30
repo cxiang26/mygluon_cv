@@ -131,7 +131,7 @@ def get_dataloader(net, train_dataset, val_dataset, train_transform, val_transfo
         train_dataset.transform(train_transform(
             net.short, net.base_stride, net.valid_range)),
             batch_size,shuffle=True, batchify_fn=train_bfn, last_batch='rollover',
-            num_workers=num_workers, pin_memory=True, pin_device_id=2)
+            num_workers=num_workers)
     val_bfn = batchify.Tuple(*[batchify.Stack() for _ in range(2)])
     val_loader = mx.gluon.data.DataLoader(
         val_dataset.transform(val_transform(net.short, net.base_stride)),
@@ -178,8 +178,8 @@ def crop(bboxes, h, w, masks):
         _w = mx.nd.tile(_w, reps=(b, 1))
         x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
         x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-        _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
-        _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y1.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x1.expand_dims(axis=-1))
         _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
@@ -327,6 +327,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                         .format(epoch, i, args.log_interval * batch_size / (time.time() \
                         - btic), msg))
                 btic = time.time()
+            break
 
         logger.info('[Epoch {}] Training cost: {:.3f}'.format(
             epoch, (time.time() - tic)))
