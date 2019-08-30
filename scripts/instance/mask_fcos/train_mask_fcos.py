@@ -25,15 +25,15 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
     parser.add_argument('--network', type=str, default='resnet50_v1',
                         help="Base network name which serves as feature extraction base.")
-    parser.add_argument('--batch-size', type=int, default=8,
+    parser.add_argument('--batch-size', type=int, default=4,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc and coco.')
     parser.add_argument('--num-workers', '-j', dest='num_workers', type=int,
-                        default=12, help='Number of data workers, you can use larger '
+                        default=4, help='Number of data workers, you can use larger '
                                         'number to accelerate data loading, '
                                         'if your CPU and GPUs are powerful.')
-    parser.add_argument('--gpus', type=str, default='1,2',
+    parser.add_argument('--gpus', type=str, default='0',
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='55',
                         help='Training epochs.')
@@ -83,7 +83,7 @@ def parse_args():
     parser.add_argument('--disable-hybridization', action='store_true',
                         help='Whether to disable hybridize the model. '
                              'Memory usage and speed will decrese.')
-    parser.add_argument('--static-alloc', action='store_true',
+    parser.add_argument('--static-alloc', action='store_true', default=False,
                         help='Whether to use static memory allocation. Memory usage will increase.')
 
     args = parser.parse_args()
@@ -178,8 +178,8 @@ def crop(bboxes, h, w, masks):
         _w = mx.nd.tile(_w, reps=(b, 1))
         x1, y1 = mx.nd.round(bboxes[:, 0]/scale), mx.nd.round(bboxes[:, 1]/scale)
         x2, y2 = mx.nd.round((bboxes[:, 2])/scale), mx.nd.round((bboxes[:, 3])/scale)
-        _h = (_h >= x1.expand_dims(axis=-1)) * (_h <= x2.expand_dims(axis=-1))
-        _w = (_w >= y1.expand_dims(axis=-1)) * (_w <= y2.expand_dims(axis=-1))
+        _h = (_h >= y1.expand_dims(axis=-1)) * (_h <= y2.expand_dims(axis=-1))
+        _w = (_w >= x1.expand_dims(axis=-1)) * (_w <= x2.expand_dims(axis=-1))
         _mask = mx.nd.batch_dot(_h.expand_dims(axis=-1), _w.expand_dims(axis=-1), transpose_b=True)
     masks = _mask * masks
     return masks
