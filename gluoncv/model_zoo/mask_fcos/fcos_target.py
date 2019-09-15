@@ -32,8 +32,8 @@ class FCOSTargetGenerator(nn.Block):
         sx = nd.tile(rx, reps=(rh, 1))
         sy = nd.tile(ry, reps=(1, rw))
 
-        x1, y1, x2, y2, _ = nd.split(boxes, 5, axis=-1, squeeze_axis=True)
-        areas = (x2 - x1) * (y2 - y1)
+        x0, y0, x1, y1, _ = nd.split(boxes, 5, axis=-1, squeeze_axis=True)
+        areas = (x1 - x0) * (y1 - y0)
         # areas = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
 
         boxes_id = nd.argsort(areas)
@@ -52,11 +52,30 @@ class FCOSTargetGenerator(nn.Block):
 
         # [H, W, N]
         eps = 1e-5
-        ctr =(nd.minimum(of_l, of_r) / nd.maximum(of_l, of_r)) * \
-                (nd.minimum(of_t, of_b) / nd.maximum(of_t, of_b) + eps)
+        # ctr = nd.minimum(of_l, of_r) / (nd.maximum(of_l, of_r) + eps) * \
+        #         nd.minimum(of_t, of_b) / (nd.maximum(of_t, of_b) + eps)
+        # ctr = nd.sqrt(nd.abs(ctr))
+        # ctr[:, :, 0] = 0
+
+        # # flat ctr
+        of_l = of_l * (of_l > 0)
+        of_r = of_r * (of_r > 0)
+        of_t = of_t * (of_t > 0)
+        of_b = of_b * (of_b > 0)
+        # ctr2 = nd.minimum(of_l, of_r) / (nd.maximum(of_l, of_r) + of_l + of_r) * \
+        #         nd.minimum(of_t, of_b) / (nd.maximum(of_t, of_b) + of_t + of_b)
+        # ctr2 = 3 * nd.sqrt(nd.abs(ctr2))
+        # ctr2[:, :, 0] = 0
+
+        # slim ctr
+        # ctr = nd.minimum(of_l, of_r) / (nd.maximum(of_l, of_r) + nd.abs(of_l - of_r) + eps) * \
+        #        nd.minimum(of_t, of_b) / (nd.maximum(of_t, of_b) + nd.abs(of_t - of_b) + eps)
+        ctr = nd.minimum(of_l, of_r) / (nd.maximum(of_l, of_r) + eps) * \
+                nd.minimum(of_t, of_b) / (nd.maximum(of_t, of_b) + eps)
+        # ctr = nd.power(0.8, 0.1 * nd.sqrt(nd.square(of_l - of_r) + nd.square(of_t - of_b) + eps))
+        # ctr = nd.power(0.8, nd.sqrt(nd.abs(of_l - of_r) + nd.abs(of_t - of_b) + eps))
         ctr = nd.sqrt(nd.abs(ctr))
         ctr[:, :, 0] = 0
-
         # [H, W, N, 4]
         offsets = nd.concat(of_l.reshape(-2, 1), of_t.reshape(-2, 1),
                             of_r.reshape(-2, 1), of_b.reshape(-2, 1), dim=-1)
@@ -79,10 +98,10 @@ class FCOSTargetGenerator(nn.Block):
         stride = self._stride
         for i in range(self._stages):
             fh, fw = fm_list[i]
-            cls_target = nd.zeros((fh, fw))
-            box_target = nd.zeros((fh, fw, 4))
-            ctr_target = nd.zeros((fh, fw))
-            match_target = nd.zeros((fh, fw))
+            # cls_target = nd.zeros((fh, fw))
+            # box_target = nd.zeros((fh, fw, 4))
+            # ctr_target = nd.zeros((fh, fw))
+            # match_target = nd.zeros((fh, fw))
 
             cx = nd.arange(0, fw).reshape((1, -1))
             cy = nd.arange(0, fh).reshape((-1, 1))
@@ -97,33 +116,45 @@ class FCOSTargetGenerator(nn.Block):
             # bx = syx[:, 1] * stride
 
             # [FH*FW, N, 4]
-            of_byx = offsets[by, bx]
-            ctr_aware = ctr[by, bx]
+            of_byx = nd.take(offsets.reshape((-1, n, 4)), by*740+bx)
+            of_ctr = nd.take(ctr.reshape((-1, n)), by*740 + bx)
+            # of_byx = offsets[by, bx]
+            # ctr_aware = ctr[by, bx]
             # of_byx = nd.gather_nd(offsets, indices=byx.transpose())
             min_vr, max_vr = self._valid_range[i]
             # [FH*FW, N]
             is_in_box = nd.prod(of_byx > 0, axis=-1)
             is_valid_area = (of_byx.max(axis=-1) >= min_vr) * (of_byx.max(axis=-1) <= max_vr)
             # [FH*FW, N]
-            valid_pos = nd.elemwise_mul(is_in_box, is_valid_area)
-            of_valid = nd.zeros((fh, fw, n))
-            of_valid[syx[:, 0], syx[:, 1], :] = valid_pos * ctr_aware # 1, 0
+            valid_pos = nd.elemwise_mul(is_in_box, is_valid_area) * of_ctr
+            # valid_pos = nd.elemwise_mul(is_in_box, is_valid_area)
+            # of_valid = nd.zeros((fh, fw, n))
+            # of_valid[syx[:, 0], syx[:, 1], :] = valid_pos * ctr_aware # 1, 0
+            of_valid = valid_pos.reshape((fh, fw, n))
             of_valid[:, :, 0] = 0
             # [FH, FW]
-            gt_inds = nd.argmax(of_valid, axis=-1)
+            # gt_inds = nd.argmax(of_valid, axis=-1)
+            gt_inds = nd.argmax(of_valid, axis=-1).reshape(-1)
             # box targets
-            box_target[syx[:, 0], syx[:, 1]] = boxes[gt_inds[syx[:, 0], syx[:, 1]], :4]
-            box_target = box_target.reshape(-1, 4)
-            # cls targets
-            cls_target[syx[:, 0], syx[:, 1]] = cls[gt_inds[syx[:, 0], syx[:, 1]]]
-            cls_target = cls_target.reshape(-1)
+            box_target = nd.take(boxes, gt_inds).slice_axis(begin=0, end=4, axis=-1)
+            # box_target[syx[:, 0], syx[:, 1]] = boxes[gt_inds[syx[:, 0], syx[:, 1]], :4]
+            # box_target = box_target.reshape(-1, 4)
 
-            match_target[syx[:, 0], syx[:, 1]] = boxes_id[gt_inds[syx[:,0], syx[:,1]]]
-            match_target = match_target.reshape(-1)
+            # cls targets
+            cls_target = nd.take(cls, gt_inds)
+            # cls_target[syx[:, 0], syx[:, 1]] = cls[gt_inds[syx[:, 0], syx[:, 1]]]
+            # cls_target = cls_target.reshape(-1)
+
+            # match targets the number of matches less than ctr targets
+            match_gt_inds = nd.argmax(of_valid * (of_valid > 0.01), axis=-1).reshape(-1)
+            match_target = nd.take(boxes_id, match_gt_inds)
+            # match_target[syx[:, 0], syx[:, 1]] = boxes_id[match_gt_inds[syx[:,0], syx[:,1]]]
+            # match_target = match_target.reshape(-1)
 
             # ctr targets
-            ctr_target[syx[:, 0], syx[:, 1]] = ctr[by, bx, gt_inds[syx[:, 0], syx[:, 1]]]
-            ctr_target = ctr_target.reshape(-1)
+            ctr_target = nd.pick(of_ctr, gt_inds)
+            # ctr_target[syx[:, 0], syx[:, 1]] = ctr[by, bx, gt_inds[syx[:, 0], syx[:, 1]]]
+            # ctr_target = ctr_target.reshape(-1)
             box_targets.append(box_target)
             cls_targets.append(cls_target)
             ctr_targets.append(ctr_target)
@@ -133,14 +164,10 @@ class FCOSTargetGenerator(nn.Block):
         cls_targets = nd.concat(*cls_targets, dim=0)
         ctr_targets = nd.concat(*ctr_targets, dim=0)
         match_targets = nd.concat(*match_targets, dim=0)
-        # rank = match_targets.argsort()[-1]
-        # if match_targets[rank] != boxes_id.max():
-        #     print('unmatch')
         return cls_targets, ctr_targets, box_targets, match_targets
 
     def forward(self, img, boxes):
         pass
-
 
 class FCOSBoxConverter(nn.HybridBlock):
     """This function is used to convert box_preds(l,t,r,b)
