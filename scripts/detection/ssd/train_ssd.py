@@ -38,7 +38,7 @@ def parse_args():
                         help="Base network name which serves as feature extraction base.")
     parser.add_argument('--data-shape', type=int, default=512,
                         help="Input data shape, use 300, 512.")
-    parser.add_argument('--batch-size', type=int, default=32,
+    parser.add_argument('--batch-size', type=int, default=12,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
                         help='Training dataset. Now support voc.')
@@ -80,7 +80,7 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--syncbn', action='store_true',
                         help='Use synchronize BN across devices.')
-    parser.add_argument('--dali', action='store_true',
+    parser.add_argument('--dali', action='store_true', default=True,
                         help='Use DALI for data loading and data preprocessing in training. '
                         'Currently supports only COCO.')
     parser.add_argument('--amp', action='store_true',
@@ -88,6 +88,7 @@ def parse_args():
     parser.add_argument('--horovod', action='store_true',
                         help='Use MXNet Horovod for distributed training. Must be run with OpenMPI. '
                         '--gpus is ignored when using --horovod.')
+    parser.add_argument('--use-fpn', default=False)
 
     args = parser.parse_args()
     return args
