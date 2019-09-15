@@ -17,7 +17,7 @@ from ...nn.feature import RetinaFeatureExpander
 from ...nn.protomask import Protonet
 
 __all__ = ['MaskFCOS', 'get_maskfcos',
-           'maskfcos_resnet50_v1_coco',]
+           'maskfcos_resnet50_v1_coco', 'maskfcos_resnet50_v1b_coco', 'maskfcos_resnet101_v1d_coco']
 
 class GroupNorm(nn.HybridBlock):
     """
@@ -154,7 +154,7 @@ def cor_target(short, scale):
 class MaskFCOS(HybridBlock):
     def __init__(self, network, features, classes, steps=None, short=600,
                  valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
-                 num_prototypes=64,
+                 num_prototypes=32,
                  use_p6_p7=True, pretrained_base=False,
                  nms_thresh=0.45, nms_topk=400, post_nms=100, share_params = False, **kwargs):
         super(MaskFCOS, self).__init__(**kwargs)
@@ -257,6 +257,16 @@ class MaskFCOS(HybridBlock):
         """Hybrid forward"""
         scale_params = [s1, s2, s3, s4, s5]
         features = self.features(x)
+        # df = []
+        # for i, feat in enumerate(features[::-1]):
+        #     if i == 0:
+        #         df.append(feat)
+        #         down_feat = F.Pooling(feat, kernel=(2, 2), pool_type='max', stride=(2, 2), pad=(1,1))
+        #     else:
+        #         feat = feat + down_feat
+        #         down_feat = F.Pooling(feat, kernel=(2, 2), pool_type='max', stride=(2, 2))
+        #         df.append(feat)
+        # features = df[::-1]
         masks = self.protonet(features[-1])
         masks = F.relu(masks)
         cls_head_feat = [cp(feat) for feat, cp in zip(features, self.classes_head)]
@@ -270,7 +280,7 @@ class MaskFCOS(HybridBlock):
                      for s, feat, bp, sc in zip(scale_params, box_head_feat, self.box_predictors, self._scale)]
 
         maskeoc_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
-                         for feat, bp in zip(box_head_feat, self.maskcoe_predictors)]
+                         for feat,  bp in zip(box_head_feat, self.maskcoe_predictors)]
 
         cls_preds = F.concat(*cls_preds, dim=1)
         center_preds = F.concat(*center_preds, dim=1)
@@ -357,6 +367,34 @@ def maskfcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
     classes = COCOInstance.CLASSES
     return get_maskfcos('resnet50_v1',
                    features=['stage2_activation3', 'stage3_activation5', 'stage4_activation2'],
+                   classes=classes,
+                   steps=[8, 16, 32, 64, 128],
+                   short = 740,
+                   valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+                   nms_thresh=0.45, nms_topk=1000, post_nms=100,
+                   dataset='coco', pretrained=pretrained,
+                   num_prototypes=32,
+                   pretrained_base=pretrained_base, share_params = True, **kwargs)
+
+def maskfcos_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwargs):
+    from ...data import COCOInstance
+    classes = COCOInstance.CLASSES
+    return get_maskfcos('resnet50_v1d',
+                   features=['layers2_relu11_fwd', 'layers3_relu17_fwd', 'layers4_relu8_fwd'],
+                   classes=classes,
+                   steps=[8, 16, 32, 64, 128],
+                   short = 740,
+                   valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+                   nms_thresh=0.45, nms_topk=1000, post_nms=100,
+                   dataset='coco', pretrained=pretrained,
+                   num_prototypes=32,
+                   pretrained_base=pretrained_base, share_params = True, **kwargs)
+
+def maskfcos_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwargs):
+    from ...data import COCOInstance
+    classes = COCOInstance.CLASSES
+    return get_maskfcos('resnet101_v1d',
+                   features=['layers2_relu11_fwd', 'layers3_relu68_fwd', 'layers4_relu8_fwd'],
                    classes=classes,
                    steps=[8, 16, 32, 64, 128],
                    short = 740,
