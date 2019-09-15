@@ -217,6 +217,11 @@ class MaskFCOSDefaultTrainTransform(object):
 
     def __call__(self, src, label, segm):
         "Apply transform to training image/label."
+        if len(label) >= 50:
+            idx = np.arange(len(label))
+            np.random.shuffle(idx)
+            label = label[idx[:50]]
+            segm = [segm[i] for i in idx[:50]]
         # resize shorter side but keep in max_size
         if np.random.uniform(0, 1) > 0.5:
             img = experimental.image.random_color_distort(src)
@@ -272,8 +277,8 @@ class MaskFCOSDefaultTrainTransform(object):
         # to tensor
         img = mx.nd.image.to_tensor(img)
         img = mx.nd.image.normalize(img, mean=self._mean, std=self._std)
-        gt_masks = mx.nd.zeros(shape=(100, masks_width, masks_height))
-        assert masks.shape[0] <= 100, print(masks.shape[0])
+        gt_masks = mx.nd.zeros(shape=(50, masks_width, masks_height))
+        assert masks.shape[0] <= 50, print(masks.shape[0])
         gt_masks[:masks.shape[0], :, :] = masks
 
         return img, cls_targets, ctr_targets, box_targets, gt_masks, matches
