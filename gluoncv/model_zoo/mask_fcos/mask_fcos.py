@@ -17,7 +17,10 @@ from ...nn.feature import RetinaFeatureExpander
 from ...nn.protomask import Protonet
 
 __all__ = ['MaskFCOS', 'get_maskfcos',
-           'maskfcos_resnet50_v1_coco', 'maskfcos_resnet50_v1b_coco', 'maskfcos_resnet101_v1d_coco']
+           'maskfcos_resnet50_v1_740_coco',
+           'maskfcos_resnet50_v1b_740_coco',
+           'maskfcos_resnet101_v1d_740_coco',
+           'maskfcos_resnet50_v1_1024_coco']
 
 class GroupNorm(nn.HybridBlock):
     """
@@ -94,7 +97,7 @@ class RetinaHead(nn.HybridBlock):
                     self.conv.add(nn.Conv2D(256, 3, 1, 1, activation='relu',
                         weight_initializer=mx.init.Normal(sigma=0.01),
                         bias_initializer='zeros'))
-                self.conv.add(GroupNorm(num_channels=256, prefix=prefix))
+                self.conv.add(nn.GroupNorm(num_groups=32))
 
     def set_params(self, newconv):
         for b, nb in zip(self.conv, newconv):
@@ -184,7 +187,7 @@ class MaskFCOS(HybridBlock):
             self.box_head = nn.HybridSequential()
             self.class_predictors = nn.HybridSequential()
             self.box_predictors = nn.HybridSequential()
-            self.center_predictors = nn.HybridSequential()
+            # self.center_predictors = nn.HybridSequential()
             self.maskcoe_predictors = nn.HybridSequential()
             share_cls_params, share_box_params = None, None
             share_cls_pred_params, share_ctr_pred_params, \
@@ -207,10 +210,10 @@ class MaskFCOS(HybridBlock):
                 share_cls_pred_params = cls_pred.get_params()
 
                 # center preds
-                center_pred = ConvPredictor(num_channels=1,
-                                            share_params=share_ctr_pred_params, bias_init='zeros')
-                self.center_predictors.add(center_pred)
-                share_ctr_pred_params = center_pred.get_params()
+                # center_pred = ConvPredictor(num_channels=1,
+                #                             share_params=share_ctr_pred_params, bias_init='zeros')
+                # self.center_predictors.add(center_pred)
+                # share_ctr_pred_params = center_pred.get_params()
 
                 # mask coefficient preds
                 maskcoe_pred = ConvPredictor(num_channels=self.k,
@@ -229,16 +232,16 @@ class MaskFCOS(HybridBlock):
                     share_cls_pred_params, share_ctr_pred_params, \
                     share_box_pred_params, share_mask_pred_params = None, None, None, None
             # trainable scales
-            self.s1 = self.params.get('scale_p1', shape=(1,), differentiable=True,
-                    allow_deferred_init=True, init='ones')
-            self.s2 = self.params.get('scale_p2', shape=(1,), differentiable=True,
-                    allow_deferred_init=True, init='ones')
-            self.s3 = self.params.get('scale_p3', shape=(1,), differentiable=True,
-                    allow_deferred_init=True, init='ones')
-            self.s4 = self.params.get('scale_p4', shape=(1,), differentiable=True,
-                    allow_deferred_init=True, init='ones')
-            self.s5 = self.params.get('scale_p5', shape=(1,), differentiable=True,
-                    allow_deferred_init=True, init='ones')
+            # self.s1 = self.params.get('scale_p1', shape=(1,), differentiable=True,
+            #         allow_deferred_init=True, init='ones')
+            # self.s2 = self.params.get('scale_p2', shape=(1,), differentiable=True,
+            #         allow_deferred_init=True, init='ones')
+            # self.s3 = self.params.get('scale_p3', shape=(1,), differentiable=True,
+            #         allow_deferred_init=True, init='ones')
+            # self.s4 = self.params.get('scale_p4', shape=(1,), differentiable=True,
+            #         allow_deferred_init=True, init='ones')
+            # self.s5 = self.params.get('scale_p5', shape=(1,), differentiable=True,
+            #         allow_deferred_init=True, init='ones')
 
     @property
     def num_classes(self):
@@ -253,40 +256,30 @@ class MaskFCOS(HybridBlock):
         return len(self.classes)
 
     # pylint: disable=arguments-differ
-    def hybrid_forward(self, F, x, s1, s2, s3, s4, s5, cor_targets):
+    def hybrid_forward(self, F, x, cor_targets):
         """Hybrid forward"""
-        scale_params = [s1, s2, s3, s4, s5]
         features = self.features(x)
-        # df = []
-        # for i, feat in enumerate(features[::-1]):
-        #     if i == 0:
-        #         df.append(feat)
-        #         down_feat = F.Pooling(feat, kernel=(2, 2), pool_type='max', stride=(2, 2), pad=(1,1))
-        #     else:
-        #         feat = feat + down_feat
-        #         down_feat = F.Pooling(feat, kernel=(2, 2), pool_type='max', stride=(2, 2))
-        #         df.append(feat)
-        # features = df[::-1]
         masks = self.protonet(features[-1])
         masks = F.relu(masks)
         cls_head_feat = [cp(feat) for feat, cp in zip(features, self.classes_head)]
         box_head_feat = [cp(feat) for feat, cp in zip(features, self.box_head)]
         cls_preds = [F.transpose(F.reshape(cp(feat), (0, 0, -1)), (0, 2, 1))
                      for feat, cp in zip(cls_head_feat, self.class_predictors)]
-        center_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
-                     for feat, bp in zip(cls_head_feat, self.center_predictors)]
+        # center_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
+        #              for feat, bp in zip(cls_head_feat, self.center_predictors)]
 
-        box_preds = [F.transpose(F.exp(F.broadcast_mul(s, F.reshape(bp(feat), (0, 0, -1)))), (0, 2, 1)) * sc
-                     for s, feat, bp, sc in zip(scale_params, box_head_feat, self.box_predictors, self._scale)]
+        box_preds = [F.transpose(F.exp(F.reshape(bp(feat), (0, 0, -1))), (0, 2, 1)) * sc
+                     for feat, bp, sc in zip(box_head_feat, self.box_predictors, self._scale)]
 
         maskeoc_preds = [F.transpose(F.reshape(bp(feat), (0, 0, -1)), (0, 2, 1))
                          for feat,  bp in zip(box_head_feat, self.maskcoe_predictors)]
 
         cls_preds = F.concat(*cls_preds, dim=1)
-        center_preds = F.concat(*center_preds, dim=1)
+        # center_preds = F.concat(*center_preds, dim=1)
         box_preds = F.concat(*box_preds, dim=1)
         maskeoc_preds = F.concat(*maskeoc_preds, dim=1)
         maskeoc_preds = F.tanh(maskeoc_preds)
+        center_preds = F.sum(maskeoc_preds, axis=-1, keepdims=True)
         # with autograd.pause():
         #     h, w, = self.short, self.short
         #     fh = int(np.ceil(np.ceil(np.ceil(h / 2) / 2) / 2))
@@ -362,7 +355,7 @@ def get_maskfcos(name, dataset, pretrained=False, ctx=mx.cpu(),
 #                     valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
 #                     nms_thresh=0.6, nms_topk=1000, save_topk=100)
 
-def maskfcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
+def maskfcos_resnet50_v1_740_coco(pretrained=False, pretrained_base=True, **kwargs):
     from ...data import COCOInstance
     classes = COCOInstance.CLASSES
     return get_maskfcos('resnet50_v1',
@@ -376,7 +369,7 @@ def maskfcos_resnet50_v1_coco(pretrained=False, pretrained_base=True, **kwargs):
                    num_prototypes=32,
                    pretrained_base=pretrained_base, share_params = True, **kwargs)
 
-def maskfcos_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwargs):
+def maskfcos_resnet50_v1b_740_coco(pretrained=False, pretrained_base=True, **kwargs):
     from ...data import COCOInstance
     classes = COCOInstance.CLASSES
     return get_maskfcos('resnet50_v1d',
@@ -390,7 +383,7 @@ def maskfcos_resnet50_v1b_coco(pretrained=False, pretrained_base=True, **kwargs)
                    num_prototypes=32,
                    pretrained_base=pretrained_base, share_params = True, **kwargs)
 
-def maskfcos_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwargs):
+def maskfcos_resnet101_v1d_740_coco(pretrained=False, pretrained_base=True, **kwargs):
     from ...data import COCOInstance
     classes = COCOInstance.CLASSES
     return get_maskfcos('resnet101_v1d',
@@ -398,6 +391,20 @@ def maskfcos_resnet101_v1d_coco(pretrained=False, pretrained_base=True, **kwargs
                    classes=classes,
                    steps=[8, 16, 32, 64, 128],
                    short = 740,
+                   valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
+                   nms_thresh=0.45, nms_topk=1000, post_nms=100,
+                   dataset='coco', pretrained=pretrained,
+                   num_prototypes=32,
+                   pretrained_base=pretrained_base, share_params = True, **kwargs)
+
+def maskfcos_resnet50_v1_1024_coco(pretrained=False, pretrained_base=True, **kwargs):
+    from ...data import COCOInstance
+    classes = COCOInstance.CLASSES
+    return get_maskfcos('resnet50_v1',
+                   features=['stage2_activation3', 'stage3_activation5', 'stage4_activation2'],
+                   classes=classes,
+                   steps=[8, 16, 32, 64, 128],
+                   short = 1024,
                    valid_range=[(512, np.inf), (256, 512), (128, 256), (64, 128), (0, 64)],
                    nms_thresh=0.45, nms_topk=1000, post_nms=100,
                    dataset='coco', pretrained=pretrained,
