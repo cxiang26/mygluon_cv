@@ -21,6 +21,7 @@ class Protonet(gluon.HybridBlock):
                     self.net.add(gluon.nn.Activation('relu'))
                     # self.net.add(gluon.nn.BatchNorm())
                 elif i == len(self.channels) - 2:
+                    self.mask.add(gluon.nn.GroupNorm(num_groups=32))
                     # self.mask.add(gluon.nn.Conv2DTranspose(in_channels=channel, channels=channel, kernel_size=(2,2),strides=(2,2), groups=channel))
                     self.mask.add(gluon.nn.Conv2D(channels=channel, kernel_size=(3, 3), strides=(1, 1), padding=(1, 1)))
                     self.mask.add(gluon.nn.Activation('relu'))
