@@ -27,6 +27,7 @@ class FCOSTargetGenerator(nn.Block):
         boxes : [N, 5]
         """
         rh, rw, _ = img.shape
+        rh, rw = int(rh/4), int(rw/4)
         rx = nd.arange(0, rw).reshape((1, -1))
         ry = nd.arange(0, rh).reshape((-1, 1))
         sx = nd.tile(rx, reps=(rh, 1))
@@ -45,10 +46,10 @@ class FCOSTargetGenerator(nn.Block):
         n = boxes.shape[0]
 
         # [H, W, N]
-        of_l = sx.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(x0, axis=0), axis=0)
-        of_t = sy.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(y0, axis=0), axis=0)
-        of_r = -(sx.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(x1, axis=0), axis=0))
-        of_b = -(sy.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(y1, axis=0), axis=0))
+        of_l = sx.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(x0/4, axis=0), axis=0)
+        of_t = sy.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(y0/4, axis=0), axis=0)
+        of_r = -(sx.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(x1/4, axis=0), axis=0))
+        of_b = -(sy.reshape(-2, 1) - nd.expand_dims(nd.expand_dims(y1/4, axis=0), axis=0))
 
         # [H, W, N]
         eps = 1e-5
@@ -78,12 +79,12 @@ class FCOSTargetGenerator(nn.Block):
         ctr[:, :, 0] = 0
         # [H, W, N, 4]
         offsets = nd.concat(of_l.reshape(-2, 1), of_t.reshape(-2, 1),
-                            of_r.reshape(-2, 1), of_b.reshape(-2, 1), dim=-1)
+                            of_r.reshape(-2, 1), of_b.reshape(-2, 1), dim=-1) * 4.
 
-        # fh = int(np.ceil(((rh + 1) / 2) // 2 / 2))
-        # fw = int(np.ceil(((rw + 1) / 2) // 2 / 2))
-        fh = int(np.ceil(np.ceil(np.ceil(rh / 2) / 2) / 2))
-        fw = int(np.ceil(np.ceil(np.ceil(rw / 2) / 2) / 2))
+        fh = int(np.ceil(rh / 2))
+        fw = int(np.ceil(rw / 2))
+        # fh = int(np.ceil(np.ceil(np.ceil(rh / 2) / 2) / 2))
+        # fw = int(np.ceil(np.ceil(np.ceil(rw / 2) / 2) / 2))
 
         fm_list = []
         for i in range(self._stages):
@@ -95,7 +96,7 @@ class FCOSTargetGenerator(nn.Block):
         ctr_targets = []
         box_targets = []
         match_targets = []
-        stride = self._stride
+        stride = int(self._stride/4)
         for i in range(self._stages):
             fh, fw = fm_list[i]
             # cls_target = nd.zeros((fh, fw))
@@ -116,8 +117,8 @@ class FCOSTargetGenerator(nn.Block):
             # bx = syx[:, 1] * stride
 
             # [FH*FW, N, 4]
-            of_byx = nd.take(offsets.reshape((-1, n, 4)), by*740+bx)
-            of_ctr = nd.take(ctr.reshape((-1, n)), by*740 + bx)
+            of_byx = nd.take(offsets.reshape((-1, n, 4)), by*740/4+bx)
+            of_ctr = nd.take(ctr.reshape((-1, n)), by*740/4 + bx)
             # of_byx = offsets[by, bx]
             # ctr_aware = ctr[by, bx]
             # of_byx = nd.gather_nd(offsets, indices=byx.transpose())
@@ -146,8 +147,8 @@ class FCOSTargetGenerator(nn.Block):
             # cls_target = cls_target.reshape(-1)
 
             # match targets the number of matches less than ctr targets
-            match_gt_inds = nd.argmax(of_valid * (of_valid > 0.01), axis=-1).reshape(-1)
-            match_target = nd.take(boxes_id, match_gt_inds)
+            # match_gt_inds = nd.argmax(of_valid * (of_valid > 0.01), axis=-1).reshape(-1)
+            match_target = nd.take(boxes_id, gt_inds)
             # match_target[syx[:, 0], syx[:, 1]] = boxes_id[match_gt_inds[syx[:,0], syx[:,1]]]
             # match_target = match_target.reshape(-1)
 
