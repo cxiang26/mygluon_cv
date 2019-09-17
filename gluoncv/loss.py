@@ -803,7 +803,7 @@ class MaskFCOSLoss(gluon.Block):
             mask_loss = []
             for ranki, matchei, maskpi, maskti, boxti, maskcoepi, agti in zip(rank, matche, maskp,
                                                                                        maskt, boxt, maskcoep, agt):
-                idx = nd.slice(ranki, 0, 300)
+                idx = nd.slice(ranki, 0, 200)
                 pos_mask = nd.take(matchei >= 0, idx)
                 pos_box = nd.take(boxti, idx)
                 area = nd.take(agti, idx)
