@@ -23,8 +23,10 @@ from gluoncv.utils.metrics.coco_instance import COCOInstanceMetric
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train MaskFCOS networks e2e.')
-    parser.add_argument('--network', type=str, default='resnet50_v1',
+    parser.add_argument('--network', type=str, default='resnet50_v1b',
                         help="Base network name which serves as feature extraction base.")
+    parser.add_argument('--data-shape', type=int, default=740,
+                        help="Input data shape, use 300, 512.")
     parser.add_argument('--batch-size', type=int, default=4,
                         help='Training mini-batch size')
     parser.add_argument('--dataset', type=str, default='coco',
@@ -37,10 +39,10 @@ def parse_args():
                         help='Training with GPUs, you can specify 1,3 for example.')
     parser.add_argument('--epochs', type=str, default='45',
                         help='Training epochs.')
-    parser.add_argument('--resume', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/smooth_maskfcos_resnet50_v1_coco_best.params',
+    parser.add_argument('--resume', type=str, default='',#'/mnt/mdisk/xcq/results/mask_fcos/smooth_maskfcos_resnet50_v1_coco_best.params',
                         help='Resume from previously saved parameters if not None. '
                              'For example, you can resume from ./faster_rcnn_xxx_0123.params')
-    parser.add_argument('--start-epoch', type=int, default=28,
+    parser.add_argument('--start-epoch', type=int, default=0,
                         help='Starting epoch for resuming, default is 0 for new training.'
                              'You can specify it to 100 for example to start from 100 epoch.')
     parser.add_argument('--lr', type=str, default='',
@@ -57,7 +59,7 @@ def parse_args():
                         help='Weight decay, default is 5e-4 for voc')
     parser.add_argument('--log-interval', type=int, default=50,
                         help='Logging mini-batch interval. Default is 100.')
-    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/smooth_',
+    parser.add_argument('--save-prefix', type=str, default='/mnt/mdisk/xcq/results/mask_fcos/',
                         help='Saving parameter prefix')
     parser.add_argument('--save-interval', type=int, default=1,
                         help='Saving parameters epoch interval, best model will always be saved.')
@@ -68,9 +70,6 @@ def parse_args():
                         help='Random seed to be fixed.')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='Print helpful debugging info once set.')
-    parser.add_argument('--mixup', action='store_true', help='Use mixup training.')
-    parser.add_argument('--no-mixup-epochs', type=int, default=20,
-                        help='Disable mixup training if enabled in the last N epochs.')
 
     # Norm layer options
     parser.add_argument('--norm-layer', type=str, default=None,
@@ -109,17 +108,12 @@ def parse_args():
 
 
 def get_dataset(dataset, args):
-    if dataset.lower() == 'voc':
-        pass
-    elif dataset.lower() == 'coco':
+    if dataset.lower() == 'coco':
         train_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_train2017')
         val_dataset = gdata.COCOInstance(root='/home/xcq/PycharmProjects/datasets/coco/',splits='instances_val2017', skip_empty=False)
         val_metric = COCOInstanceMetric(val_dataset, args.save_prefix + '_eval', cleanup=True)
     else:
         raise NotImplementedError('Dataset: {} not implemented.'.format(dataset))
-    if args.mixup:
-        from gluoncv.data.mixup import detection
-        train_dataset = detection.MixupDetection(train_dataset)
     return train_dataset, val_dataset, val_metric
 
 
@@ -242,7 +236,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     # maskfcos_ctr_loss = gcv.loss.CtrNessLoss()
     # maskfcos_box_loss = gcv.loss.IOULoss(return_iou=False)
     # maskfcos_mask_loss = gcv.loss.MaskLoss()
-    maskfcos_loss = gcv.loss.MaskFCOSLoss(from_logits=False, sparse_label=True,
+    maskfcos_loss = gcv.loss.MaskFCOSLoss(from_logits=False, sparse_label=True, img_shape=(args.data_shape, args.data_shape),
                                           num_class=len(net.classes)+1, return_iou=False)
 
     # set up logger
@@ -262,13 +256,6 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
     logger.info('Start training from [Epoch {}]'.format(args.start_epoch))
     best_map = [0]
     for epoch in range(args.start_epoch, args.epochs):
-        mix_ratio = 1.0
-        if args.mixup:
-            train_data._dataset._data.set_mixup(np.random.uniform, 0.5, 0.5)
-            mix_ratio = 0.5
-            if epoch >= args.epochs - args.no_mixup_epochs:
-                train_data._dataset._data.set_mixup(None)
-                mix_ratio = 1.0
         while lr_steps and epoch >= lr_steps[0]:
             new_lr = trainer.learning_rate * lr_decay
             lr_steps.pop(0)
@@ -308,7 +295,7 @@ def train(net, train_data, val_data, eval_metric, ctx, args):
                 sum_losses, cls_losses, ctr_losses, box_losses, mask_losses = \
                     maskfcos_loss(cls_targets, ctr_targets, box_targets, mask_targets, matches, clsps, ctrps, boxps, maskps, maskcoeps)
                 autograd.backward(sum_losses)
-            trainer.step(1) # normalize by batch_size
+            trainer.step(1, ignore_stale_grad=True) # normalize by batch_size
             if args.log_interval and not (i + 1) % args.log_interval:
                 total_cls_loss, total_ctr_loss, total_box_loss, total_mask_loss = 0., 0., 0., 0.
                 for cls_loss, ctr_loss, box_loss, mask_loss in zip(cls_losses, ctr_losses, box_losses, mask_losses):
@@ -355,7 +342,7 @@ if __name__ == '__main__':
 
     # network
     kwargs = {}
-    net_name = "_".join(("maskfcos", args.network, args.dataset))
+    net_name = "_".join(("maskfcos", args.network, str(args.data_shape), args.dataset))
     args.save_prefix += net_name
     net = get_model(net_name, pretrained_base=True, **kwargs)
     if args.resume.strip():
