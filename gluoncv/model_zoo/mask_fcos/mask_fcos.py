@@ -97,7 +97,7 @@ class RetinaHead(nn.HybridBlock):
                     self.conv.add(nn.Conv2D(256, 3, 1, 1, activation='relu',
                         weight_initializer=mx.init.Normal(sigma=0.01),
                         bias_initializer='zeros'))
-                self.conv.add(nn.GroupNorm(num_groups=32))
+                self.conv.add(GroupNorm(num_channels=256, prefix=prefix))
 
     def set_params(self, newconv):
         for b, nb in zip(self.conv, newconv):
