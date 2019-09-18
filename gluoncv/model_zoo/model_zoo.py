@@ -7,6 +7,7 @@ from .cifarresnet import *
 from .cifarresnext import *
 from .cifarwideresnet import *
 from .deeplabv3 import *
+from .deeplabv3b_plus import *
 from .densenet import *
 from .faster_rcnn import *
 from .fcn import *
@@ -178,6 +179,7 @@ _models = {
     'deeplab_resnet152_voc': get_deeplab_resnet152_voc,
     'deeplab_resnet50_ade': get_deeplab_resnet50_ade,
     'deeplab_resnet101_ade': get_deeplab_resnet101_ade,
+    'deeplab_v3b_plus_wideresnet_citys': get_deeplab_v3b_plus_wideresnet_citys,
     'resnet18_v1b': resnet18_v1b,
     'resnet34_v1b': resnet34_v1b,
     'resnet50_v1b': resnet50_v1b,
@@ -259,7 +261,11 @@ _models = {
     'inceptionv3_ucf101': inceptionv3_ucf101,
     'inceptionv3_kinetics400': inceptionv3_kinetics400,
     'fcn_resnet101_voc_int8': fcn_resnet101_voc_int8,
-    'fcn_resnet101_coco_int8':fcn_resnet101_coco_int8,
+    'fcn_resnet101_coco_int8': fcn_resnet101_coco_int8,
+    'psp_resnet101_voc_int8': psp_resnet101_voc_int8,
+    'psp_resnet101_coco_int8': psp_resnet101_coco_int8,
+    'deeplab_resnet101_voc_int8': deeplab_resnet101_voc_int8,
+    'deeplab_resnet101_coco_int8': deeplab_resnet101_coco_int8
 }
 
 
